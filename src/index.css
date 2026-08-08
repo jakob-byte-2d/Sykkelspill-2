@@ -1,0 +1,18 @@
+/* The game paints itself — this only clears the page around it. */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #9fb2c5;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
