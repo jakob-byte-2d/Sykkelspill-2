@@ -156,10 +156,13 @@ function makeRiders(rng) {
     riders.push(r);
     r.surge = usableSurge(r);
   };
+  // three all-rounders, a climber and a pure sprinter — everything that separates them
+  // (cda, threshold, the pull, the sprint) falls out of these numbers on its own
   mk(0, "PEDERSEN", 76, 1.80, { p5s: 1450, p1: 800, p5: 560, p20: 490, p60: 455 });
   mk(1, "V.D.POEL", 75, 1.84, { p5s: 1560, p1: 800, p5: 565, p20: 495, p60: 460 });
   mk(2, "VAN AERT", 78, 1.90, { p5s: 1600, p1: 820, p5: 570, p20: 500, p60: 465 });
-  mk(3, "ABRAHAMSEN", 78, 1.83, { p5s: 1350, p1: 750, p5: 545, p20: 485, p60: 455 });
+  mk(3, "VIRENQUE", 62, 1.72, { p5s: 1010, p1: 620, p5: 472, p20: 426, p60: 400 });
+  mk(4, "CIPOLLINI", 89, 1.89, { p5s: 1980, p1: 790, p5: 545, p20: 468, p60: 430 });
   return riders;
 }
 
