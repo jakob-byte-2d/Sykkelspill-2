@@ -1463,9 +1463,10 @@ export default function TheBreakaway() {
           </div>
         </div>
 
-        {/* watt slider */}
+        {/* watt slider — its foot carries the WATTS label, so the column has to stop
+            clear of the mode chip below it, not just above the chip's own top edge */}
         <div
-          style={{ position: "absolute", right: 6, top: 84, bottom: 134, width: 74, touchAction: "none", userSelect: "none" }}
+          style={{ position: "absolute", right: 6, top: 84, bottom: 158, width: 74, touchAction: "none", userSelect: "none" }}
           onPointerDown={(e) => { dragRef.current = true; e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
           onPointerMove={(e) => { if (dragRef.current) onSlider(e, e.currentTarget); }}
           onPointerUp={onSliderUp}
