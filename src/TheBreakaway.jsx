@@ -5,6 +5,8 @@ const COOP_REF = 140;      // watts of gift that count as one second's worth of 
 const COOP_MARGIN = 0.05;  // the pull ends once your share is this many points over fair
 const COOP_BLEND = 6;      // over the last metres of the drop-back, watts blend up to the wheel price
 const COOP_PULL_SEC = 300; // a rotation pull sits about here on each rider's power–duration curve
+const COOP_PULL_SPEND = 0.02; // a turn also ends once it has cost this much of the tank you carried to the front...
+const COOP_PULL_MIN = 12;  // ...but no turn is shorter than this — a rotation that swaps every second is no rotation
 const COOP_COAST_KMH = 50; // past this speed a pace-setting effort buys nothing...
 const COOP_COAST_SPAN = 8; // ...watts tapering to zero over the next this-many km/h
 const PULL_MIN_SF = 0.2;   // under this much tank you sit on the back — drop-backs slot in ahead of you
@@ -147,6 +149,9 @@ function makeRiders(rng) {
       shel: 0,
       st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0 },
       finished: null, caught: false, rampT: 0, rampFrom: 0, hold: false, paid: COOP_SEED,
+      // the turn on the front: the tank he brought to it, how long he has held it,
+      // and whether it has been declared over — a flag, so it survives the drop-back
+      pullMark: null, pullT: 0, done: false,
     };
     riders.push(r);
     r.surge = usableSurge(r);
@@ -288,20 +293,19 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
   let P, brake = 0;
   const grp = r.groupNo != null ? S.groups[r.groupNo - 1] : null;
   if (grp && grp.length > 1) {
-    const tot = grp.reduce((s, o) => s + o.paid, 0);
-    const share = tot > 0 ? r.paid / tot : 1 / grp.length;
-    const fair = 1 / grp.length;
     const inFront = r.groupPos === 1;
     const sitting = r.isPlayer && S.sitting;  // the player as a rester: never pays, sinks to the back
     // ...and the same idea for anyone: whoever is not working holds the back of the line
     const resting = sitting || (!r.isPlayer && (r.sf ?? 1) < PULL_MIN_SF);
-    const overpaid = share > fair + COOP_MARGIN;
+    // the turn was called over in stepSim — by the ledger or by his body, whichever
+    // came first. It is a flag and not a sum, so it holds all the way down the
+    // drop-back: recomputed, it would flick off the moment his tank started refilling
+    // and he would latch back onto the front halfway home.
+    const overpaid = !!r.done;
     const front = grp[0];
-    // "the front is done" is public: an AI front past his share, or the player without
-    // the pull button lit — position 2 rolls through on the SAME tick the front eases
-    const frontDone = !inFront && (front.isPlayer && !S.pulling
-      ? true
-      : tot > 0 && front.paid / tot > fair + COOP_MARGIN);
+    // "the front is done" is public: his own flag, or the player without the pull
+    // button lit — position 2 rolls through on the SAME tick the front eases
+    const frontDone = !inFront && (front.isPlayer && !S.pulling ? true : !!front.done);
     if (r.hold && (shel === 0 || !ahead || (!sitting && !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0)))))) r.hold = false;
     if (inFront) {
       r.hold = false;
@@ -559,6 +563,32 @@ function stepSim(S) {
     const pGrav = Math.max(-r.mass * G * S.course.gradAt(d), 0) * r.speed;
     const legs = r.power / Math.max(r.power + pGrav, 1);
     r.paid += legs * Math.max(r.power - sit, 0) / COOP_REF;
+
+    // ...and then ask whether the turn is over. Two reasons end it, and the first
+    // one to arrive wins: the ledger says he has done his share, or his body says
+    // enough. The second is the one a rider actually feels — a turn on the front
+    // sits above threshold and drains the tank, and he swings off while he can
+    // still get it back in the wheels. Decided once here, so every reader agrees.
+    if (r.pullMark == null) { r.pullMark = r.surge; r.pullT = 0; }
+    r.pullT += 1;
+    const b = bodyNow(r);
+    const tot = g.reduce((s, o) => s + o.paid, 0);
+    const paidUp = tot > 0 && r.paid / tot > 1 / g.length + COOP_MARGIN;
+    // a small slice, because the front only sits a few points over threshold: measured
+    // in play the pull runs at a median 1.03 × T, so 2 % of the tank is about forty
+    // seconds of tempo — and far fewer where the road tips up and the gap widens
+    const spent = r.surge < r.pullMark - COOP_PULL_SPEND * usableSurge(r);
+    // an empty tank only ends the turn if someone fresher can take it on —
+    // when the whole break is equally cooked, somebody still has to ride
+    const empty = b.sf < PULL_MIN_SF && g.some((o) => o !== r && (o.sf ?? 1) > b.sf);
+    if (r.pullT >= COOP_PULL_MIN && (paidUp || spent || empty)) r.done = true;
+  }
+  // the turn's bookkeeping: it opens when he reaches the front and closes for good
+  // once he has drifted to the back — tagGroups ran above, so the positions are this
+  // second's. Anyone not on the front is between turns and carries no mark.
+  for (const r of S.riders) {
+    if (r.groupPos !== 1) { r.pullMark = null; r.pullT = 0; }
+    if (r.groupSize > 1 && r.groupPos === r.groupSize) r.done = false;
   }
 }
 
