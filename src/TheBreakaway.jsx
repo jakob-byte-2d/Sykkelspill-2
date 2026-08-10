@@ -1082,7 +1082,7 @@ function draw(S, canvas, alpha) {
   // then a nudge pass per row — the same chips-on-stalks trick the race map uses,
   // because five riders wheel to wheel are closer together than their labels are wide
   {
-    const BW = DEBUG ? 59 : 37, BH = DEBUG ? 61 : 39, GAPX = 3;
+    const BW = DEBUG ? 59 : 48, BH = DEBUG ? 72 : 50, GAPX = 3;
     for (const row of [0, 1]) {
       const mine = bubbles.filter((m) => m.row === row).sort((a, m) => m.x - a.x);
       mine.forEach((m) => { m.bx = m.x; });
@@ -1095,39 +1095,44 @@ function draw(S, canvas, alpha) {
       const top = m.tipY - 8 - BH - (m.row ? BH + 4 : 0);
       drawBubble(ctx, m.bx, top, BW, BH, m.r.color, m.x, m.tipY);
       const { r, b } = m;
+      // his name, in his own colour — the same signal as the bubble's border and the
+      // stalk, so a glance ties the numbers to the man without following the line down
+      ctx.font = "800 8px ui-monospace, monospace";
+      ctx.fillStyle = r.color;
+      ctx.fillText(r.name.split(".").pop().slice(0, 8), m.bx, top + 10);
       if (!DEBUG) {
         ctx.font = "800 10px ui-monospace, monospace";
         ctx.fillStyle = "#f2f6fa";
-        ctx.fillText(Math.round(r.power) + " W", m.bx, top + 13);
+        ctx.fillText(Math.round(r.power) + " W", m.bx, top + 24);
         ctx.fillStyle = tankHue(b.sf);
-        ctx.fillText("S" + Math.round(b.sf * 100) + "%", m.bx, top + 25);
+        ctx.fillText("S" + Math.round(b.sf * 100) + "%", m.bx, top + 36);
         ctx.font = "800 9px ui-monospace, monospace";
         ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 36);
+        ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 47);
       } else {
         ctx.font = "800 9px ui-monospace, monospace";
         const L = m.bx - BW / 2 + 16, R = m.bx + BW / 2 - 15;
         ctx.fillStyle = "#f2f6fa";
-        ctx.fillText(Math.round(r.power) + "W", L, top + 12);
+        ctx.fillText(Math.round(r.power) + "W", L, top + 23);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText(Math.round(b.T) + "T", L, top + 23);
+        ctx.fillText(Math.round(b.T) + "T", L, top + 34);
         ctx.fillStyle = "#ffd23f";
-        ctx.fillText(roleOf(S, r), L, top + 34);
+        ctx.fillText(roleOf(S, r), L, top + 45);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
         // wheels overlap by centimetres in a tight line, and "-0.0" is just noise
-        ctx.fillText(m.gap == null ? "—" : (Math.abs(m.gap) < 0.05 ? 0 : m.gap).toFixed(1), L, top + 45);
+        ctx.fillText(m.gap == null ? "—" : (Math.abs(m.gap) < 0.05 ? 0 : m.gap).toFixed(1), L, top + 56);
         ctx.fillStyle = tankHue(b.sf);
-        ctx.fillText("S" + Math.round(b.sf * 100), R, top + 12);
+        ctx.fillText("S" + Math.round(b.sf * 100), R, top + 23);
         ctx.fillStyle = tankHue(b.ff);
-        ctx.fillText("F" + Math.round(b.ff * 100), R, top + 23);
+        ctx.fillText("F" + Math.round(b.ff * 100), R, top + 34);
         // legs reads as what is LEFT, the same way the instrument panel shows it —
         // so the number agrees with its own colour, and with the bar below
         ctx.fillStyle = tankHue(1 - r.legs);
-        ctx.fillText("L" + Math.round((1 - r.legs) * 100), R, top + 34);
+        ctx.fillText("L" + Math.round((1 - r.legs) * 100), R, top + 45);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText("LY" + Math.round((r.shel / SHEL_MAX) * 100), R, top + 45);
+        ctx.fillText("LY" + Math.round((r.shel / SHEL_MAX) * 100), R, top + 56);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 56);
+        ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 67);
       }
     }
   }
