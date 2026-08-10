@@ -12,6 +12,9 @@ const COOP_COAST_SPAN = 8; // ...watts tapering to zero over the next this-many 
 const PULL_MIN_SF = 0.3;   // under this much tank you stop taking turns — drop-backs slot in ahead of you
 const WHEEL_COOKED_SF = 0.2; // ...and under this much, his wheel is about to go backwards
 const DOOR_NEAR = 10;      // this close ahead of a resting rider, a man dropping back becomes his wheel
+const SPRINT_FINALE_M = 1000; // inside this the ledger stops deciding: everyone holds a wheel
+const SPRINT_M = 200;      // the fastest man in the group can afford to wait until here...
+const SPRINT_LONG = 300;   // ...and the slowest opens from here, to try to blunt him
 const SWING_W = 80;        // swinging off, you ease this many watts below holding your own speed in the wind...
 const DROP_W = 80;         // ...and drift back at most this many watts below the wheel price
 const PEL_FINALE_X = 1.15; // the bunch lifts the pace inside the finale
@@ -143,7 +146,12 @@ function makeRiders(rng) {
       curve, T0, form,
       // his own pull, read off his own curve — not everyone's constant
       pullX: powerAt(curve, COOP_PULL_SEC) / T0,
-      surgeMax: Math.max((curve.p5 - T0) * 300, 6000), surge: 0,
+      // his sprint measured against his own engine: what he gains by arriving together
+      sprintX: curve.p5s / T0,
+      // the anaerobic battery. A sprinter is a man with a big one and a climber's is
+      // small, and reading it off the five-minute power cannot tell those apart — it
+      // only knows the engine. So it is given in kilojoules, and derived only if not.
+      surgeMax: curve.wp ? curve.wp * 1000 : Math.max((curve.p5 - T0) * 300, 6000), surge: 0,
       fuelMax: 125000 * mass, fuel: 125000 * mass * FUEL_START,
       legs: clamp(0.42 + gaussOf(rng) * 0.05, 0.3, 0.55), recov: 0.9 + rng() * 0.2,
       dist: 0, prevDist: 0, speed: 11.5, power: 0, ped: rng() * 6,
@@ -159,11 +167,12 @@ function makeRiders(rng) {
   };
   // three all-rounders, a climber and a pure sprinter — everything that separates them
   // (cda, threshold, the pull, the sprint) falls out of these numbers on its own
-  mk(0, "PEDERSEN", 76, 1.80, { p5s: 1450, p1: 800, p5: 560, p20: 490, p60: 455 });
-  mk(1, "V.D.POEL", 75, 1.84, { p5s: 1560, p1: 800, p5: 565, p20: 495, p60: 460 });
-  mk(2, "VAN AERT", 78, 1.90, { p5s: 1600, p1: 820, p5: 570, p20: 500, p60: 465 });
-  mk(3, "VIRENQUE", 62, 1.72, { p5s: 1010, p1: 620, p5: 472, p20: 426, p60: 400 });
-  mk(4, "CIPOLLINI", 89, 1.89, { p5s: 1980, p1: 790, p5: 545, p20: 468, p60: 430 });
+  // wp is the anaerobic battery in kilojoules — the sprinter's defining number
+  mk(0, "PEDERSEN", 76, 1.80, { p5s: 1450, p1: 800, p5: 560, p20: 490, p60: 455, wp: 26 });
+  mk(1, "V.D.POEL", 75, 1.84, { p5s: 1560, p1: 800, p5: 565, p20: 495, p60: 460, wp: 28 });
+  mk(2, "VAN AERT", 78, 1.90, { p5s: 1600, p1: 820, p5: 570, p20: 500, p60: 465, wp: 29 });
+  mk(3, "VIRENQUE", 62, 1.72, { p5s: 1010, p1: 620, p5: 472, p20: 426, p60: 400, wp: 17 });
+  mk(4, "CIPOLLINI", 89, 1.89, { p5s: 1980, p1: 790, p5: 545, p20: 468, p60: 430, wp: 38 });
   return riders;
 }
 
@@ -233,6 +242,28 @@ const deadWheel = (o, r) => (o.sf ?? 1) < WHEEL_COOKED_SF && (r.sf ?? 1) > (o.sf
 // whoever is actually taking his turn: role decides it for the player, the tank for
 // everyone else — and nobody drifting back down the outside counts as a turn-taker
 const working = (S, o) => !o.offline && (o.isPlayer ? !S.sitting : (o.sf ?? 1) >= PULL_MIN_SF);
+
+// where he opens up, read off his sprint against the rest of his group. The fastest man
+// can afford to wait on a wheel; the slowest has to go long and try to blunt him, which
+// is the only card a man without a sprint has left to play.
+function launchAt(grp, r) {
+  let lo = Infinity, hi = -Infinity;
+  for (const o of grp) { if (o.sprintX < lo) lo = o.sprintX; if (o.sprintX > hi) hi = o.sprintX; }
+  const t = hi > lo ? (r.sprintX - lo) / (hi - lo) : 1;
+  return SPRINT_M + (SPRINT_LONG - SPRINT_M) * (1 - t);
+}
+
+// ...and where he wants to be sitting when it starts. The men who have to go long line
+// up in front, in the order they will open — but the fastest man takes second wheel
+// rather than last. Buried at the back he is displaced by every gap ahead of him when
+// the line jumps, and no sprint on earth brings that back in two hundred metres.
+function wantPos(grp, r) {
+  const order = [...grp].sort((a, o) => launchAt(grp, o) - launchAt(grp, a));
+  const fastest = order[order.length - 1];
+  if (r === fastest) return Math.min(2, grp.length);
+  const k = order.indexOf(r);
+  return k + 1 + (k + 1 >= 2 ? 1 : 0);
+}
 
 function queueWheel(S, r, ahead) {
   if (!ahead) return ahead;
@@ -308,8 +339,19 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
   r.offline = 0;   // out of the line? set below in the two branches where you are
   let P, brake = 0;
   const grp = r.groupNo != null ? S.groups[r.groupNo - 1] : null;
+  const togo = S.course.total - r.dist;
+  // ...and the last thing anyone does is empty the tank. It goes before every other
+  // branch, and before coast(), which would otherwise wipe the watts out above 58 km/h
+  // — coast describes tempo buying nothing at speed, not a sprint being impossible.
+  r.launch = grp && grp.length > 1 ? launchAt(grp, r) : SPRINT_M;
+  if (togo < r.launch) { r.sprinting = 1; return { P: b.ceil, brake: 0 }; }
+  r.sprinting = 0;
   if (grp && grp.length > 1) {
     const inFront = r.groupPos === 1;
+    // inside the finale the ledger stops deciding: nobody owes anybody a turn any more,
+    // everyone sits on a wheel and waits for his own moment. The man who ends up in
+    // front still rides the plan, so the break does not stall and get swallowed.
+    const finale = togo < SPRINT_FINALE_M;
     const sitting = r.isPlayer && S.sitting;  // the player as a rester: never pays, sinks to the back
     // ...and the same idea for anyone: whoever is not working holds the back of the line
     const resting = sitting || (!r.isPlayer && (r.sf ?? 1) < PULL_MIN_SF);
@@ -317,11 +359,13 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // came first. It is a flag and not a sum, so it holds all the way down the
     // drop-back: recomputed, it would flick off the moment his tank started refilling
     // and he would latch back onto the front halfway home.
-    const overpaid = !!r.done;
+    // ...and in the finale nobody swings off and nobody rolls through: the rotation is
+    // over, and a man who eased now would simply hand the race to the wheel behind him
+    const overpaid = !finale && !!r.done;
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
     // button lit — position 2 rolls through on the SAME tick the front eases
-    const frontDone = !inFront && (front.isPlayer && !S.pulling ? true : !!front.done);
+    const frontDone = !finale && !inFront && (front.isPlayer && !S.pulling ? true : !!front.done);
     if (r.hold && (shel === 0 || !ahead || (!sitting && !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0)))))) r.hold = false;
     if (inFront) {
       r.hold = false;
@@ -370,6 +414,15 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // that space IS his new wheel, not someone to look through. And he is happy to
       // go slower with him — the speed test is the working line's business, not his
       let tgt = ahead ? (sitting ? ahead : queueWheel(S, r, ahead)) : null;
+      // in the finale he rides to his slot instead of just holding whatever wheel he
+      // has. Sitting too far back, he takes the wheel of the man he wants to be behind
+      // and comes up the outside to it — with the autopilot's full authority, because
+      // this is the one move in the race that must not be left half-done.
+      let movingUp = false;
+      if (finale && !sitting) {
+        const want = wantPos(grp, r);
+        if (r.groupPos > want) { tgt = grp[want - 2] || grp[0]; movingUp = tgt !== r; }
+      }
       // ...and once that man is close enough to be slotting in, he IS the wheel: follow
       // him down at his speed and the space opens by itself, for nothing. Holding the
       // line's wheel through the manoeuvre instead means braking to make room and then
@@ -409,11 +462,13 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
           * (1 + PACE_GAIN * urgency);
         P = Math.min(pWant + SWING_W, r.pullX * b.T, b.ceil);
-      } else if (usable && (r.hold || ((bestGap >= 0 || sitting) && shel > 0))) {
+      } else if (usable && (movingUp || r.hold || ((bestGap >= 0 || sitting) && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);
         const need = powerFor(tgt.speed, r.mass, r.cda, grad, rho, hw, shel);
         if (!r.hold) { r.hold = true; r.rampFrom = Math.max(r.power, isFinite(need) ? need : 0); r.rampT = 3; }
-        const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, true);
+        // in the finale you match the jump or you lose the wheel — the soft cap that
+        // keeps a rester from digging is exactly wrong once the sprint is on
+        const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, !movingUp && !finale);
         P = out.P; brake = out.brake;
       } else {
         r.hold = false;
