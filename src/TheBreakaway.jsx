@@ -165,14 +165,16 @@ function makeRiders(rng) {
     riders.push(r);
     r.surge = usableSurge(r);
   };
-  // three all-rounders, a climber and a pure sprinter — everything that separates them
-  // (cda, threshold, the pull, the sprint) falls out of these numbers on its own
-  // wp is the anaerobic battery in kilojoules — the sprinter's defining number
+  // three all-rounders, a climber and a big diesel — everything that separates them
+  // (cda, threshold, the pull, the sprint) falls out of these numbers on its own.
+  // wp is the anaerobic battery in kilojoules: what a man has above his threshold.
+  // No pure sprinter here — one would never have survived 150 km and a six per cent
+  // climb to reach this move in the first place.
   mk(0, "PEDERSEN", 76, 1.80, { p5s: 1450, p1: 800, p5: 560, p20: 490, p60: 455, wp: 26 });
   mk(1, "V.D.POEL", 75, 1.84, { p5s: 1560, p1: 800, p5: 565, p20: 495, p60: 460, wp: 28 });
   mk(2, "VAN AERT", 78, 1.90, { p5s: 1600, p1: 820, p5: 570, p20: 500, p60: 465, wp: 29 });
   mk(3, "VIRENQUE", 62, 1.72, { p5s: 1010, p1: 620, p5: 472, p20: 426, p60: 400, wp: 17 });
-  mk(4, "CIPOLLINI", 89, 1.89, { p5s: 1980, p1: 790, p5: 545, p20: 468, p60: 430, wp: 38 });
+  mk(4, "KÜNG", 83, 1.93, { p5s: 1300, p1: 720, p5: 555, p20: 480, p60: 450, wp: 24 });
   return riders;
 }
 
