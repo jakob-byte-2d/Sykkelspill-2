@@ -28,6 +28,12 @@ const PEL_FINALE_M = 5000; // ...and the finale starts this many metres from the
 const PEL_MASS = 68, PEL_CDA = 0.28;   // the bunch modelled as one body: this one
 const BRK_MASS = 76, BRK_CDA = 0.30;   // and the break as another: the man on the front
 const PACE_MARGIN = 15;    // seconds the break wants to cross the line ahead of the bunch
+const BREAK_GAIN = 0.15;   // a rotating break saves a great deal of air over a lone rider, but an
+                           // ad-hoc one of unequal men — turns, drop-backs, wave-ins, a man sitting
+                           // on with an empty tank — banks only part of it. Measured at 0.21-0.34
+                           // of the theoretical saving across five races, and the bunch is set just
+                           // under the lowest of those: enough that the deadline bites everywhere,
+                           // not so much that the flattest course swallows the move every time
 const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free
@@ -874,7 +880,7 @@ function planSpeedAt(plan, dist) {
 /* ---------------- New race ---------------- */
 /* Ride the course alone, fresh body, steady threshold pacing, tuck downhill,
    empty the tank in the last 400 m — the player's honest benchmark. */
-function soloBenchmark(course, rider) {
+function soloBenchmark(course, rider, shel = 0) {
   const r = { ...rider, st: { ...rider.st }, dist: 0, prevDist: 0, speed: 11.5, power: 0 };
   let t = 0;
   while (r.dist < course.total && t < 9000) {
@@ -888,7 +894,7 @@ function soloBenchmark(course, rider) {
     if (descending) P = coast(P, r.speed);
     const v0 = Math.max(r.speed, 0.8);
     const va = v0 + hw;
-    const F = (P * 0.975) / v0 - 0.004 * r.mass * G - r.mass * G * grad - 0.5 * rho * r.cda * Math.abs(va) * va;
+    const F = (P * 0.975) / v0 - 0.004 * r.mass * G - r.mass * G * grad - 0.5 * rho * r.cda * (1 - shel) * Math.abs(va) * va;
     r.speed = clamp(v0 + F / (r.mass + 1.5), 0.8, 33);
     r.dist += r.speed;
     spend(r, P, 1, b, true);
@@ -930,14 +936,22 @@ function newSim(seed) {
   });
   const startGap = (65 + rng() * 40) * 11.5;
   // every rider's honest solo benchmark — the bunch is calibrated against the best of them
+  // Two honest benchmarks of the same course, ridden by the same bodies: alone in the
+  // wind, and taking turns. In a rotation of N you spend one turn in N on the front and
+  // the rest in the wheels, so the draft you keep is SHEL_MAX scaled by (N-1)/N.
   const soloTs = riders.map((r) => soloBenchmark(course, r));
-  const soloT = Math.min(...soloTs);
-  const pelBase = calibratePel(course, startGap, soloT + 1);
-  const plan = breakSchedule(course, soloT + 1 - PACE_MARGIN);
+  const rotTs = riders.map((r) => soloBenchmark(course, r, SHEL_MAX * (riders.length - 1) / riders.length));
+  const soloT = Math.min(...soloTs), rotT = Math.min(...rotTs);
+  // ...and the bunch is set against what a break actually manages between those two.
+  // Calibrating on the solo time is what left the break arriving a clear two minutes
+  // early with nothing to chase; calibrating on the rotation would catch it every time.
+  const targetT = soloT - BREAK_GAIN * (soloT - rotT);
+  const pelBase = calibratePel(course, startGap, targetT + 1);
+  const plan = breakSchedule(course, targetT + 1 - PACE_MARGIN);
   const T0 = bodyNow(riders[0]).T;
   const S = {
     seed, course, riders,
-    pel: { dist: -startGap, prevDist: -startGap, speed: 11.8, base: pelBase, soloT, gapS: startGap / 11.8 },
+    pel: { dist: -startGap, prevDist: -startGap, speed: 11.8, base: pelBase, soloT: targetT, gapS: startGap / 11.8 },
     soloTs,
     plan,            // distance → time the break must hit to stay clear; nothing reads it yet
     groups: [],
