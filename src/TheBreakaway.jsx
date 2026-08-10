@@ -9,7 +9,8 @@ const COOP_PULL_SPEND = 0.02; // a turn also ends once it has cost this much of 
 const COOP_PULL_MIN = 12;  // ...but no turn is shorter than this — a rotation that swaps every second is no rotation
 const COOP_COAST_KMH = 50; // past this speed a pace-setting effort buys nothing...
 const COOP_COAST_SPAN = 8; // ...watts tapering to zero over the next this-many km/h
-const PULL_MIN_SF = 0.2;   // under this much tank you sit on the back — drop-backs slot in ahead of you
+const PULL_MIN_SF = 0.3;   // under this much tank you stop taking turns — drop-backs slot in ahead of you
+const WHEEL_COOKED_SF = 0.2; // ...and under this much, his wheel is about to go backwards
 const DOOR_NEAR = 10;      // this close ahead of a resting rider, a man dropping back becomes his wheel
 const SWING_W = 80;        // swinging off, you ease this many watts below holding your own speed in the wind...
 const DROP_W = 80;         // ...and drift back at most this many watts below the wheel price
@@ -222,6 +223,13 @@ const wheelGap0 = (ahead, r) => (dist0(ahead) - BIKE) - dist0(r);
 // freewheeling wheel is free to sit on
 const validWheel = (o, r, grad) => o.speed > r.speed - 2 / 3.6 || grad < DH_GRAD;
 
+// the speed test above only fires once the deficit is already there, and a man on an
+// empty tank lets go gently — slowly enough to pass it for a long while, and take
+// whoever is on his wheel out the back with him. So read the tank, not just the pace:
+// look through a wheel that is about to die — unless you are no better off yourself,
+// in which case there is nothing better to sit on and you may as well take it
+const deadWheel = (o, r) => (o.sf ?? 1) < WHEEL_COOKED_SF && (r.sf ?? 1) > (o.sf ?? 1);
+
 // whoever is actually taking his turn: role decides it for the player, the tank for
 // everyone else — and nobody drifting back down the outside counts as a turn-taker
 const working = (S, o) => !o.offline && (o.isPlayer ? !S.sitting : (o.sf ?? 1) >= PULL_MIN_SF);
@@ -230,7 +238,8 @@ function queueWheel(S, r, ahead) {
   if (!ahead) return ahead;
   let best = null;
   for (const o of S.riders) {
-    if (o === r || o.caught || o.finished != null || o.offline || !validWheel(o, r, S.course.gradAt(Math.max(dist0(o), 0)))) continue;
+    if (o === r || o.caught || o.finished != null || o.offline || deadWheel(o, r)
+      || !validWheel(o, r, S.course.gradAt(Math.max(dist0(o), 0)))) continue;
     if (dist0(o) > dist0(r) && (best == null || dist0(o) < dist0(best))) best = o;
   }
   return best || ahead;
@@ -368,20 +377,28 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       if (resting) {
         let dropper = null;
         for (const o of grp) {
-          if (o === r || !o.offline) continue;
+          if (o === r || !o.offline || deadWheel(o, r)) continue;
           const behind = dist0(o) - dist0(r);
           if (behind > 0 && behind < DOOR_NEAR && (!dropper || behind < dist0(dropper) - dist0(r))) dropper = o;
         }
         if (dropper) tgt = dropper;
       }
-      const usable = tgt && (sitting || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
+      // a rester may go slower with a man rotating back — that is the whole point of
+      // the wave-in — but not with one who is coming off for good
+      const usable = tgt && !deadWheel(tgt, r)
+        && (sitting || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
       // the line hands over to the first man still in it — not literally position 2,
-      // or a rester there would leave the break with no engine at all
-      let nextUp = null;
+      // or a rester there would leave the break with no engine at all. A rider on an
+      // empty tank is no engine either, so he is passed over too; but if nobody has
+      // anything left, the fullest tank takes it anyway. Somebody still has to ride.
+      let nextUp = null, fullest = null;
       for (let k = 1; k < grp.length; k++) {
         const o = grp[k];
-        if (!o.offline && !(o.isPlayer && S.sitting)) { nextUp = o; break; }
+        if (o.offline || (o.isPlayer && S.sitting)) continue;
+        if (!fullest || (o.sf ?? 1) > (fullest.sf ?? 1)) fullest = o;
+        if (nextUp == null && (o.sf ?? 1) >= PULL_MIN_SF) nextUp = o;
       }
+      nextUp = nextUp || fullest;
       if (r === nextUp && !sitting && (frontDone || !usable)) {
         // the front is done, or the wheel ahead is dying — ride through at the plan's
         // price plus the swing differential: enough to pass the man easing off at
