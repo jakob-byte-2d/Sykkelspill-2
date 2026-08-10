@@ -222,6 +222,10 @@ const wheelGap0 = (ahead, r) => (dist0(ahead) - BIKE) - dist0(r);
 // freewheeling wheel is free to sit on
 const validWheel = (o, r, grad) => o.speed > r.speed - 2 / 3.6 || grad < DH_GRAD;
 
+// whoever is actually taking his turn: role decides it for the player, the tank for
+// everyone else — and nobody drifting back down the outside counts as a turn-taker
+const working = (S, o) => !o.offline && (o.isPlayer ? !S.sitting : (o.sf ?? 1) >= PULL_MIN_SF);
+
 function queueWheel(S, r, ahead) {
   if (!ahead) return ahead;
   let best = null;
@@ -341,11 +345,9 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       for (let k = grp.length - 1; k >= 1; k--) {
         const o = grp[k];
         if (o === r) continue;
-        // role decides it for the player, the tank for everyone else — a rester
-        // must not qualify as "working" just because resting refilled him, and
-        // nobody drifting back down the outside is a wheel to land on either
-        const working = !o.offline && (o.isPlayer ? !S.sitting : (o.sf ?? 1) >= PULL_MIN_SF);
-        if (working) { back = o; break; }
+        // a rester must not qualify as a wheel to land on just because resting
+        // refilled him, and nor must anyone drifting back down the outside
+        if (working(S, o)) { back = o; break; }
       }
       const dback = dist0(r) - (dist0(back) - BIKE);   // land ON his wheel, not on top of him
       let k = clamp(1 - dback / COOP_BLEND, 0, 1);
@@ -581,9 +583,10 @@ function stepSim(S) {
     // in play the pull runs at a median 1.03 × T, so 2 % of the tank is about forty
     // seconds of tempo — and far fewer where the road tips up and the gap widens
     const spent = r.surge < r.pullMark - COOP_PULL_SPEND * usableSurge(r);
-    // an empty tank only ends the turn if someone fresher can take it on —
-    // when the whole break is equally cooked, somebody still has to ride
-    const empty = b.sf < PULL_MIN_SF && g.some((o) => o !== r && (o.sf ?? 1) > b.sf);
+    // an empty tank only ends the turn if someone fresher can take it on — and a
+    // rester refilling at the back is no relief at all. When the whole break is
+    // equally cooked, somebody still has to ride
+    const empty = b.sf < PULL_MIN_SF && g.some((o) => o !== r && working(S, o) && (o.sf ?? 1) > b.sf);
     if (r.pullT >= COOP_PULL_MIN && (paidUp || spent || empty)) r.done = true;
   }
   // the turn's bookkeeping: it opens when he reaches the front and closes for good
@@ -591,7 +594,14 @@ function stepSim(S) {
   // second's. Anyone not on the front is between turns and carries no mark.
   for (const r of S.riders) {
     if (r.groupPos !== 1) { r.pullMark = null; r.pullT = 0; }
-    if (r.groupSize > 1 && r.groupPos === r.groupSize) r.done = false;
+    // the turn is over once nobody still working sits behind him. NOT "last in the
+    // group": a rider sitting on parks at the very rear for good, so that test would
+    // never come true again for anyone else and the flag would stick all race —
+    // leaving every AI permanently offline and the rotation with no engine at all
+    if (r.done && r.groupNo != null) {
+      const g = S.groups[r.groupNo - 1];
+      if (!g || g.length < 2 || !g.some((o) => o !== r && o.groupPos > r.groupPos && working(S, o))) r.done = false;
+    }
   }
 }
 
