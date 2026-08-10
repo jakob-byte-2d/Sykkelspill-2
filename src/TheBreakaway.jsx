@@ -10,7 +10,7 @@ const COOP_PULL_MIN = 12;  // ...but no turn is shorter than this — a rotation
 const COOP_COAST_KMH = 50; // past this speed a pace-setting effort buys nothing...
 const COOP_COAST_SPAN = 8; // ...watts tapering to zero over the next this-many km/h
 const PULL_MIN_SF = 0.2;   // under this much tank you sit on the back — drop-backs slot in ahead of you
-const DOOR_M = 2.5;        // how far the sitting player eases off the wheel to let a returning puller slot in
+const DOOR_NEAR = 10;      // this close ahead of a resting rider, a man dropping back becomes his wheel
 const SWING_W = 80;        // swinging off, you ease this many watts below holding your own speed in the wind...
 const DROP_W = 80;         // ...and drift back at most this many watts below the wheel price
 const PEL_FINALE_X = 1.15; // the bunch lifts the pace inside the finale
@@ -360,7 +360,20 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // a rester keeps the wheel right in front of him: the man dropping back into
       // that space IS his new wheel, not someone to look through. And he is happy to
       // go slower with him — the speed test is the working line's business, not his
-      const tgt = ahead ? (sitting ? ahead : queueWheel(S, r, ahead)) : null;
+      let tgt = ahead ? (sitting ? ahead : queueWheel(S, r, ahead)) : null;
+      // ...and once that man is close enough to be slotting in, he IS the wheel: follow
+      // him down at his speed and the space opens by itself, for nothing. Holding the
+      // line's wheel through the manoeuvre instead means braking to make room and then
+      // digging to close what the brake cost — which is no way for a rester to ride.
+      if (resting) {
+        let dropper = null;
+        for (const o of grp) {
+          if (o === r || !o.offline) continue;
+          const behind = dist0(o) - dist0(r);
+          if (behind > 0 && behind < DOOR_NEAR && (!dropper || behind < dist0(dropper) - dist0(r))) dropper = o;
+        }
+        if (dropper) tgt = dropper;
+      }
       const usable = tgt && (sitting || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
       // the line hands over to the first man still in it — not literally position 2,
       // or a rester there would leave the break with no engine at all
@@ -381,19 +394,9 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         P = Math.min(pWant + SWING_W, r.pullX * b.T, b.ceil);
       } else if (usable && (r.hold || ((bestGap >= 0 || sitting) && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);
-        // the door: a rester eases off the wheel the moment the front's pull
-        // is paid up — the returning rider needs somewhere to slot in — and closes it
-        // again once that rider IS the wheel ahead
-        let door = 0;
-        if (resting) {
-          for (const o of grp) {
-            if (o === r || !o.offline) continue;
-            if (dist0(o) > dist0(r)) { door = DOOR_M; break; }
-          }
-        }
         const need = powerFor(tgt.speed, r.mass, r.cda, grad, rho, hw, shel);
         if (!r.hold) { r.hold = true; r.rampFrom = Math.max(r.power, isFinite(need) ? need : 0); r.rampT = 3; }
-        const out = wheelAutopilot(S, r, b, tgt, tgap - door, shel, need, grad, rho, hw, true);
+        const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, true);
         P = out.P; brake = out.brake;
       } else {
         r.hold = false;
