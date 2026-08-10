@@ -44,6 +44,10 @@ Simuleringen kjører ett sekund om gangen:
 - **Samarbeidet** er ett regnskap med like andeler: fronten drar til han er
   overbetalt, svinger av, og faller tilbake på siste hjul som fortsatt jobber.
   Prosenten over hvert hode er hans andel av dragningen.
+- **Terrenget** leses forover: hver rytter ser hvor langt det er til toppen av
+  stigningen han er i, og den som veier minst i forhold til terskelen sin går fram
+  og kjører sitt eget tempo der — terskelen pluss den delen av tanken han er villig
+  til å legge igjen før toppen. Ingen er merket som klatrer; regnestykket avgjør.
 - **Feltet** er deterministisk, så tiden det krysser målstreken er kjent fra
   start. Det gjør kravet til bruddet til en tidsfrist, ikke en fart — og
   fartsplanen (`breakSchedule`) er den fristen lest av hver 100. meter.

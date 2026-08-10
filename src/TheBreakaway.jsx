@@ -32,6 +32,18 @@ const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free
 const FUEL_START = 0.44;   // fraction of the tank left at the start — 150 km already in the legs
+const CLIMB_GRAD = 0.02;   // from here the road is "up"...
+const CLIMB_SMOOTH = 300;  // ...and a shelf shorter than this is a shelf inside the climb, not the top of it
+const CLIMB_SPEND = 0.35;  // this much of the tank he has left, spread over the seconds still to
+                           // climb — re-read every second, so it works out near half a full tank
+                           // over a whole climb, and he crests it with the rest still there
+const CLIMB_MIN_T = 60;    // ...and under a minute of climbing there is nothing to pace
+const TERRAIN_EDGE = 0.10; // you lift when the pace costs the man it suits least this many points
+                           // more of his threshold than it costs you. Measured mid-race, where
+                           // fatigue has compressed everyone: the flat runs 0.07-0.08 and a climb
+                           // 0.11-0.15, so the line sits between them and nothing fires on the flat
+const TERRAIN_WHEEL = 0.12; // ...and only where a wheel is worth no more than this. On the flat it
+                            // saves them a third of the work and the lift just tows them to the line
 
 /* ============================================================
    THE BREAKAWAY — LEGENDS 0.2 — a one-thumb road cycling simulation
@@ -114,11 +126,25 @@ function buildCourse(rng) {
     const i = Math.floor(x);
     return lerp(arr[i], arr[i + 1], x - i);
   };
+  // How far to the top of the rise you are on — what a rider sees when he looks up the
+  // road, and the one thing he needs to know to pick a level he can hold to it. Walked
+  // backwards once here, read in a single lookup while racing. A stretch of easy road
+  // shorter than CLIMB_SMOOTH is a shelf inside the climb and does not end it; on the
+  // flat the answer is where you stand, so there is no climb ahead to pace.
+  const flatRun = Math.round(CLIMB_SMOOTH / STEP);
+  const top = new Float32Array(n + 1);
+  top[n] = total;
+  let easy = 0;
+  for (let i = n - 1; i >= 0; i--) {
+    if (grad[i] >= CLIMB_GRAD) { easy = 0; top[i] = top[i + 1]; }
+    else { easy++; top[i] = easy <= flatRun ? top[i + 1] : i * STEP; }
+  }
   return {
     total, n, ele, wv,
     gradAt: (d) => at(grad, d),
     eleAt: (d) => at(ele, d),
     windAt: (d) => at(wHead, d),
+    climbTopAt: (d) => top[clamp(Math.floor(d / STEP), 0, n)],
   };
 }
 
@@ -273,6 +299,26 @@ function wantPos(grp, r) {
   return k + 1 + (k + 1 >= 2 ? 1 : 0);
 }
 
+// Whose road is this? The price of the group's pace as a share of each man's own
+// threshold — frontal area on the flat, kilograms uphill, and a tiring man grows heavy
+// either way. The spread between the cheapest and the dearest IS the terrain's verdict,
+// and no rider has to be labelled a climber for it to come out right. Reported with
+// what a wheel is worth here, which decides whether a lift sheds anybody at all or
+// merely tows the group to the line.
+function terrainEdge(S, grp, r, grad, rho, hw) {
+  const v = planSpeedAt(S.plan, r.dist);
+  let mine = 1, best = Infinity, worst = 0;
+  for (const o of grp) {
+    if (o.caught || o.finished != null) continue;
+    const c = powerFor(v, o.mass, o.cda, grad, rho, hw, 0) / Math.max(bodyNow(o).T, 1);
+    if (o === r) mine = c;
+    best = Math.min(best, c); worst = Math.max(worst, c);
+  }
+  const open = powerFor(v, r.mass, r.cda, grad, rho, hw, 0);
+  const wheel = open > 1 ? 1 - powerFor(v, r.mass, r.cda, grad, rho, hw, SHEL_MAX) / open : 1;
+  return { cheapest: mine <= best + 1e-9, spread: worst - best, wheel };
+}
+
 function queueWheel(S, r, ahead) {
   if (!ahead) return ahead;
   let best = null;
@@ -345,6 +391,7 @@ const coast = (P, v) => P * (1 - clamp((v * 3.6 - COOP_COAST_KMH) / COOP_COAST_S
    move up to pay — if you can actually ride the pace; otherwise you hold a wheel. */
 function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
   r.offline = 0;   // out of the line? set below in the two branches where you are
+  r.digging = 0;   // ...and riding your own climb rather than the plan's tempo: only in front
   let P, brake = 0;
   const grp = r.groupNo != null ? S.groups[r.groupNo - 1] : null;
   const togo = S.course.total - r.dist;
@@ -370,6 +417,20 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // ...and in the finale nobody swings off and nobody rolls through: the rotation is
     // over, and a man who eased now would simply hand the race to the wheel behind him
     const overpaid = !finale && !!r.done;
+    // The terrain read, made once and used twice: it decides both how hard he rides
+    // when the road is his, and whether he comes to the front to ride it at all. A
+    // climber who waited his turn in the rotation would attack about once a race.
+    const tTop = Math.max(planTimeAt(S.plan, S.course.climbTopAt(r.dist)) - planTimeAt(S.plan, r.dist), 0);
+    const e = finale || overpaid || resting ? null : terrainEdge(S, grp, r, grad, rho, hw);
+    const mine = !!e && e.cheapest && e.spread >= TERRAIN_EDGE && e.wheel <= TERRAIN_WHEEL && tTop >= CLIMB_MIN_T;
+    // ...and the level he settles on: his threshold plus the share of the tank he is
+    // willing to leave on this hill, spread over the seconds to the summit. Short rise,
+    // high number; long one, near tempo; empty tank, tempo — one line, and all three
+    // fall out of it, because this is the game's own surge equation read backwards.
+    // Never above his own curve for an effort that long: that is what the curve is for.
+    const digP = mine
+      ? Math.min(b.T + CLIMB_SPEND * r.surge / tTop, powerAt(r.curve, clamp(tTop, 30, 3600)), b.ceil)
+      : 0;
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
     // button lit — position 2 rolls through on the SAME tick the front eases
@@ -393,6 +454,9 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
           * (1 + PACE_GAIN * urgency);
         P = Math.min(pWant, r.pullX * b.T, b.ceil);
+        // ...and where the road is his, the plan's tempo is a wasted chance. pullX is
+        // the price of a long turn in the wind and has no say in a dig; the body does
+        if (mine) { r.digging = 1; P = Math.max(P, digP); }
       }
       P = coast(P, r.speed);
     } else if ((overpaid || sitting) && r.groupPos < grp.length) {
@@ -460,7 +524,16 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         if (nextUp == null && (o.sf ?? 1) >= PULL_MIN_SF) nextUp = o;
       }
       nextUp = nextUp || fullest;
-      if (r === nextUp && !sitting && (frontDone || !usable)) {
+      if (mine) {
+        // the road is his, so he does not wait for the rotation to offer him the front:
+        // he comes past the man riding tempo and rides his own climb. It is the one
+        // place in the race where a man goes forward without being owed a turn — and
+        // without it a climber would attack about once a race, whenever the rotation
+        // happened to hand him the hill.
+        r.hold = false;
+        r.digging = 1;
+        P = digP;
+      } else if (r === nextUp && !sitting && (frontDone || !usable)) {
         // the front is done, or the wheel ahead is dying — ride through at the plan's
         // price plus the swing differential: enough to pass the man easing off at
         // −SWING_W, without burning a dig's worth of tank on every handover
@@ -678,7 +751,14 @@ function stepSim(S) {
     const worth = clamp((r.power - sit) / Math.max(r.power, 1), 0, 1);
     const k = clamp((worth - 0.05) / 0.25, 0, 1);
     const maxPull = COOP_PULL_MAX_UP + (COOP_PULL_MAX - COOP_PULL_MAX_UP) * k;
-    if (r.pullT >= COOP_PULL_MIN && (paidUp || spent || empty || r.pullT >= maxPull)) r.done = true;
+    // ...and a man riding his own climb is not taking a turn at all. The ledger would
+    // end it in twelve seconds — over threshold, two per cent of the tank goes in eight
+    // — and there is no such thing as an eight-second attack. Nor does a clock apply:
+    // his climb ends when the hill does, and the hill decides that, not the rotation.
+    // The tank can still end it early, and over the top the ledger takes over again —
+    // hopelessly overpaid by then, so he sits up at the summit like anyone would.
+    const over = r.digging ? empty : (paidUp || spent || empty || r.pullT >= maxPull);
+    if (r.pullT >= COOP_PULL_MIN && over) r.done = true;
   }
   // the turn's bookkeeping: it opens when he reaches the front and closes for good
   // once he has drifted to the back — tagGroups ran above, so the positions are this
