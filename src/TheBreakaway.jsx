@@ -23,17 +23,15 @@ const SPRINT_M = 200;      // the fastest man in the group can afford to wait un
 const SPRINT_LONG = 300;   // ...and the slowest opens from here, to try to blunt him
 const SWING_W = 80;        // swinging off, you ease this many watts below holding your own speed in the wind...
 const DROP_W = 80;         // ...and drift back at most this many watts below the wheel price
-const PEL_FINALE_X = 1.15; // the bunch lifts the pace inside the finale
-const PEL_FINALE_M = 5000; // ...and the finale starts this many metres from the line
+const PEL_FINALE_X = 1.5;  // inside the finale the bunch rides this multiple of the benchmark
+                           // threshold — a lead-out train, not a tempo
+const PEL_FINALE_M = 1000; // ...and the finale starts this many metres from the line
 const PEL_MASS = 68, PEL_CDA = 0.28;   // the bunch modelled as one body: this one
 const BRK_MASS = 76, BRK_CDA = 0.30;   // and the break as another: the man on the front
 const PACE_MARGIN = 15;    // seconds the break wants to cross the line ahead of the bunch
-const BREAK_GAIN = 0.15;   // a rotating break saves a great deal of air over a lone rider, but an
-                           // ad-hoc one of unequal men — turns, drop-backs, wave-ins, a man sitting
-                           // on with an empty tank — banks only part of it. Measured at 0.21-0.34
-                           // of the theoretical saving across five races, and the bunch is set just
-                           // under the lowest of those: enough that the deadline bites everywhere,
-                           // not so much that the flattest course swallows the move every time
+const PEL_LEAD = 0.10;     // the bunch crosses the line this much earlier than the benchmark: one
+                           // rider, alone in the wind, holding his threshold the whole way and
+                           // never running out of fuel. That ride is the deadline the break races
 const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free
@@ -352,6 +350,12 @@ function queueWheel(S, r, ahead) {
 /* Threshold right now, and the ceiling */
 // heavy legs shrink the tank you can actually fill — this is where most of the penalty lives
 const usableSurge = (r) => r.surgeMax * (1 - 0.35 * r.legs);
+
+// ...and his threshold with the tank taken out of the question: bodyNow's own reading
+// with the two terms that describe running out of fuel set aside. It is not a number he
+// can really hold for four hundred kilometres — that is the point. It is a fixed
+// reference the deadline can be built on, immune to how the race actually goes.
+const thresholdFull = (r) => r.T0 * r.form * (1 - 0.15 * r.legs);
 
 function bodyNow(r) {
   const ff = clamp(r.fuel / r.fuelMax, 0, 1);
@@ -680,10 +684,12 @@ function stepRider(S, r, dt) {
 /* One second of the bunch — shared verbatim by the live sim and the calibration,
    so the two can never drift apart: steady base watts, lifted by PEL_FINALE_X
    inside the last PEL_FINALE_M metres. Returns the new speed. */
-function pelSpeed(course, dist, v, base) {
+function pelSpeed(course, dist, v, base, finaleP) {
   const d = Math.max(dist, 0);
   const grad = course.gradAt(d), rho = rhoAt(course.eleAt(d)), hw = course.windAt(d);
-  const P = (course.total - dist) < PEL_FINALE_M ? base * PEL_FINALE_X : base;
+  // inside the last kilometre it stops riding tempo and rides the sprint: an absolute
+  // number off the benchmark threshold, not a multiple of whatever base it was given
+  const P = (course.total - dist) < PEL_FINALE_M ? finaleP : base;
   return speedFor(P, PEL_MASS, PEL_CDA, grad, rho, hw, 0, v);
 }
 
@@ -700,7 +706,7 @@ function stepPel(S) {
     p.vAvg = p.vAvg ? p.vAvg + (p.speed - p.vAvg) / 30 : p.speed;
     p.gapS = (rear.dist - p.dist) / Math.max(p.vAvg, 8);
   }
-  p.speed = pelSpeed(C, p.dist, p.speed, p.base);
+  p.speed = pelSpeed(C, p.dist, p.speed, p.base, p.finaleP);
   p.dist += p.speed;
 }
 
@@ -879,15 +885,19 @@ function planSpeedAt(plan, dist) {
 
 /* ---------------- New race ---------------- */
 /* Ride the course alone, fresh body, steady threshold pacing, tuck downhill,
-   empty the tank in the last 400 m — the player's honest benchmark. */
-function soloBenchmark(course, rider, shel = 0) {
+   empty the tank in the last 400 m — the player's honest benchmark.
+   With `steady` it becomes the other kind of reference: his threshold with the fuel
+   question set aside, held flat from kilometre nought to the line and never sprinted.
+   Nothing is spent, so nothing decays — it is a ruler, not a ride. */
+function soloBenchmark(course, rider, shel = 0, steady = false) {
   const r = { ...rider, st: { ...rider.st }, dist: 0, prevDist: 0, speed: 11.5, power: 0 };
+  const flat = thresholdFull(r);
   let t = 0;
   while (r.dist < course.total && t < 9000) {
     t++;
     const b = bodyNow(r);
-    let P = Math.min(b.T * 0.99, b.ceil);
-    if (course.total - r.dist < 400) P = b.ceil;
+    let P = steady ? flat : Math.min(b.T * 0.99, b.ceil);
+    if (!steady && course.total - r.dist < 400) P = b.ceil;
     const d = Math.max(r.dist, 0);
     const grad = course.gradAt(d), rho = rhoAt(course.eleAt(d)), hw = course.windAt(d);
     const descending = grad < DH_GRAD;
@@ -897,28 +907,30 @@ function soloBenchmark(course, rider, shel = 0) {
     const F = (P * 0.975) / v0 - 0.004 * r.mass * G - r.mass * G * grad - 0.5 * rho * r.cda * (1 - shel) * Math.abs(va) * va;
     r.speed = clamp(v0 + F / (r.mass + 1.5), 0.8, 33);
     r.dist += r.speed;
-    spend(r, P, 1, b, true);
+    if (!steady) spend(r, P, 1, b, true);
   }
   return t - (r.dist - course.total) / Math.max(r.speed, 1);
 }
 
 /* The bunch must cross the line exactly one second after that benchmark.
    It rides the same pelSpeed step as the live bunch — solve for the base. */
-function pelSimTime(course, startGap, base) {
+function pelSimTime(course, startGap, base, finaleP) {
   let dist = -startGap, v = 11.8, t = 0;
   while (dist < course.total && t < 12000) {
     t++;
-    v = pelSpeed(course, dist, v, base);
+    v = pelSpeed(course, dist, v, base, finaleP);
     dist += v;
   }
   return t - (dist - course.total) / Math.max(v, 1);
 }
 
-function calibratePel(course, startGap, targetT) {
-  let lo = 200, hi = 520;
-  for (let k = 0; k < 18; k++) {
+function calibratePel(course, startGap, targetT, finaleP) {
+  // wide enough that the search never sits on its own ceiling: clamped, the bunch would
+  // quietly ride slower than the deadline asks for and the knob would stop meaning anything
+  let lo = 150, hi = 900;
+  for (let k = 0; k < 22; k++) {
     const mid = (lo + hi) / 2;
-    if (pelSimTime(course, startGap, mid) > targetT) lo = mid; else hi = mid;
+    if (pelSimTime(course, startGap, mid, finaleP) > targetT) lo = mid; else hi = mid;
   }
   return (lo + hi) / 2;
 }
@@ -935,24 +947,20 @@ function newSim(seed) {
     r.paid = COOP_SEED * (0.7 + (0.6 * k) / Math.max(order.length - 1, 1));
   });
   const startGap = (65 + rng() * 40) * 11.5;
-  // every rider's honest solo benchmark — the bunch is calibrated against the best of them
-  // Two honest benchmarks of the same course, ridden by the same bodies: alone in the
-  // wind, and taking turns. In a rotation of N you spend one turn in N on the front and
-  // the rest in the wheels, so the draft you keep is SHEL_MAX scaled by (N-1)/N.
-  const soloTs = riders.map((r) => soloBenchmark(course, r));
-  const rotTs = riders.map((r) => soloBenchmark(course, r, SHEL_MAX * (riders.length - 1) / riders.length));
-  const soloT = Math.min(...soloTs), rotT = Math.min(...rotTs);
-  // ...and the bunch is set against what a break actually manages between those two.
-  // Calibrating on the solo time is what left the break arriving a clear two minutes
-  // early with nothing to chase; calibrating on the rotation would catch it every time.
-  const targetT = soloT - BREAK_GAIN * (soloT - rotT);
-  const pelBase = calibratePel(course, startGap, targetT + 1);
+  // The deadline is one fixed ride: the player, alone in the wind, holding his threshold
+  // from the gun with the fuel question set aside — and the bunch beats it by PEL_LEAD.
+  // One reference instead of three, and it does not move with who else is in the break.
+  const benchT = soloBenchmark(course, riders[0], 0, true);
+  const targetT = benchT * (1 - PEL_LEAD);
+  // ...and in the last kilometre the bunch rides a lead-out off that same threshold
+  const finaleP = PEL_FINALE_X * thresholdFull(riders[0]);
+  const pelBase = calibratePel(course, startGap, targetT + 1, finaleP);
   const plan = breakSchedule(course, targetT + 1 - PACE_MARGIN);
   const T0 = bodyNow(riders[0]).T;
   const S = {
     seed, course, riders,
-    pel: { dist: -startGap, prevDist: -startGap, speed: 11.8, base: pelBase, soloT: targetT, gapS: startGap / 11.8 },
-    soloTs,
+    pel: { dist: -startGap, prevDist: -startGap, speed: 11.8, base: pelBase, finaleP, soloT: targetT, gapS: startGap / 11.8 },
+    benchT,
     plan,            // distance → time the break must hit to stay clear; nothing reads it yet
     groups: [],
     t: 0, clock0: 3 * 3600 + 48 * 60,
