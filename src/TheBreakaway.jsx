@@ -34,9 +34,6 @@ const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't di
 const FUEL_START = 0.44;   // fraction of the tank left at the start — 150 km already in the legs
 const CLIMB_GRAD = 0.02;   // from here the road is "up"...
 const CLIMB_SMOOTH = 300;  // ...and a shelf shorter than this is a shelf inside the climb, not the top of it
-const CLIMB_SPEND = 0.35;  // this much of the tank he has left, spread over the seconds still to
-                           // climb — re-read every second, so it works out near half a full tank
-                           // over a whole climb, and he crests it with the rest still there
 const CLIMB_MIN_T = 60;    // ...and under a minute of climbing there is nothing to pace
 const TERRAIN_EDGE = 0.10; // you lift when the pace costs the man it suits least this many points
                            // more of what he could hold to the top than it costs you. Measured
@@ -442,14 +439,14 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     const e = finale || overpaid || resting || tTop < CLIMB_MIN_T
       ? null : terrainEdge(S, grp, r, grad, rho, hw, tTop);
     const mine = !!e && e.cheapest && e.spread >= TERRAIN_EDGE && e.wheel <= TERRAIN_WHEEL;
-    // ...and the level he settles on: his threshold plus the share of the tank he is
-    // willing to leave on this hill, spread over the seconds to the summit. Short rise,
-    // high number; long one, near tempo; empty tank, tempo — one line, and all three
-    // fall out of it, because this is the game's own surge equation read backwards.
-    // Never above his own curve for an effort that long: that is what the curve is for.
-    const digP = mine
-      ? Math.min(b.T + CLIMB_SPEND * r.surge / tTop, durPower(r, tTop, b.T), b.ceil)
-      : 0;
+    // ...and the level he settles on is what he can hold to the top — which in a body
+    // with a finite battery means the battery divided by the seconds still to climb.
+    // He crests the summit empty, because that is what riding all the way to the top
+    // costs. Never above his own curve for an effort that long either: the curve is the
+    // other half of the same statement. There is no free constant left in it, and
+    // nothing here knows which rider it is — the curve, the tank, the mass and the
+    // frontal area say everything, so a new profile needs no new code.
+    const digP = mine ? Math.min(b.T + r.surge / tTop, durPower(r, tTop, b.T), b.ceil) : 0;
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
     // button lit — position 2 rolls through on the SAME tick the front eases
