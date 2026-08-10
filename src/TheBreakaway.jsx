@@ -205,7 +205,15 @@ function makeRiders(rng) {
   mk(0, "PEDERSEN", 76, 1.80, { p5s: 1450, p1: 800, p5: 560, p20: 490, p60: 455, wp: 26 });
   mk(1, "V.D.POEL", 75, 1.84, { p5s: 1560, p1: 800, p5: 565, p20: 495, p60: 460, wp: 28 });
   mk(2, "VAN AERT", 78, 1.90, { p5s: 1600, p1: 820, p5: 570, p20: 500, p60: 465, wp: 29 });
-  mk(3, "VIRENQUE", 62, 1.72, { p5s: 1010, p1: 620, p5: 472, p20: 426, p60: 400, wp: 17 });
+  // ...and the climber is the explosive kind, not the diesel: he is the best man in this
+  // group from about four minutes upward, which is what this stage's hill actually lasts.
+  // A flatter, more aerobic climber would beat him on a twenty-minute col and lose to him
+  // here. The low p5s and the small wp are the same rider seen from the other end: he
+  // attacks with an aerobic engine and cannot sprint at all — the worst finish in the
+  // break, so being together at the line is the one thing he must not allow. And he
+  // weighs what the last man weighed: any lighter and he falls off the back on descents,
+  // where the road hands speed out by the kilogram.
+  mk(3, "PANTANI", 62, 1.72, { p5s: 800, p1: 590, p5: 517, p20: 455, p60: 402, wp: 15 });
   mk(4, "KÜNG", 83, 1.93, { p5s: 1300, p1: 720, p5: 555, p20: 480, p60: 450, wp: 24 });
   return riders;
 }
@@ -1874,7 +1882,7 @@ export default function TheBreakaway() {
               <div style={{ fontWeight: 800, fontSize: 46, letterSpacing: 2, color: "#0d3568", fontStyle: "italic", lineHeight: 1, margin: "6px 0 14px", textShadow: "0 1px 0 rgba(255,255,255,0.8)" }}>THE<br />BREAKAWAY</div>
               <div style={{ fontSize: 12, letterSpacing: 4, color: "#3a76bd", fontWeight: 800, fontStyle: "italic", marginTop: -8, marginBottom: 12 }}>LEGENDS 0.2</div>
               <div style={{ fontSize: 14, color: "#22456b", lineHeight: 1.5, textAlign: "left" }}>
-                You're away with Van der Poel, Van Aert and Abrahamsen, ~23 km from the line, the peloton about a minute back — pacing to catch the best of you by a single second.
+                You're away with Van der Poel, Van Aert, Küng and Pantani, ~23 km from the line, the peloton about a minute back — pacing to catch the best of you by a single second.
                 <br /><br />
                 <b style={{ color: "#0d3568" }}>One thumb, one control:</b> drag the watt slider. It stays where you leave it.
                 <br />• <span style={{ color: "#1d7a34", fontWeight: 700 }}>Green line</span> = your threshold
