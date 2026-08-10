@@ -39,9 +39,9 @@ const CLIMB_SPEND = 0.35;  // this much of the tank he has left, spread over the
                            // over a whole climb, and he crests it with the rest still there
 const CLIMB_MIN_T = 60;    // ...and under a minute of climbing there is nothing to pace
 const TERRAIN_EDGE = 0.10; // you lift when the pace costs the man it suits least this many points
-                           // more of his threshold than it costs you. Measured mid-race, where
-                           // fatigue has compressed everyone: the flat runs 0.07-0.08 and a climb
-                           // 0.11-0.15, so the line sits between them and nothing fires on the flat
+                           // more of what he could hold to the top than it costs you. Measured
+                           // over the climbs of five races: a tenth is the middle of the range,
+                           // so the drags nobody would attack on stay quiet and the real ones do not
 const TERRAIN_WHEEL = 0.12; // ...and only where a wheel is worth no more than this. On the flat it
                             // saves them a third of the work and the lift just tows them to the line
 
@@ -299,18 +299,26 @@ function wantPos(grp, r) {
   return k + 1 + (k + 1 >= 2 ? 1 : 0);
 }
 
-// Whose road is this? The price of the group's pace as a share of each man's own
-// threshold — frontal area on the flat, kilograms uphill, and a tiring man grows heavy
-// either way. The spread between the cheapest and the dearest IS the terrain's verdict,
-// and no rider has to be labelled a climber for it to come out right. Reported with
-// what a wheel is worth here, which decides whether a lift sheds anybody at all or
-// merely tows the group to the line.
-function terrainEdge(S, grp, r, grad, rho, hw) {
+// What a man can hold for an effort of this length, tired as he is right now: his own
+// curve read at that duration, carrying the same fatigue discount his threshold does.
+// Which man it flatters depends entirely on the number: over an hour the 62-kilo climber
+// leads the group by fifteen per cent, over seven minutes by a third of one, and under
+// five the puncheur is ahead of him. A hill is not one kind of terrain — its LENGTH
+// decides whose it is, and that is why the reading has to be taken at the real duration.
+const durPower = (o, t, T) => T * powerAt(o.curve, clamp(t, 30, 3600)) / o.T0;
+
+// Whose road is this? The price of the group's pace as a share of what each man could
+// hold all the way to the top — frontal area on the flat, kilograms uphill, and a
+// tiring man grows heavy either way. The spread between the cheapest and the dearest
+// IS the terrain's verdict, and no rider has to be labelled a climber for it to come
+// out right. Reported with what a wheel is worth here, which decides whether a lift
+// sheds anybody at all or merely tows the group to the line.
+function terrainEdge(S, grp, r, grad, rho, hw, tTop) {
   const v = planSpeedAt(S.plan, r.dist);
   let mine = 1, best = Infinity, worst = 0;
   for (const o of grp) {
     if (o.caught || o.finished != null) continue;
-    const c = powerFor(v, o.mass, o.cda, grad, rho, hw, 0) / Math.max(bodyNow(o).T, 1);
+    const c = powerFor(v, o.mass, o.cda, grad, rho, hw, 0) / Math.max(durPower(o, tTop, bodyNow(o).T), 1);
     if (o === r) mine = c;
     best = Math.min(best, c); worst = Math.max(worst, c);
   }
@@ -421,15 +429,18 @@ function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // when the road is his, and whether he comes to the front to ride it at all. A
     // climber who waited his turn in the rotation would attack about once a race.
     const tTop = Math.max(planTimeAt(S.plan, S.course.climbTopAt(r.dist)) - planTimeAt(S.plan, r.dist), 0);
-    const e = finale || overpaid || resting ? null : terrainEdge(S, grp, r, grad, rho, hw);
-    const mine = !!e && e.cheapest && e.spread >= TERRAIN_EDGE && e.wheel <= TERRAIN_WHEEL && tTop >= CLIMB_MIN_T;
+    // ...and there is nothing to read where there is no climb: the duration is the
+    // whole point of the reading, so with no summit ahead the question is not asked
+    const e = finale || overpaid || resting || tTop < CLIMB_MIN_T
+      ? null : terrainEdge(S, grp, r, grad, rho, hw, tTop);
+    const mine = !!e && e.cheapest && e.spread >= TERRAIN_EDGE && e.wheel <= TERRAIN_WHEEL;
     // ...and the level he settles on: his threshold plus the share of the tank he is
     // willing to leave on this hill, spread over the seconds to the summit. Short rise,
     // high number; long one, near tempo; empty tank, tempo — one line, and all three
     // fall out of it, because this is the game's own surge equation read backwards.
     // Never above his own curve for an effort that long: that is what the curve is for.
     const digP = mine
-      ? Math.min(b.T + CLIMB_SPEND * r.surge / tTop, powerAt(r.curve, clamp(tTop, 30, 3600)), b.ceil)
+      ? Math.min(b.T + CLIMB_SPEND * r.surge / tTop, durPower(r, tTop, b.T), b.ceil)
       : 0;
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
