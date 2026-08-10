@@ -769,6 +769,42 @@ function newSim(seed) {
 }
 
 /* ---------------- Drawing ---------------- */
+
+/* Telemetry, off unless asked for: ?debug=1 in the address, or the D key. A player
+   should never trip over it, so the bubble stays compact until it is switched on. */
+let DEBUG = false;
+if (typeof window !== "undefined") {
+  DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
+  window.addEventListener("keydown", (e) => { if (e.key === "d" || e.key === "D") DEBUG = !DEBUG; });
+}
+
+// a tank reads at a glance by its colour — you should see who is empty without
+// having to read the number, which is what makes five bubbles at once survivable
+const tankHue = (f) => (f > 0.55 ? "#5fe07a" : f > 0.28 ? "#ffd23f" : "#ff6b5d");
+
+// a rounded chip on a stalk, in the rider's own colour — the same object the race
+// map already uses for its group flags, borrowed here for the heads
+function drawBubble(ctx, x, top, w, h, color, tipX, tipY) {
+  // the stalk leans back to the man it belongs to — once the bubbles are nudged
+  // apart, it is the only thing that says whose is whose
+  ctx.strokeStyle = "rgba(19,58,107,0.65)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x, top + h); ctx.lineTo(tipX, tipY); ctx.stroke();
+  ctx.fillStyle = "rgba(12,26,44,0.82)";
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(x - w / 2, top, w, h, 5); else ctx.rect(x - w / 2, top, w, h);
+  ctx.fill();
+  ctx.strokeStyle = color; ctx.lineWidth = 1.6; ctx.stroke();
+}
+
+// what he is doing right now, in one word the bubble has room for
+function roleOf(S, r) {
+  if (r.groupSize <= 1) return "solo";
+  if (r.isPlayer && S.sitting) return "sit";
+  if (r.groupPos === 1 && !r.offline) return "FRONT";
+  if (r.offline) return "drop";
+  return "wheel";
+}
+
 function drawCyclist(ctx, x, y, k, color, ped, mode, lean) {
   ctx.save();
   ctx.translate(x, y);
@@ -935,6 +971,7 @@ function draw(S, canvas, alpha) {
     return tot > 0 ? Math.round((100 * r.paid) / tot) : null;
   };
   const sorted = [...S.riders].sort((a, b) => a.dist - b.dist);
+  const bubbles = [];
   for (const r of sorted) {
     if (r.caught) continue;
     const d = lerp(r.prevDist, r.dist, alpha);
@@ -946,21 +983,71 @@ function draw(S, canvas, alpha) {
     const mode = r.power > 1.22 * b.T && g > 0.015 ? "stand" : "ride";
     r.ped = (r.ped || 0) + r.speed * 0.045;
     drawCyclist(ctx, x, y, riderK(pxm), r.color, r.ped, mode, -Math.atan(g * 1.6));
-    const sh = shareOf(r);
-    if (sh != null) {
-      ctx.font = "800 9px ui-monospace, monospace";
-      ctx.textAlign = "center";
-      ctx.fillStyle = r.isPlayer ? "rgba(13,53,104,0.95)" : "rgba(13,53,104,0.75)";
-      ctx.fillText(sh + "%", x, y - 26);
-    }
+    // the arrow sits between his head and his bubble — still "this one is you"
     if (r.isPlayer) {
       ctx.fillStyle = "#ffd23f";
-      ctx.beginPath(); ctx.moveTo(x, y - 33); ctx.lineTo(x - 4, y - 40); ctx.lineTo(x + 4, y - 40); ctx.fill();
-      if (r.shel > 0.02) {
+      ctx.beginPath(); ctx.moveTo(x, y - 20); ctx.lineTo(x - 4, y - 27); ctx.lineTo(x + 4, y - 27); ctx.fill();
+    }
+    // the wheel he is on, for the gap readout — nearest man up the road
+    let gap = null;
+    for (const o of S.riders) {
+      if (o === r || o.caught || o.finished != null || o.dist <= r.dist) continue;
+      const wg = (o.dist - BIKE) - r.dist;
+      if (gap == null || wg < gap) gap = wg;
+    }
+    bubbles.push({ r, b, x, tipY: y - 29, gap, share: shareOf(r), row: (r.groupPos || 1) % 2 });
+  }
+
+  // ...and the bubbles last, so no rider is ever drawn over one. Two staggered rows,
+  // then a nudge pass per row — the same chips-on-stalks trick the race map uses,
+  // because five riders wheel to wheel are closer together than their labels are wide
+  {
+    const BW = DEBUG ? 59 : 37, BH = DEBUG ? 61 : 39, GAPX = 3;
+    for (const row of [0, 1]) {
+      const mine = bubbles.filter((m) => m.row === row).sort((a, m) => m.x - a.x);
+      mine.forEach((m) => { m.bx = m.x; });
+      for (let i = 1; i < mine.length; i++) {
+        if (mine[i - 1].bx - mine[i].bx < BW + GAPX) mine[i].bx = mine[i - 1].bx - (BW + GAPX);
+      }
+    }
+    ctx.textAlign = "center";
+    for (const m of bubbles) {
+      const top = m.tipY - 8 - BH - (m.row ? BH + 4 : 0);
+      drawBubble(ctx, m.bx, top, BW, BH, m.r.color, m.x, m.tipY);
+      const { r, b } = m;
+      if (!DEBUG) {
+        ctx.font = "800 10px ui-monospace, monospace";
+        ctx.fillStyle = "#f2f6fa";
+        ctx.fillText(Math.round(r.power) + " W", m.bx, top + 13);
+        ctx.fillStyle = tankHue(b.sf);
+        ctx.fillText("S" + Math.round(b.sf * 100) + "%", m.bx, top + 25);
         ctx.font = "800 9px ui-monospace, monospace";
-        ctx.textAlign = "center";
-        ctx.fillStyle = "rgba(13,53,104,0.9)";
-        ctx.fillText("LY " + Math.round((r.shel / SHEL_MAX) * 100) + "%" + (r.overlap ? " · SIDE" : ""), x, y - 44);
+        ctx.fillStyle = "rgba(190,210,230,0.9)";
+        ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 36);
+      } else {
+        ctx.font = "800 9px ui-monospace, monospace";
+        const L = m.bx - BW / 2 + 16, R = m.bx + BW / 2 - 15;
+        ctx.fillStyle = "#f2f6fa";
+        ctx.fillText(Math.round(r.power) + "W", L, top + 12);
+        ctx.fillStyle = "rgba(190,210,230,0.9)";
+        ctx.fillText(Math.round(b.T) + "T", L, top + 23);
+        ctx.fillStyle = "#ffd23f";
+        ctx.fillText(roleOf(S, r), L, top + 34);
+        ctx.fillStyle = "rgba(190,210,230,0.9)";
+        // wheels overlap by centimetres in a tight line, and "-0.0" is just noise
+        ctx.fillText(m.gap == null ? "—" : (Math.abs(m.gap) < 0.05 ? 0 : m.gap).toFixed(1), L, top + 45);
+        ctx.fillStyle = tankHue(b.sf);
+        ctx.fillText("S" + Math.round(b.sf * 100), R, top + 12);
+        ctx.fillStyle = tankHue(b.ff);
+        ctx.fillText("F" + Math.round(b.ff * 100), R, top + 23);
+        // legs reads as what is LEFT, the same way the instrument panel shows it —
+        // so the number agrees with its own colour, and with the bar below
+        ctx.fillStyle = tankHue(1 - r.legs);
+        ctx.fillText("L" + Math.round((1 - r.legs) * 100), R, top + 34);
+        ctx.fillStyle = "rgba(190,210,230,0.9)";
+        ctx.fillText("LY" + Math.round((r.shel / SHEL_MAX) * 100), R, top + 45);
+        ctx.fillStyle = "rgba(190,210,230,0.9)";
+        ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 56);
       }
     }
   }
@@ -1298,6 +1385,8 @@ export default function TheBreakaway() {
   const start = (seed) => {
     seedRef.current = seed;
     simRef.current = newSim(seed);
+    // the fixture the telemetry reads from — the whole sim, and only when asked for
+    if (DEBUG && typeof window !== "undefined") window.__S = simRef.current;
     speedRef.current = 5; setSpeedMode(5);
     setPhase("race");
   };
