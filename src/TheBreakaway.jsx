@@ -7,6 +7,12 @@ const COOP_BLEND = 6;      // over the last metres of the drop-back, watts blend
 const COOP_PULL_SEC = 300; // a rotation pull sits about here on each rider's power–duration curve
 const COOP_PULL_SPEND = 0.02; // a turn also ends once it has cost this much of the tank you carried to the front...
 const COOP_PULL_MIN = 12;  // ...but no turn is shorter than this — a rotation that swaps every second is no rotation
+const COOP_PULL_MAX = 60;  // ...and on the flat none is longer: a wheel is worth a third of
+                           // your power there, so real breakaway turns run 30-60 s
+const COOP_PULL_MAX_UP = 150; // ...but at five per cent a wheel is worth six, the swap stops
+                              // paying for itself, and a real break settles into single file
+                              // at its own tempo. Turns lengthen to match — only the
+                              // seven-minute solo effort is ruled out.
 const COOP_COAST_KMH = 50; // past this speed a pace-setting effort buys nothing...
 const COOP_COAST_SPAN = 8; // ...watts tapering to zero over the next this-many km/h
 const PULL_MIN_SF = 0.3;   // under this much tank you stop taking turns — drop-backs slot in ahead of you
@@ -664,7 +670,15 @@ function stepSim(S) {
     // rester refilling at the back is no relief at all. When the whole break is
     // equally cooked, somebody still has to ride
     const empty = b.sf < PULL_MIN_SF && g.some((o) => o !== r && working(S, o) && (o.sf ?? 1) > b.sf);
-    if (r.pullT >= COOP_PULL_MIN && (paidUp || spent || empty)) r.done = true;
+    // ...and a clock, because uphill none of the three above can fire. The gift shrinks
+    // to a fifth, a man under his threshold drains no tank, and a full one is not empty
+    // — so the strongest climber would simply stay there for the whole climb. The clock
+    // is set by what a wheel is actually worth here, which is the gift's own share of
+    // his power: a third on the flat, six per cent at five, nothing on a wall.
+    const worth = clamp((r.power - sit) / Math.max(r.power, 1), 0, 1);
+    const k = clamp((worth - 0.05) / 0.25, 0, 1);
+    const maxPull = COOP_PULL_MAX_UP + (COOP_PULL_MAX - COOP_PULL_MAX_UP) * k;
+    if (r.pullT >= COOP_PULL_MIN && (paidUp || spent || empty || r.pullT >= maxPull)) r.done = true;
   }
   // the turn's bookkeeping: it opens when he reaches the front and closes for good
   // once he has drifted to the back — tagGroups ran above, so the positions are this
