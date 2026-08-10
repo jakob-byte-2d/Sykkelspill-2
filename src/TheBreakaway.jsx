@@ -772,10 +772,16 @@ function newSim(seed) {
 
 /* Telemetry, off unless asked for: ?debug=1 in the address, or the D key. A player
    should never trip over it, so the bubble stays compact until it is switched on. */
-let DEBUG = false;
-if (typeof window !== "undefined") {
-  DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
-  window.addEventListener("keydown", (e) => { if (e.key === "d" || e.key === "D") DEBUG = !DEBUG; });
+let DEBUG = typeof window !== "undefined"
+  && new URLSearchParams(window.location.search).get("debug") === "1";
+
+// the canvas reads DEBUG afresh every frame, so flipping it here is all the bubbles
+// need. The sim fixture goes up and down with it, so an automated check can always
+// read the truth behind whatever the bubbles are claiming.
+function setDebug(on, S) {
+  DEBUG = on;
+  if (typeof window === "undefined") return;
+  if (on) { if (S) window.__S = S; } else delete window.__S;
 }
 
 // a tank reads at a glance by its colour — you should see who is empty without
@@ -1375,6 +1381,7 @@ export default function TheBreakaway() {
   const [phase, setPhase] = useState("menu");
   const [, setTick] = useState(0);
   const [speedMode, setSpeedMode] = useState(5);
+  const [debugOn, setDebugOn] = useState(DEBUG);
   const speedRef = useRef(5);
   const simRef = useRef(null);
   const canvasRef = useRef(null);
@@ -1390,6 +1397,19 @@ export default function TheBreakaway() {
     speedRef.current = 5; setSpeedMode(5);
     setPhase("race");
   };
+
+  // the button owns the flag; the D key is the same switch, kept so a keyboard and
+  // an automated run can reach it without hunting for the chyron
+  const toggleDebug = () => {
+    const on = !DEBUG;
+    setDebug(on, simRef.current);
+    setDebugOn(on);
+  };
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "d" || e.key === "D") toggleDebug(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     const fit = () => {
@@ -1498,6 +1518,14 @@ export default function TheBreakaway() {
                   {m}×
                 </button>
               ))}
+              <button onClick={toggleDebug}
+                title="Telemetri i boblene over hodene (eller trykk D)"
+                style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, border: "1px solid #0d3568", cursor: "pointer", fontStyle: "normal",
+                  boxShadow: debugOn ? "inset 0 1px 0 rgba(255,255,255,0.95), 0 0 6px rgba(255,255,255,0.6)" : "inset 0 1px 0 rgba(255,255,255,0.55)",
+                  background: debugOn ? "linear-gradient(180deg, #ffffff, #cfe2f6 60%, #a9cdf0)" : "linear-gradient(180deg, #9cc0e6, #3a76bd 55%, #2a5f9e)",
+                  color: debugOn ? "#0d3568" : "#eaf3fb" }}>
+                DBG
+              </button>
               <button onClick={() => start((Math.random() * 1e9) | 0)}
                 title="Start et nytt løp"
                 style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, border: "1px solid #5c1010", cursor: "pointer", fontStyle: "normal",
