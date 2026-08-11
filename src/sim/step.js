@@ -1,8 +1,9 @@
-import { COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, PULL_MIN_SF } from "../content/tuning.js";
+import { COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF } from "../content/tuning.js";
 import { bodyNow, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
 import { BIKE, G, LY_FLOOR, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
+import { planSpeedAt } from "./plan.js";
 import { coopRide } from "./ride.js";
 import { clamp } from "./rng.js";
 import { working } from "./tactics.js";
@@ -55,6 +56,21 @@ export function stepRider(S, r, dt) {
   let brake = 0;
   if (r.isPlayer && S.input.mode === "manual") {
     P = Math.min(S.input.watts, b.ceil);   // manual: your watts, your problem
+    // ...but swinging off is a thing you have to be able to SAY. The AI says it with
+    // r.offline and the whole line listens — queueWheel looks through him, the resters
+    // open the door. In manual that flag never got set, so however low the slider went
+    // the wheel behind believed it and followed the player down for half a minute
+    // before the 2 km/h test rescued it. The signal is the watts: riding below even the
+    // drop-back's own level — the sit-in price at the plan's pace, minus DROP_W — is
+    // not an effort that intends to stay in the line. Read against the plan's speed,
+    // not his own: his own falls with him and the threshold would chase it down. But at
+    // HIS shelter, not the best seat's — holding the pace costs the man on the front
+    // twice what it costs the man buried in the line, and the same 150 W that says
+    // "swinging off" in the wind simply holds the wheel from fourth position.
+    // Downhill the price is nothing and the flag cannot arm, which is right too —
+    // nobody swings off a descent by soft-pedalling, everyone rolls the same.
+    const sit = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, shel);
+    r.offline = (r.groupSize ?? 1) > 1 && P <= sit - DROP_W ? 1 : 0;
   } else {
     // one rule for the whole break — the player in relay or sitting on rides it too
     const out = coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw);
