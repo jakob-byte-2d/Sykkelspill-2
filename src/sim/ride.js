@@ -1,9 +1,9 @@
 import { CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { durPower } from "./body.js";
-import { BIKE, SHEL_MAX, coast, powerFor, powerRaw } from "./physics.js";
+import { BIKE, SHEL_MAX, coast, powerFor, powerRaw, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
-import { deadWheel, dist0, launchAt, queueWheel, terrainEdge, validWheel, wantPos, wheelGap0, working } from "./tactics.js";
+import { chaseTarget, deadWheel, dist0, launchAt, queueWheel, terrainEdge, validWheel, wantPos, wheelGap0, working } from "./tactics.js";
 
 /* The decision, once per rider per second: how many watts, and why. */
 
@@ -13,6 +13,7 @@ import { deadWheel, dist0, launchAt, queueWheel, terrainEdge, validWheel, wantPo
 export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
   r.offline = 0;   // out of the line? set below in the two branches where you are
   r.digging = 0;   // ...and riding your own climb rather than the plan's tempo: only in front
+  r.chasing = 0;   // ...and chasing a wheel up the road: only when alone and not leading
   let P, brake = 0;
   const grp = r.groupNo != null ? S.groups[r.groupNo - 1] : null;
   const togo = S.course.total - r.dist;
@@ -181,8 +182,43 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       }
     }
   } else {
-    P = Math.min(0.92 * b.T, b.ceil);
-    P = coast(P, r.speed);
+    // Alone. Off the front there is nothing to read and nothing to chase, so the old
+    // steady tempo stands. Off the back there is a wheel up the road, and the whole
+    // question a dropped rider asks is whether he can reach it before the line.
+    const lead = chaseTarget(S, r);
+    if (!lead) {
+      P = Math.min(0.92 * b.T, b.ceil);
+    } else {
+      const gap = Math.max(dist0(lead) - BIKE - dist0(r), 1);
+      // his pace, smoothed. A rotation swings half a metre a second either way, and raw
+      // that noise would land straight in the chaser's watts
+      if (r.chaseOf !== lead.i) { r.chaseOf = lead.i; r.chaseU = lead.speed; }
+      else r.chaseU += (lead.speed - r.chaseU) / 8;
+      // ...and the same sentence as a dig up a climb, with a different target: what he
+      // can hold all the way to it. Two things cap that and they swap over by themselves
+      // — for a short chase it is his curve read at those few seconds, for a long one it
+      // is the tank divided by them.
+      const hold = (t) => Math.min(b.T + r.surge / t, durPower(r, t, b.T), b.ceil);
+      // speed follows from power and the time from speed, so it is solved by going round
+      // three times: speed goes roughly as the cube root of watts, so it settles fast
+      let t = clamp(gap, 15, 600);
+      for (let k = 0; k < 3; k++) {
+        const v = speedFor(hold(t), r.mass, r.cda, grad, rho, hw, 0, r.speed);
+        t = v > r.chaseU + 0.05 ? clamp(gap / (v - r.chaseU), 10, 1200) : Infinity;
+        if (!isFinite(t)) break;
+      }
+      // He chases if he would get there before the finish, and rides for the line if he
+      // would not. No constant decides that, the road does — and because the power is
+      // continuous in the time, the two answers meet at the boundary and he cannot
+      // flicker between them.
+      const toLine = Math.max((S.course.total - r.dist) / Math.max(r.speed, 6), 1);
+      r.chasing = isFinite(t) && t < toLine ? 1 : 0;
+      P = hold(r.chasing ? t : toLine);
+    }
+    // ...and a chase is not tempo. coast() describes a pace-setting effort buying nothing
+    // at speed, which is why the sprint is exempt from it too — a man closing a gap into
+    // a tailwind at fifty-six an hour is doing neither of those things, he is racing.
+    if (!r.chasing) P = coast(P, r.speed);
   }
   return { P, brake };
 }

@@ -75,6 +75,18 @@ export function terrainEdge(S, grp, r, grad, rho, hw, tTop) {
   return { cheapest: mine <= best + 1e-9, spread: worst - best, wheel };
 }
 
+// the nearest man up the road, whoever he is riding with — what a rider alone off the
+// back is looking at. Same scan as queueWheel, without any of its filters: a wheel you
+// cannot yet sit on is still the wheel you are chasing.
+export function chaseTarget(S, r) {
+  let best = null;
+  for (const o of S.riders) {
+    if (o === r || o.caught || o.finished != null) continue;
+    if (dist0(o) > dist0(r) && (best == null || dist0(o) < dist0(best))) best = o;
+  }
+  return best;
+}
+
 export function queueWheel(S, r, ahead) {
   if (!ahead) return ahead;
   let best = null;
