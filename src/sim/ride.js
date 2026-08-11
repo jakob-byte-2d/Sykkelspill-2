@@ -1,6 +1,6 @@
 import { CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { durPower } from "./body.js";
-import { BIKE, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
+import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
 import { chaseTarget, deadWheel, dist0, launchAt, queueWheel, terrainEdge, validWheel, wantPos, wheelGap0, working } from "./tactics.js";
@@ -79,7 +79,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // the seconds left is a sprint, and pacing is over — he holds what he has been
     // holding and crests on it, rather than emptying himself into the descent.
     const tPace = Math.max(tTop, CLIMB_MIN_T);
-    const digP = mine ? Math.min(b.T + r.surge / tPace, durPower(r, tPace, b.T), b.ceil) : 0;
+    // ...and the same number answers a second question, for everyone and not just the man
+    // the hill belongs to: this is simply what he can hold to the summit. The digger rides
+    // it. The men behind him may not go above it, whatever the wheel in front is doing.
+    const holdTop = Math.min(b.T + r.surge / tPace, durPower(r, tPace, b.T), b.ceil);
+    const digP = mine ? holdTop : 0;
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
     // button lit — position 2 rolls through on the SAME tick the front eases
@@ -181,7 +185,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // happened to hand him the hill.
         r.hold = false;
         r.digging = 1;
-        P = digP;
+        P = coast(digP, r.speed);
       } else if (r === nextUp && !sitting && (frontDone || !usable)) {
         // the front is done, or the wheel ahead is dying — ride through at the plan's
         // price plus the swing differential: enough to pass the man easing off at
@@ -191,7 +195,9 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         const urgency = clamp(behind / PACE_WINDOW, 0, 1);
         const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
           * (1 + PACE_GAIN * urgency);
-        P = Math.min(pWant + SWING_W, r.pullX * b.T, b.ceil);
+        // ...and the swing differential is watts, not speed: at sixty downhill it buys
+        // nothing and is simply spent, so the same taper the front pull already has
+        P = coast(Math.min(pWant + SWING_W, r.pullX * b.T, b.ceil), r.speed);
       } else if (usable && (movingUp || r.hold || ((bestGap >= 0 || sitting) && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);
         const need = powerFor(tgt.speed, r.mass, r.cda, grad, rho, hw, shel);
@@ -200,9 +206,38 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // keeps a rester from digging is exactly wrong once the sprint is on
         const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, !movingUp && !finale);
         P = out.P; brake = out.brake;
+        // ...and up a climb there is a level above which following him is not following
+        // at all, it is blowing up in his wake. A rider knows that: he lets the wheel go
+        // and rides what he can hold to the top, and as often as not he comes back over
+        // it. Measured before this, one climbing second in eight was spent over that
+        // level, and the half-minute before a man lost his group swung 140 W — a rider
+        // cracking, not one making a choice. Only uphill: on the flat a wheel is worth a
+        // third of the work, so hanging on always beats sitting up and the same rule
+        // there would be nonsense. Not in the finale either, where you match it or lose.
+        if (!finale && !movingUp && tTop >= CLIMB_MIN_T && P > holdTop) { P = holdTop; brake = 0; }
       } else {
+        // No wheel to sit on: he has lost it, or the one ahead is dying and there is
+        // nothing behind it to take. This was a flat 340 W — the one hardcoded wattage
+        // in the whole ladder, and it knew nothing about his mass, his threshold, the
+        // gradient, the wind, or how far up the road the wheel had gone. What a rider
+        // does here is not a number: he rides what closes the gap. It is the question
+        // the man alone off the back already asks, so it gets the same answer.
         r.hold = false;
-        P = Math.min(340, b.ceil);
+        const lead = tgt || chaseTarget(S, r);
+        const away = lead ? dist0(lead) - BIKE - dist0(r) : Infinity;
+        if (!lead) {
+          P = Math.min(0.92 * b.T, b.ceil);
+        } else if (away < DRAFT) {
+          // still in his wake, or alongside him: this is not a chase and must not be
+          // priced as one. A chase solved for a four-metre gap asks for the tank over
+          // ten seconds — seven hundred watts to regain a wheel he has not really lost —
+          // and paid two seconds at a time it empties him by the finale. What it costs
+          // to hold his speed from where he is sitting is the whole answer.
+          P = Math.max(powerFor(lead.speed, r.mass, r.cda, grad, rho, hw, shel), 0);
+        } else {
+          P = chaseRide(S, r, b, lead, grad, rho, hw);
+        }
+        if (!r.chasing) P = coast(P, r.speed);
       }
     }
   } else {
@@ -210,41 +245,45 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // steady tempo stands. Off the back there is a wheel up the road, and the whole
     // question a dropped rider asks is whether he can reach it before the line.
     const lead = chaseTarget(S, r);
-    if (!lead) {
-      P = Math.min(0.92 * b.T, b.ceil);
-    } else {
-      const gap = Math.max(dist0(lead) - BIKE - dist0(r), 1);
-      // his pace, smoothed. A rotation swings half a metre a second either way, and raw
-      // that noise would land straight in the chaser's watts
-      if (r.chaseOf !== lead.i) { r.chaseOf = lead.i; r.chaseU = lead.speed; }
-      else r.chaseU += (lead.speed - r.chaseU) / 8;
-      // ...and the same sentence as a dig up a climb, with a different target: what he
-      // can hold all the way to it. Two things cap that and they swap over by themselves
-      // — for a short chase it is his curve read at those few seconds, for a long one it
-      // is the tank divided by them.
-      const hold = (t) => Math.min(b.T + r.surge / t, durPower(r, t, b.T), b.ceil);
-      // speed follows from power and the time from speed, so it is solved by going round
-      // three times: speed goes roughly as the cube root of watts, so it settles fast
-      let t = clamp(gap, 15, 600);
-      for (let k = 0; k < 3; k++) {
-        const v = speedFor(hold(t), r.mass, r.cda, grad, rho, hw, 0, r.speed);
-        t = v > r.chaseU + 0.05 ? clamp(gap / (v - r.chaseU), 10, 1200) : Infinity;
-        if (!isFinite(t)) break;
-      }
-      // He chases if he would get there before the finish, and rides for the line if he
-      // would not. No constant decides that, the road does — and because the power is
-      // continuous in the time, the two answers meet at the boundary and he cannot
-      // flicker between them.
-      const toLine = Math.max((S.course.total - r.dist) / Math.max(r.speed, 6), 1);
-      r.chasing = isFinite(t) && t < toLine ? 1 : 0;
-      P = hold(r.chasing ? t : toLine);
-    }
+    if (!lead) P = Math.min(0.92 * b.T, b.ceil);
+    else P = chaseRide(S, r, b, lead, grad, rho, hw);
     // ...and a chase is not tempo. coast() describes a pace-setting effort buying nothing
     // at speed, which is why the sprint is exempt from it too — a man closing a gap into
     // a tailwind at fifty-six an hour is doing neither of those things, he is racing.
     if (!r.chasing) P = coast(P, r.speed);
   }
   return { P, brake };
+}
+
+/* What a man rides when the wheel he wants is up the road. Sets r.chasing and returns
+   the watts. Asked by the rider alone off the back and by the rider inside a group who
+   has lost the wheel — it is the same question, so it has one answer. */
+export function chaseRide(S, r, b, lead, grad, rho, hw) {
+  const gap = Math.max(dist0(lead) - BIKE - dist0(r), 1);
+  // his pace, smoothed. A rotation swings half a metre a second either way, and raw
+  // that noise would land straight in the chaser's watts
+  if (r.chaseOf !== lead.i) { r.chaseOf = lead.i; r.chaseU = lead.speed; }
+  else r.chaseU += (lead.speed - r.chaseU) / 8;
+  // ...and the same sentence as a dig up a climb, with a different target: what he
+  // can hold all the way to it. Two things cap that and they swap over by themselves
+  // — for a short chase it is his curve read at those few seconds, for a long one it
+  // is the tank divided by them.
+  const hold = (t) => Math.min(b.T + r.surge / t, durPower(r, t, b.T), b.ceil);
+  // speed follows from power and the time from speed, so it is solved by going round
+  // three times: speed goes roughly as the cube root of watts, so it settles fast
+  let t = clamp(gap, 15, 600);
+  for (let k = 0; k < 3; k++) {
+    const v = speedFor(hold(t), r.mass, r.cda, grad, rho, hw, 0, r.speed);
+    t = v > r.chaseU + 0.05 ? clamp(gap / (v - r.chaseU), 10, 1200) : Infinity;
+    if (!isFinite(t)) break;
+  }
+  // He chases if he would get there before the finish, and rides for the line if he
+  // would not. No constant decides that, the road does — and because the power is
+  // continuous in the time, the two answers meet at the boundary and he cannot
+  // flicker between them.
+  const toLine = Math.max((S.course.total - r.dist) / Math.max(r.speed, 6), 1);
+  r.chasing = isFinite(t) && t < toLine ? 1 : 0;
+  return hold(r.chasing ? t : toLine);
 }
 
 /* The wheel autopilot, shared by the player and any AI that holds a wheel.

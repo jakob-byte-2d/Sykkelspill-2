@@ -41,17 +41,19 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.03;    // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.045;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
-                           // back. Re-swept over 240 races, eighty courses in each wind, after the
-                           // rotation was slowed to real turn lengths — which made the break
-                           // markedly faster and had to be paid for here. At three per cent a
-                           // headwind is a coin toss (55 % of moves survive) and a tailwind favours
-                           // the break (72 %), the median winning margin is 26-39 s, and two or
-                           // three of the five come home. Kinder than that and the deadline stops
-                           // being felt; harsher and the flat courses swallow everything
+                           // back. Re-swept over 240 races, eighty courses in each wind, after
+                           // riders learnt to let a wheel go up a climb rather than crack holding
+                           // it — which splits the break more often and cost it about a fifth of
+                           // its finishers. At four and a half per cent a headwind survives 64 %
+                           // of the time and a tailwind 72 %, the median winning margin is 27-50 s,
+                           // and two or three of the five come home. Kinder than that and the
+                           // deadline stops being felt; harsher and the flat courses swallow
+                           // everything. Note the two winds have converged — they were 55/72 —
+                           // because the climbs now do more of the selecting and the wind less
 export const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 export const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 export const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free
