@@ -3,11 +3,15 @@
   "private": true,
   "version": "0.2.0",
   "type": "module",
-  "description": "The Breakaway — Legends 0.2, a one-thumb road cycling simulation",
+  "description": "The Breakaway \u2014 Legends 0.2, a one-thumb road cycling simulation",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "golden": "node tools/golden.mjs",
+    "golden:write": "node tools/golden.mjs --write",
+    "sweep": "node tools/sweep.mjs",
+    "race": "node tools/race.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

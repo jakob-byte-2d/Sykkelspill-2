@@ -1,0 +1,1842 @@
+[
+ {
+  "seed": 1000,
+  "bench": 2456.755,
+  "pelT": 2628.728,
+  "base": 373.126,
+  "finaleP": 663.724,
+  "total": 22998,
+  "wind": 5.181,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 709533,
+    "legs": 0.713586
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 700877,
+    "legs": 0.62077
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 718340,
+    "legs": 0.618178
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 585853,
+    "legs": 0.546209
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 737440,
+    "legs": 0.691996
+   }
+  ]
+ },
+ {
+  "seed": 8919,
+  "bench": 2211.049,
+  "pelT": 2365.822,
+  "base": 346.765,
+  "finaleP": 642.782,
+  "total": 23964,
+  "wind": 1.992,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 2291.152,
+    "caught": false,
+    "work": 665308,
+    "legs": 0.611801
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 2291.941,
+    "caught": false,
+    "work": 669124,
+    "legs": 0.657712
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 2291.034,
+    "caught": false,
+    "work": 702525,
+    "legs": 0.562793
+   },
+   {
+    "name": "PANTANI",
+    "fin": 2342.312,
+    "caught": false,
+    "work": 593818,
+    "legs": 0.492029
+   },
+   {
+    "name": "KÜNG",
+    "fin": 2291.974,
+    "caught": false,
+    "work": 711532,
+    "legs": 0.561558
+   }
+  ]
+ },
+ {
+  "seed": 16838,
+  "bench": 2166.664,
+  "pelT": 2318.33,
+  "base": 359.276,
+  "finaleP": 649.584,
+  "total": 22682,
+  "wind": 3.101,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 713409,
+    "legs": 0.6371
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 695485,
+    "legs": 0.801602
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 2297.549,
+    "caught": false,
+    "work": 704490,
+    "legs": 0.633292
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 587267,
+    "legs": 0.731076
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 522934,
+    "legs": 0.647889
+   }
+  ]
+ },
+ {
+  "seed": 24757,
+  "bench": 2125.244,
+  "pelT": 2274.011,
+  "base": 355.701,
+  "finaleP": 646.199,
+  "total": 20916,
+  "wind": 4.027,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 705030,
+    "legs": 0.736481
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 685636,
+    "legs": 0.627248
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 709946,
+    "legs": 0.810925
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 569165,
+    "legs": 0.635346
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 720574,
+    "legs": 0.59368
+   }
+  ]
+ },
+ {
+  "seed": 32676,
+  "bench": 2348.13,
+  "pelT": 2512.5,
+  "base": 363.938,
+  "finaleP": 653.065,
+  "total": 21622,
+  "wind": 5.558,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 719632,
+    "legs": 0.692509
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 721341,
+    "legs": 0.668164
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 724499,
+    "legs": 0.711925
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 491476,
+    "legs": 0.490519
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 782873,
+    "legs": 0.633552
+   }
+  ]
+ },
+ {
+  "seed": 40595,
+  "bench": 2104.65,
+  "pelT": 2251.976,
+  "base": 397.22,
+  "finaleP": 715.589,
+  "total": 23206,
+  "wind": 2.477,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 714678,
+    "legs": 0.716728
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 687735,
+    "legs": 0.726791
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 712161,
+    "legs": 0.648067
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 448921,
+    "legs": 0.571506
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 374147,
+    "legs": 0.640943
+   }
+  ]
+ },
+ {
+  "seed": 48514,
+  "bench": 1664.273,
+  "pelT": 1780.773,
+  "base": 315.077,
+  "finaleP": 622.102,
+  "total": 24153,
+  "wind": -4.486,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1743.256,
+    "caught": false,
+    "work": 470864,
+    "legs": 0.644798
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1743.409,
+    "caught": false,
+    "work": 469467,
+    "legs": 0.515218
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1742.693,
+    "caught": false,
+    "work": 487857,
+    "legs": 0.567202
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1743.402,
+    "caught": false,
+    "work": 406921,
+    "legs": 0.572248
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 427269,
+    "legs": 0.568326
+   }
+  ]
+ },
+ {
+  "seed": 56433,
+  "bench": 1924.228,
+  "pelT": 2058.923,
+  "base": 364.47,
+  "finaleP": 653.306,
+  "total": 21887,
+  "wind": 1.572,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 2003.628,
+    "caught": false,
+    "work": 618840,
+    "legs": 0.620552
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 2003.615,
+    "caught": false,
+    "work": 626668,
+    "legs": 0.567277
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 2039.769,
+    "caught": false,
+    "work": 623903,
+    "legs": 0.585433
+   },
+   {
+    "name": "PANTANI",
+    "fin": 2003.704,
+    "caught": false,
+    "work": 548510,
+    "legs": 0.603663
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 559512,
+    "legs": 0.615079
+   }
+  ]
+ },
+ {
+  "seed": 64352,
+  "bench": 2651.464,
+  "pelT": 2837.067,
+  "base": 354.464,
+  "finaleP": 633.322,
+  "total": 23553,
+  "wind": 5.673,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 707875,
+    "legs": 0.633182
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 708214,
+    "legs": 0.633387
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 733244,
+    "legs": 0.554327
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 585826,
+    "legs": 0.475002
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 765275,
+    "legs": 0.648522
+   }
+  ]
+ },
+ {
+  "seed": 72271,
+  "bench": 2033.599,
+  "pelT": 2175.951,
+  "base": 375.171,
+  "finaleP": 687.367,
+  "total": 21776,
+  "wind": 3.143,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 707537,
+    "legs": 0.707873
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 688813,
+    "legs": 0.642354
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 688550,
+    "legs": 0.808552
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 573994,
+    "legs": 0.623524
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 541588,
+    "legs": 0.616711
+   }
+  ]
+ },
+ {
+  "seed": 80190,
+  "bench": 1456.75,
+  "pelT": 1558.723,
+  "base": 340.495,
+  "finaleP": 626.4,
+  "total": 20815,
+  "wind": -4.259,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1533.323,
+    "caught": false,
+    "work": 403386,
+    "legs": 0.562822
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1534.457,
+    "caught": false,
+    "work": 407489,
+    "legs": 0.653647
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1533.7,
+    "caught": false,
+    "work": 423813,
+    "legs": 0.550294
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1533.507,
+    "caught": false,
+    "work": 357972,
+    "legs": 0.537635
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 428158,
+    "legs": 0.545111
+   }
+  ]
+ },
+ {
+  "seed": 88109,
+  "bench": 1472.936,
+  "pelT": 1576.041,
+  "base": 348.602,
+  "finaleP": 658.85,
+  "total": 21343,
+  "wind": -4.098,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1564.478,
+    "caught": false,
+    "work": 426276,
+    "legs": 0.63401
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1564.152,
+    "caught": false,
+    "work": 437169,
+    "legs": 0.528172
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1564.29,
+    "caught": false,
+    "work": 434292,
+    "legs": 0.634197
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1564.816,
+    "caught": false,
+    "work": 366390,
+    "legs": 0.545952
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 389587,
+    "legs": 0.569506
+   }
+  ]
+ },
+ {
+  "seed": 96028,
+  "bench": 1593.961,
+  "pelT": 1705.539,
+  "base": 346.371,
+  "finaleP": 654.864,
+  "total": 21682,
+  "wind": -3.066,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1663.864,
+    "caught": false,
+    "work": 486288,
+    "legs": 0.598615
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1664.03,
+    "caught": false,
+    "work": 506445,
+    "legs": 0.587015
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1702.69,
+    "caught": false,
+    "work": 504732,
+    "legs": 0.542263
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1695.893,
+    "caught": false,
+    "work": 434519,
+    "legs": 0.573857
+   },
+   {
+    "name": "KÜNG",
+    "fin": 1702.489,
+    "caught": false,
+    "work": 516266,
+    "legs": 0.590609
+   }
+  ]
+ },
+ {
+  "seed": 103947,
+  "bench": 1912.682,
+  "pelT": 2046.569,
+  "base": 357.861,
+  "finaleP": 647.505,
+  "total": 20716,
+  "wind": 2.551,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1988.592,
+    "caught": false,
+    "work": 611864,
+    "legs": 0.573236
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1988.557,
+    "caught": false,
+    "work": 638814,
+    "legs": 0.614849
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1988.584,
+    "caught": false,
+    "work": 642952,
+    "legs": 0.67945
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 536897,
+    "legs": 0.61084
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 641049,
+    "legs": 0.728079
+   }
+  ]
+ },
+ {
+  "seed": 111866,
+  "bench": 2351.701,
+  "pelT": 2516.32,
+  "base": 330.156,
+  "finaleP": 600.481,
+  "total": 20985,
+  "wind": 5.07,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 2504.624,
+    "caught": false,
+    "work": 701018,
+    "legs": 0.705677
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 704213,
+    "legs": 0.731274
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 724040,
+    "legs": 0.767622
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 594415,
+    "legs": 0.690436
+   },
+   {
+    "name": "KÜNG",
+    "fin": 2504.404,
+    "caught": false,
+    "work": 750743,
+    "legs": 0.749174
+   }
+  ]
+ },
+ {
+  "seed": 119785,
+  "bench": 1609.392,
+  "pelT": 1722.05,
+  "base": 331.194,
+  "finaleP": 626.967,
+  "total": 20962,
+  "wind": -2.045,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1667.984,
+    "caught": false,
+    "work": 479959,
+    "legs": 0.519437
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1668.084,
+    "caught": false,
+    "work": 486912,
+    "legs": 0.598184
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1667.721,
+    "caught": false,
+    "work": 507709,
+    "legs": 0.600898
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1681.887,
+    "caught": false,
+    "work": 442260,
+    "legs": 0.561304
+   },
+   {
+    "name": "KÜNG",
+    "fin": 1681.01,
+    "caught": false,
+    "work": 530752,
+    "legs": 0.568952
+   }
+  ]
+ },
+ {
+  "seed": 127704,
+  "bench": 1428.649,
+  "pelT": 1528.655,
+  "base": 323.583,
+  "finaleP": 626.069,
+  "total": 20323,
+  "wind": -4.015,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1515.428,
+    "caught": false,
+    "work": 406383,
+    "legs": 0.585071
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1514.996,
+    "caught": false,
+    "work": 408247,
+    "legs": 0.558152
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1515.028,
+    "caught": false,
+    "work": 429269,
+    "legs": 0.587406
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1516.828,
+    "caught": false,
+    "work": 342919,
+    "legs": 0.539284
+   },
+   {
+    "name": "KÜNG",
+    "fin": 1515.403,
+    "caught": false,
+    "work": 432394,
+    "legs": 0.578051
+   }
+  ]
+ },
+ {
+  "seed": 135623,
+  "bench": 2389.598,
+  "pelT": 2556.869,
+  "base": 350.744,
+  "finaleP": 626.057,
+  "total": 22423,
+  "wind": 4.338,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 725217,
+    "legs": 0.871712
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 711500,
+    "legs": 0.735125
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 733987,
+    "legs": 0.764538
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 538380,
+    "legs": 0.617037
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 760328,
+    "legs": 0.643878
+   }
+  ]
+ },
+ {
+  "seed": 143542,
+  "bench": 1689.968,
+  "pelT": 1808.266,
+  "base": 326.246,
+  "finaleP": 612.232,
+  "total": 21610,
+  "wind": -1.794,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1759.569,
+    "caught": false,
+    "work": 472725,
+    "legs": 0.578978
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1759.414,
+    "caught": false,
+    "work": 477516,
+    "legs": 0.59646
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1759.464,
+    "caught": false,
+    "work": 491906,
+    "legs": 0.596287
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1759.608,
+    "caught": false,
+    "work": 421295,
+    "legs": 0.589576
+   },
+   {
+    "name": "KÜNG",
+    "fin": 1787.981,
+    "caught": false,
+    "work": 555026,
+    "legs": 0.537468
+   }
+  ]
+ },
+ {
+  "seed": 151461,
+  "bench": 1948.237,
+  "pelT": 2084.614,
+  "base": 380.668,
+  "finaleP": 687.986,
+  "total": 21646,
+  "wind": 2.31,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 2074.869,
+    "caught": false,
+    "work": 690572,
+    "legs": 0.785993
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 2074.954,
+    "caught": false,
+    "work": 677870,
+    "legs": 0.689489
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 2074.961,
+    "caught": false,
+    "work": 706366,
+    "legs": 0.718871
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 523414,
+    "legs": 0.5826
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 413536,
+    "legs": 0.56172
+   }
+  ]
+ },
+ {
+  "seed": 159380,
+  "bench": 2151.745,
+  "pelT": 2302.367,
+  "base": 370.634,
+  "finaleP": 661.412,
+  "total": 20891,
+  "wind": 4.617,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 708040,
+    "legs": 0.665473
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 689078,
+    "legs": 0.751915
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 725753,
+    "legs": 0.712091
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 576930,
+    "legs": 0.501005
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 746043,
+    "legs": 0.616739
+   }
+  ]
+ },
+ {
+  "seed": 167299,
+  "bench": 1900.464,
+  "pelT": 2033.496,
+  "base": 382.88,
+  "finaleP": 687.84,
+  "total": 20610,
+  "wind": 2.586,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1986.575,
+    "caught": false,
+    "work": 666458,
+    "legs": 0.676038
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1986.701,
+    "caught": false,
+    "work": 665901,
+    "legs": 0.675437
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1986.58,
+    "caught": false,
+    "work": 674767,
+    "legs": 0.679375
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 478446,
+    "legs": 0.582445
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 504614,
+    "legs": 0.53622
+   }
+  ]
+ },
+ {
+  "seed": 175218,
+  "bench": 1821.283,
+  "pelT": 1948.773,
+  "base": 347.551,
+  "finaleP": 671.883,
+  "total": 23877,
+  "wind": -1.556,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1913.947,
+    "caught": false,
+    "work": 559720,
+    "legs": 0.486796
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1913.927,
+    "caught": false,
+    "work": 547759,
+    "legs": 0.648153
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1913.912,
+    "caught": false,
+    "work": 577532,
+    "legs": 0.53563
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1915.163,
+    "caught": false,
+    "work": 465927,
+    "legs": 0.64233
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 412590,
+    "legs": 0.653831
+   }
+  ]
+ },
+ {
+  "seed": 183137,
+  "bench": 2407.362,
+  "pelT": 2575.877,
+  "base": 331.412,
+  "finaleP": 588.416,
+  "total": 22097,
+  "wind": 4.564,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 2524.49,
+    "caught": false,
+    "work": 679205,
+    "legs": 0.610604
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 2523.77,
+    "caught": false,
+    "work": 681497,
+    "legs": 0.564408
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 2522.925,
+    "caught": false,
+    "work": 716754,
+    "legs": 0.626262
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 585982,
+    "legs": 0.532245
+   },
+   {
+    "name": "KÜNG",
+    "fin": 2523.365,
+    "caught": false,
+    "work": 736417,
+    "legs": 0.606861
+   }
+  ]
+ },
+ {
+  "seed": 191056,
+  "bench": 1823.817,
+  "pelT": 1951.484,
+  "base": 351.425,
+  "finaleP": 656.79,
+  "total": 20553,
+  "wind": 1.878,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1895.817,
+    "caught": false,
+    "work": 573045,
+    "legs": 0.637966
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1895.697,
+    "caught": false,
+    "work": 556573,
+    "legs": 0.592457
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1895.996,
+    "caught": false,
+    "work": 597257,
+    "legs": 0.516353
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1897.159,
+    "caught": false,
+    "work": 497820,
+    "legs": 0.546902
+   },
+   {
+    "name": "KÜNG",
+    "fin": 1917.668,
+    "caught": false,
+    "work": 566426,
+    "legs": 0.641595
+   }
+  ]
+ },
+ {
+  "seed": 198975,
+  "bench": 2374.461,
+  "pelT": 2540.674,
+  "base": 356.205,
+  "finaleP": 634.709,
+  "total": 21771,
+  "wind": 5.592,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 717825,
+    "legs": 0.765171
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 701496,
+    "legs": 0.555124
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 739055,
+    "legs": 0.798247
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 589015,
+    "legs": 0.683413
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 755857,
+    "legs": 0.676319
+   }
+  ]
+ },
+ {
+  "seed": 206894,
+  "bench": 1540.578,
+  "pelT": 1648.418,
+  "base": 348.886,
+  "finaleP": 656.961,
+  "total": 22739,
+  "wind": -4.64,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1636.154,
+    "caught": false,
+    "work": 456596,
+    "legs": 0.606001
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1636.294,
+    "caught": false,
+    "work": 480240,
+    "legs": 0.625553
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1643.649,
+    "caught": false,
+    "work": 453763,
+    "legs": 0.652774
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1643.988,
+    "caught": false,
+    "work": 400635,
+    "legs": 0.631876
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 350788,
+    "legs": 0.557269
+   }
+  ]
+ },
+ {
+  "seed": 214813,
+  "bench": 2417.119,
+  "pelT": 2586.317,
+  "base": 371.947,
+  "finaleP": 658.603,
+  "total": 23481,
+  "wind": 4.846,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 719721,
+    "legs": 0.791007
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 693422,
+    "legs": 0.647237
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 742667,
+    "legs": 0.794151
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 585749,
+    "legs": 0.65068
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 733362,
+    "legs": 0.641524
+   }
+  ]
+ },
+ {
+  "seed": 222732,
+  "bench": 1639.326,
+  "pelT": 1754.079,
+  "base": 331.973,
+  "finaleP": 638.372,
+  "total": 21910,
+  "wind": -2.829,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1714.892,
+    "caught": false,
+    "work": 511468,
+    "legs": 0.530743
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1714.668,
+    "caught": false,
+    "work": 499579,
+    "legs": 0.541352
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1724.783,
+    "caught": false,
+    "work": 496225,
+    "legs": 0.677136
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1725.464,
+    "caught": false,
+    "work": 454102,
+    "legs": 0.518186
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 483941,
+    "legs": 0.620964
+   }
+  ]
+ },
+ {
+  "seed": 230651,
+  "bench": 1544.838,
+  "pelT": 1652.977,
+  "base": 345.035,
+  "finaleP": 674.252,
+  "total": 23288,
+  "wind": -4.976,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1648.047,
+    "caught": false,
+    "work": 448267,
+    "legs": 0.604893
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1648.224,
+    "caught": false,
+    "work": 453710,
+    "legs": 0.672559
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1648.194,
+    "caught": false,
+    "work": 470107,
+    "legs": 0.518012
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1648.384,
+    "caught": false,
+    "work": 394941,
+    "legs": 0.491522
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 297826,
+    "legs": 0.582968
+   }
+  ]
+ },
+ {
+  "seed": 238570,
+  "bench": 1635.985,
+  "pelT": 1750.504,
+  "base": 334.29,
+  "finaleP": 647.933,
+  "total": 23473,
+  "wind": -3.919,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1731.582,
+    "caught": false,
+    "work": 475711,
+    "legs": 0.563901
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1731.409,
+    "caught": false,
+    "work": 474729,
+    "legs": 0.527186
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1731.367,
+    "caught": false,
+    "work": 481021,
+    "legs": 0.544825
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1731.693,
+    "caught": false,
+    "work": 408654,
+    "legs": 0.496474
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 431430,
+    "legs": 0.586933
+   }
+  ]
+ },
+ {
+  "seed": 246489,
+  "bench": 2328.491,
+  "pelT": 2491.486,
+  "base": 357.492,
+  "finaleP": 634.994,
+  "total": 21608,
+  "wind": 5.057,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 714690,
+    "legs": 0.67883
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 709403,
+    "legs": 0.651151
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 725438,
+    "legs": 0.686965
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 588137,
+    "legs": 0.703235
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 741551,
+    "legs": 0.718708
+   }
+  ]
+ },
+ {
+  "seed": 254408,
+  "bench": 2166.591,
+  "pelT": 2318.253,
+  "base": 359.176,
+  "finaleP": 649.913,
+  "total": 22349,
+  "wind": 3.203,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 2268.967,
+    "caught": false,
+    "work": 685770,
+    "legs": 0.688015
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 2269.046,
+    "caught": false,
+    "work": 671544,
+    "legs": 0.703368
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 2300.692,
+    "caught": false,
+    "work": 732312,
+    "legs": 0.662041
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 587949,
+    "legs": 0.563137
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 603497,
+    "legs": 0.580268
+   }
+  ]
+ },
+ {
+  "seed": 262327,
+  "bench": 1645.277,
+  "pelT": 1760.446,
+  "base": 333.516,
+  "finaleP": 616.057,
+  "total": 20684,
+  "wind": -1.571,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1683.489,
+    "caught": false,
+    "work": 469487,
+    "legs": 0.583794
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1684.477,
+    "caught": false,
+    "work": 480804,
+    "legs": 0.563065
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1682.482,
+    "caught": false,
+    "work": 529492,
+    "legs": 0.585205
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1683.738,
+    "caught": false,
+    "work": 432958,
+    "legs": 0.511685
+   },
+   {
+    "name": "KÜNG",
+    "fin": 1702.321,
+    "caught": false,
+    "work": 528419,
+    "legs": 0.699877
+   }
+  ]
+ },
+ {
+  "seed": 270246,
+  "bench": 2004.545,
+  "pelT": 2144.864,
+  "base": 368.752,
+  "finaleP": 682.819,
+  "total": 21494,
+  "wind": 2.63,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 705180,
+    "legs": 0.696999
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 553157,
+    "legs": 0.631946
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 671490,
+    "legs": 0.729635
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 583884,
+    "legs": 0.595404
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 454119,
+    "legs": 0.555947
+   }
+  ]
+ },
+ {
+  "seed": 278165,
+  "bench": 2084.004,
+  "pelT": 2229.885,
+  "base": 358.104,
+  "finaleP": 650.549,
+  "total": 22063,
+  "wind": 2.799,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 2191.985,
+    "caught": false,
+    "work": 636465,
+    "legs": 0.608716
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 2189.675,
+    "caught": false,
+    "work": 652602,
+    "legs": 0.610118
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 2190.686,
+    "caught": false,
+    "work": 690706,
+    "legs": 0.625431
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 551513,
+    "legs": 0.558824
+   },
+   {
+    "name": "KÜNG",
+    "fin": 2191.263,
+    "caught": false,
+    "work": 673862,
+    "legs": 0.639732
+   }
+  ]
+ },
+ {
+  "seed": 286084,
+  "bench": 2183.475,
+  "pelT": 2336.318,
+  "base": 382.304,
+  "finaleP": 678.552,
+  "total": 20774,
+  "wind": 5.402,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": null,
+    "caught": true,
+    "work": 711242,
+    "legs": 0.656242
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": null,
+    "caught": true,
+    "work": 591718,
+    "legs": 0.631027
+   },
+   {
+    "name": "VAN AERT",
+    "fin": null,
+    "caught": true,
+    "work": 721408,
+    "legs": 0.784131
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 585225,
+    "legs": 0.762535
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 387103,
+    "legs": 0.653097
+   }
+  ]
+ },
+ {
+  "seed": 294003,
+  "bench": 1781.866,
+  "pelT": 1906.596,
+  "base": 354.892,
+  "finaleP": 650.593,
+  "total": 22986,
+  "wind": -1.916,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1887.271,
+    "caught": false,
+    "work": 549746,
+    "legs": 0.555676
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1887.685,
+    "caught": false,
+    "work": 535096,
+    "legs": 0.618446
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1887.363,
+    "caught": false,
+    "work": 554826,
+    "legs": 0.630903
+   },
+   {
+    "name": "PANTANI",
+    "fin": null,
+    "caught": true,
+    "work": 469696,
+    "legs": 0.5422
+   },
+   {
+    "name": "KÜNG",
+    "fin": 1887.429,
+    "caught": false,
+    "work": 586141,
+    "legs": 0.594355
+   }
+  ]
+ },
+ {
+  "seed": 301922,
+  "bench": 1535.231,
+  "pelT": 1642.697,
+  "base": 326.487,
+  "finaleP": 639.12,
+  "total": 21370,
+  "wind": -3.209,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1613.88,
+    "caught": false,
+    "work": 422754,
+    "legs": 0.64459
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1613.738,
+    "caught": false,
+    "work": 431517,
+    "legs": 0.546756
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1613.747,
+    "caught": false,
+    "work": 453290,
+    "legs": 0.626457
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1613.714,
+    "caught": false,
+    "work": 380468,
+    "legs": 0.426723
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 438266,
+    "legs": 0.464954
+   }
+  ]
+ },
+ {
+  "seed": 309841,
+  "bench": 1542.767,
+  "pelT": 1650.76,
+  "base": 332.247,
+  "finaleP": 656.025,
+  "total": 21514,
+  "wind": -3.271,
+  "riders": [
+   {
+    "name": "PEDERSEN",
+    "fin": 1619.317,
+    "caught": false,
+    "work": 441391,
+    "legs": 0.615777
+   },
+   {
+    "name": "V.D.POEL",
+    "fin": 1619.245,
+    "caught": false,
+    "work": 445970,
+    "legs": 0.582183
+   },
+   {
+    "name": "VAN AERT",
+    "fin": 1619.514,
+    "caught": false,
+    "work": 459737,
+    "legs": 0.5955
+   },
+   {
+    "name": "PANTANI",
+    "fin": 1619.822,
+    "caught": false,
+    "work": 385029,
+    "legs": 0.54914
+   },
+   {
+    "name": "KÜNG",
+    "fin": null,
+    "caught": true,
+    "work": 460374,
+    "legs": 0.613511
+   }
+  ]
+ }
+]
