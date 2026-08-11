@@ -31,9 +31,38 @@ brenn fyrstikkene og den synker.
 
 ## Sånn er det bygget
 
-- `src/TheBreakaway.jsx` — hele spillet: fysikk, AI, bane og tegning i én fil.
-- `src/main.jsx` — React-rot.
-- Vite + React 18, canvas-rendering, ingen andre avhengigheter.
+Én vei gjennom lagene, aldri motsatt:
+
+```
+content  →  sim  →  render  →  ui
+ (data)    (motor)  (piksler)  (skall)
+              ↑
+           tools
+```
+
+| Mappe | Hva som ligger der |
+| --- | --- |
+| `src/content/` | `tuning.js` — alle balansetallene. Ingen kode, bare tall og begrunnelser. |
+| `src/sim/` | Motoren: fysikk, kropp, taktikk, felt, fartsplan, ett sekund om gangen. **Rører aldri DOM.** `sim/index.js` er den offentlige flaten. |
+| `src/render/` | Leser tilstand, skriver piksler. Endrer aldri noe. |
+| `src/ui/` | React-skallet: knapper, skjermer, watt-slideren. |
+| `tools/` | Kjører mot `sim/` direkte, uten nettleser. |
+
+Regelen er verdt å håndheve: fordi `sim/` ikke vet at det finnes en skjerm, kan
+fire hundre løp kjøres på femten sekunder i Node i stedet for å klikkes gjennom en
+nettleser.
+
+```bash
+npm run golden                              # 40 faste løp, krever bit-identisk resultat
+npm run race -- 1000 --every=100            # ett løp, telemetri per sekund
+npm run sweep -- PEL_LEAD -0.05 -0.07 -0.09 # balansesveip over løyper og vind
+```
+
+`npm run golden` er sikkerhetsnettet: en refaktorering av en simulering er enten
+bit-identisk eller en feil. Endrer du noe med vilje, skriv ny fasit med
+`npm run golden:write` — og se på diffen først.
+
+Vite + React 18, canvas-rendering, ingen andre avhengigheter.
 
 Simuleringen kjører ett sekund om gangen:
 
