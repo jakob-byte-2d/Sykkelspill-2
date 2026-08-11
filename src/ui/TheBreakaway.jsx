@@ -11,6 +11,7 @@ export default function TheBreakaway() {
   const [, setTick] = useState(0);
   const [speedMode, setSpeedMode] = useState(5);
   const [debugOn, setDebugOn] = useState(DEBUG);
+  const [dragging, setDragging] = useState(false);   // finger down on the slider
   const speedRef = useRef(5);
   const simRef = useRef(null);
   const canvasRef = useRef(null);
@@ -95,6 +96,7 @@ export default function TheBreakaway() {
   };
   const onSliderUp = () => {
     dragRef.current = false;
+    setDragging(false);
   };
 
   /* ---------- UI pieces ---------- */
@@ -270,7 +272,7 @@ export default function TheBreakaway() {
             clear of the mode chip below it, not just above the chip's own top edge */}
         <div
           style={{ position: "absolute", right: 6, top: 84, bottom: 158, width: 104, touchAction: "none", userSelect: "none" }}
-          onPointerDown={(e) => { dragRef.current = true; e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
+          onPointerDown={(e) => { dragRef.current = true; setDragging(true); e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
           onPointerMove={(e) => { if (dragRef.current) onSlider(e, e.currentTarget); }}
           onPointerUp={onSliderUp}
           onPointerCancel={onSliderUp}
@@ -293,11 +295,28 @@ export default function TheBreakaway() {
           <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#ff4b3a", top: markerTop(tC), boxShadow: "0 0 5px #ff4b3a", transition: "top .3s linear" }} />
           {/* thumb */}
           <div style={{ position: "absolute", left: 42, width: 50, height: 34, top: `calc(${markerTop(tS)} - 17px)`, borderRadius: 999, background: S.input.mode === "sit" ? "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)" : "linear-gradient(180deg, #eaf3fb, #7db3e0 45%, #2f6cb3)", border: S.input.mode === "sit" ? "2px solid #145c27" : "2px solid #123a6b", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: mono, fontWeight: 800, fontSize: 13, color: "#fff", textShadow: "0 1px 2px rgba(10,30,55,0.7)" }}>
-            {S.input.mode === "sit" ? (S.braking > 1 ? "BREMS" : "HJUL") : shownW}
+            {S.input.mode === "sit" ? (S.braking > 1 ? "BREMS" : "HJUL") : ""}
           </div>
-          {S.input.mode === "sit" && (
-            <div style={{ position: "absolute", left: 46, width: 42, textAlign: "center", top: `calc(${markerTop(tS)} + 19px)`, fontFamily: mono, fontWeight: 800, fontSize: 11, color: "#145c27", background: "rgba(255,255,255,0.82)", borderRadius: 999, padding: "0 2px", boxShadow: "0 1px 3px rgba(15,35,60,0.35)" }}>
-              {S.playerW}
+          {/* The number does not ride the thumb any more: it stands still, halfway up the
+              column, so there is one place on the screen the watts are always found. The
+              thumb slides under it — that is why it is drawn last and left transparent
+              where the two meet. */}
+          <div style={{ position: "absolute", left: 46, width: 50, top: "calc(50% - 13px)", height: 26, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.86)", border: "1px solid rgba(13,53,104,0.35)", boxShadow: "0 1px 4px rgba(15,35,60,0.35)", fontFamily: mono, fontWeight: 800, fontSize: 15, color: "#0d3568", pointerEvents: "none" }}>
+            {shownW}
+          </div>
+          {/* ...and under a finger the thumb is hidden by the finger, so while you are
+              holding it the value comes up a thumb's height above the grip — flipped below
+              near the top of the track, where there is no room above it. */}
+          {dragging && (
+            <div style={{
+              position: "absolute", left: 34, width: 66, height: 30, borderRadius: 999,
+              top: `calc(${markerTop(tS)} ${tS > 0.86 ? "+ 21px" : "- 47px"})`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: "linear-gradient(180deg, #ffffff, #dcebfa)", border: "2px solid #2f6cb3",
+              boxShadow: "0 3px 10px rgba(15,35,60,0.45)", fontFamily: mono, fontWeight: 800,
+              fontSize: 16, color: "#0d3568", pointerEvents: "none",
+            }}>
+              {shownW} W
             </div>
           )}
           <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, textAlign: "center", fontSize: 9, letterSpacing: 2, color: "#0d3568", fontWeight: 800, fontStyle: "italic", fontFamily: font }}>WATTS</div>
