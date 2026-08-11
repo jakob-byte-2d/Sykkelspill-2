@@ -42,7 +42,15 @@ export const DRAFT = 12;        // beyond this there is no useful wind shadow le
 
 export const DRAFT_TAU = 3.5;   // it decays by 1/e every 3.5 m
 
-export const SHEL_MAX = 0.4;    // most drag a wheel can take off you
+export const SHEL_MAX = 0.36;   // most drag ONE wheel can take off you — the real figure
+                                // for second wheel, glued on, in a wind tunnel
+export const DEPTH_FALL = 0.35; // ...and every further body up the road adds this much of
+                                // what the ones behind him left, so the line deepens:
+                                // 36 % on second wheel, 44 on third, 46 on fourth, 47 on
+                                // fifth, against a measured 33-38 / 38-43 / 42-47 / 44-48
+// the most the line can ever give, with a full file glued together — the reference the
+// LY readout is a percentage of
+export const SHEL_DEEP = 0.48;
 
 // gap is measured wheel to wheel: from the back of his rear tyre to the front of yours.
 // gap = 0 → your front wheel is touching his rear wheel.
@@ -51,6 +59,21 @@ export function shelterAt(gap) {
   if (gap >= 0) return gap < DRAFT ? SHEL_MAX * Math.exp(-gap / DRAFT_TAU) : 0;
   if (gap > -BIKE) { const f = 1 + gap / BIKE; return SHEL_MAX * f * f; }   // alongside him it goes fast
   return 0;                                              // a full bike length clear
+}
+
+/* Every body up the road takes a little wind off you. The nearest wheel does most of it;
+   a man further up already sits inside the wake of the one behind him, so only what is
+   left of the wind reaches him as a new contribution — which is why a line stops paying
+   after about the fourth wheel. Given the shelter each rider ahead would give on his own,
+   this is what the whole file gives together. */
+export function shelterStack(each) {
+  let shel = 0, w = 1;
+  for (const s of each.sort((a, b) => b - a)) {
+    if (s <= 0) continue;
+    shel += (1 - shel) * s * w;
+    w *= DEPTH_FALL;
+  }
+  return shel;
 }
 
 // past COOP_COAST_KMH a pace-setting effort buys nothing — watts taper to zero

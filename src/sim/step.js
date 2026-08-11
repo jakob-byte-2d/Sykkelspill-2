@@ -2,7 +2,7 @@ import { COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_
 import { bodyNow, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
-import { BIKE, G, SHEL_MAX, powerFor, rhoAt, shelterAt } from "./physics.js";
+import { BIKE, G, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
 import { coopRide } from "./ride.js";
 import { clamp } from "./rng.js";
 import { working } from "./tactics.js";
@@ -24,15 +24,20 @@ export function stepRider(S, r, dt) {
   r.sf = b.sf;   // published for the drop-back scan; readers see last turn's value
 
   // shelter: full behind the wheel, then fading — and it bleeds away over one bike
-  // length while you move up alongside and past him
-  let shel = 0, ahead = null, bestGap = 1e9;
+  // length while you move up alongside and past him. The wheel he follows is the one
+  // that shelters him best, which is not always the nearest; the wind he is actually
+  // out of is the whole file's, so every body ahead goes into the stack.
+  let best = 0, ahead = null, bestGap = 1e9;
+  const each = [];
   for (const o of S.riders) {
     if (o === r || o.caught || o.finished != null) continue;
     const gap = ((o.d0 != null ? o.d0 : o.dist) - BIKE) - (r.d0 != null ? r.d0 : r.dist);
     const s = shelterAt(gap);
-    if (s > shel) { shel = s; ahead = o; bestGap = gap; }
-    else if (gap > 0 && gap < bestGap && shel === 0) { bestGap = gap; ahead = o; }
+    if (s > 0) each.push(s);
+    if (s > best) { best = s; ahead = o; bestGap = gap; }
+    else if (gap > 0 && gap < bestGap && best === 0) { bestGap = gap; ahead = o; }
   }
+  const shel = shelterStack(each);
   r.shel = shel;
   r.overlap = !!ahead && bestGap < 0 && shel > 0;
 
