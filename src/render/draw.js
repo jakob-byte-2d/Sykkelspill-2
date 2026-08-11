@@ -256,7 +256,10 @@ export function draw(S, canvas, alpha) {
         ctx.fillStyle = tankHue(1 - r.legs);
         ctx.fillText("L" + Math.round((1 - r.legs) * 100), R, top + 45);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText("LY" + Math.round(r.ly * 100), R, top + 56);
+        // the share he is taking in the wind — the complement of the wheel's saving.
+        // Two characters like S/F/L above it: the bubble is 59 px and this column
+        // shares its row with the wheel gap on the left
+        ctx.fillText("WI" + Math.round((1 - r.ly) * 100), R, top + 56);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
         ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 67);
       }

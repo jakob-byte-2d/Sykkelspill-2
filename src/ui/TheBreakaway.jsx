@@ -252,7 +252,10 @@ export default function TheBreakaway() {
           <Bar label="SURGE" frac={body.sf} color="#35c24d" />
           <Bar label="FUEL" frac={body.ff} color="#2e8fe0" />
           <Bar label="LEGS" frac={1 - player.legs} color="#e0483c" />
-          <Bar label="LY" frac={player.ly} color="#8e6bd6" />
+          {/* the complement of the shelter: the share of the work he is taking in the
+              wind himself. Same number, read the way a rider says it — and it uses the
+              whole scale, where the saving alone sat in the bottom third all race */}
+          <Bar label="WIND" frac={1 - player.ly} color="#8e6bd6" />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontFamily: mono, fontSize: 11 }}>
             <span style={{ color: "#1d7a34", fontWeight: 700 }}>THR {Math.round(body.T)}</span>
             <span style={{ color: "#c22a1e", fontWeight: 700 }}>MAX {Math.round(body.ceil)}</span>
