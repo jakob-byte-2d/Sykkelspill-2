@@ -1,12 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { DEBUG, draw, setDebug } from "../render/draw.js";
 import { fmtGap, fmtTime } from "../render/format.js";
-import { bodyNow } from "../sim/body.js";
-import { gapRows } from "../sim/groups.js";
-import { newSim } from "../sim/newRace.js";
-import { SHEL_MAX } from "../sim/physics.js";
-import { clamp } from "../sim/rng.js";
-import { finalize, stepSim } from "../sim/step.js";
+import { SHEL_MAX, bodyNow, clamp, finalize, gapRows, newSim, setInput, stepSim } from "../sim/index.js";
 import { sliderPts, tFromW, wFromT } from "./slider.js";
 import { ResultRow, btn, card, markerTop, overlay, place } from "./widgets.jsx";
 
@@ -95,8 +90,8 @@ export default function TheBreakaway() {
     const y = e.clientY - rect.top;
     const t = 1 - clamp((y - 14) / (rect.height - 28), 0, 1);
     const asked = Math.round(wFromT(t, pts));
-    if (S.sitting) S.sitting = false;   // grabbing the slider takes the controls back
-    S.slider = asked;
+    // grabbing the slider takes the controls back, whatever mode you were in
+    setInput(S, { mode: "manual", watts: asked });
   };
   const onSliderUp = () => {
     dragRef.current = false;
@@ -131,7 +126,7 @@ export default function TheBreakaway() {
     const kmToGo = Math.max(0, (S.course.total - player.dist) / 1000);
     const grad = S.course.gradAt(player.dist);
     const inWheels = player.shel > 0.05;
-    const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts), tS = tFromW(S.slider, pts);
+    const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts), tS = tFromW(S.playerW, pts);
 
     raceUI = (
       <>
@@ -190,44 +185,37 @@ export default function TheBreakaway() {
         <button
           onClick={() => {
             if (!S || S.ended) return;
-            if (S.sitting) {
-              S.sitting = false;
-              S.slider = Math.round(player.power);   // hand the controls back where they are
-            } else {
-              S.sitting = true;
-              S.pulling = false;
-            }
+            // leaving SIT ON hands the controls back exactly where the legs are
+            setInput(S, S.input.mode === "sit"
+              ? { mode: "manual", watts: Math.round(player.power) }
+              : { mode: "sit" });
           }}
           style={actionBtn(94, {
             cursor: "pointer",
             border: "2px solid #145c27", color: "#fff",
-            background: S.sitting
+            background: S.input.mode === "sit"
               ? "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)"
               : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #2f9e4f",
           })}>
-          {S.sitting ? "HOLDING" : "SIT ON"}
+          {S.input.mode === "sit" ? "HOLDING" : "SIT ON"}
         </button>
 
         {/* take the front */}
         <button
           onClick={() => {
             if (!S || S.ended) return;
-            if (S.pulling) {
-              S.pulling = false;
-              S.slider = Math.round(player.power);   // hand the controls back where they are
-            } else {
-              S.pulling = true;
-              S.sitting = false;
-            }
+            setInput(S, S.input.mode === "relay"
+              ? { mode: "manual", watts: Math.round(player.power) }
+              : { mode: "relay" });
           }}
           style={actionBtn(56, {
             cursor: "pointer",
             border: "2px solid #123a6b", color: "#fff",
-            background: S.pulling
+            background: S.input.mode === "relay"
               ? "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #c0392b"
               : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #3a76bd",
           })}>
-          {S.pulling ? "MANUAL" : "RELAY"}
+          {S.input.mode === "relay" ? "MANUAL" : "RELAY"}
         </button>
 
         {/* mode chip — where you ARE; the buttons say where you can go */}
@@ -237,7 +225,7 @@ export default function TheBreakaway() {
           textAlign: "center", borderRadius: 999, color: "#dfe9f4",
           background: "rgba(10,25,45,0.55)", border: "1px solid rgba(255,255,255,0.25)",
         }}>
-          {S.sitting ? "SIT ON" : S.pulling ? "RELAY" : "MANUAL"}
+          {S.input.mode === "sit" ? "SIT ON" : S.input.mode === "relay" ? "RELAY" : "MANUAL"}
         </div>
 
         {/* instrument panel */}
@@ -275,12 +263,12 @@ export default function TheBreakaway() {
           {/* red ceiling line — sinks when you burn your matches */}
           <div style={{ position: "absolute", left: 20, width: 40, height: 2, background: "#ff4b3a", top: markerTop(tC), boxShadow: "0 0 5px #ff4b3a", transition: "top .3s linear" }} />
           {/* thumb */}
-          <div style={{ position: "absolute", left: 12, width: 50, height: 34, top: `calc(${markerTop(tS)} - 17px)`, borderRadius: 999, background: S.sitting ? "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)" : "linear-gradient(180deg, #eaf3fb, #7db3e0 45%, #2f6cb3)", border: S.sitting ? "2px solid #145c27" : "2px solid #123a6b", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: mono, fontWeight: 800, fontSize: 13, color: "#fff", textShadow: "0 1px 2px rgba(10,30,55,0.7)" }}>
-            {S.sitting ? (S.braking > 1 ? "BREMS" : "HJUL") : S.slider}
+          <div style={{ position: "absolute", left: 12, width: 50, height: 34, top: `calc(${markerTop(tS)} - 17px)`, borderRadius: 999, background: S.input.mode === "sit" ? "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)" : "linear-gradient(180deg, #eaf3fb, #7db3e0 45%, #2f6cb3)", border: S.input.mode === "sit" ? "2px solid #145c27" : "2px solid #123a6b", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: mono, fontWeight: 800, fontSize: 13, color: "#fff", textShadow: "0 1px 2px rgba(10,30,55,0.7)" }}>
+            {S.input.mode === "sit" ? (S.braking > 1 ? "BREMS" : "HJUL") : S.playerW}
           </div>
-          {S.sitting && (
+          {S.input.mode === "sit" && (
             <div style={{ position: "absolute", right: 64, width: 42, textAlign: "right", top: `calc(${markerTop(tS)} - 8px)`, fontFamily: mono, fontWeight: 800, fontSize: 12, color: "#1d7a34", textShadow: "0 1px 0 rgba(255,255,255,0.8)" }}>
-              {S.slider}
+              {S.playerW}
             </div>
           )}
           <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, textAlign: "center", fontSize: 9, letterSpacing: 2, color: "#0d3568", fontWeight: 800, fontStyle: "italic", fontFamily: font }}>WATTS</div>

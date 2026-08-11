@@ -39,13 +39,13 @@ export function stepRider(S, r, dt) {
   // what he asks his legs for
   let P;
   let brake = 0;
-  if (r.isPlayer && !S.pulling && !S.sitting) {
-    P = Math.min(S.slider, b.ceil);   // manual: your watts, your problem
+  if (r.isPlayer && S.input.mode === "manual") {
+    P = Math.min(S.input.watts, b.ceil);   // manual: your watts, your problem
   } else {
     // one rule for the whole break — the player in relay or sitting on rides it too
     const out = coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw);
     P = out.P; brake = out.brake;
-    if (r.isPlayer) { S.slider = Math.round(P); S.braking = brake; }
+    if (r.isPlayer) { S.playerW = Math.round(P); S.braking = brake; }
   }
 
   // free body: propulsion against rolling, gravity and drag — speed now has inertia

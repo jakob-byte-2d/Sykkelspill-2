@@ -1,3 +1,4 @@
+import { DEFAULT_STAGE } from "../content/stage.js";
 import { CLIMB_GRAD, CLIMB_SMOOTH } from "../content/tuning.js";
 import { clamp, lerp } from "./rng.js";
 
@@ -6,19 +7,8 @@ import { clamp, lerp } from "./rng.js";
 /* ---------------- The road ---------------- */
 export const STEP = 10; // metres between samples
 
-export function buildCourse(rng) {
-  const segs = [];
-  const add = (len, g, c) => segs.push({ len, g, c });
-  add(2800 + rng() * 1400, rng() * 0.6 - 0.3, 0.15 + rng() * 0.1);
-  add(2300 + rng() * 1200, rng() * 0.8 - 0.4, 0.3);
-  add(1100, 1.4 + rng() * 0.8, 0.25);
-  const cl = 2300 + rng() * 1300, cg = 4.0 + rng() * 2.0;
-  add(cl, cg, 0.3 + rng() * 0.2);
-  add(cl * 0.8, -(cg + 0.6 + rng()), 0.55 + rng() * 0.3);
-  add(3200 + rng() * 1600, rng() * 0.8 - 0.4, 0.25);
-  add(850 + rng() * 500, 2.6 + rng() * 1.8, 0.3);
-  add(800 + rng() * 300, -(2.4 + rng() * 1.4), 0.45 + rng() * 0.2);
-  add(2500 + rng() * 1200, rng() * 0.4 - 0.2, 0.18);
+export function buildCourse(rng, stage = DEFAULT_STAGE) {
+  const segs = stage(rng);
   let total = 0; for (const s of segs) total += s.len;
   const n = Math.ceil(total / STEP) + 2;
   const rawG = new Float32Array(n);

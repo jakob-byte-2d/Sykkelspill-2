@@ -28,7 +28,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // everyone sits on a wheel and waits for his own moment. The man who ends up in
     // front still rides the plan, so the break does not stall and get swallowed.
     const finale = togo < SPRINT_FINALE_M;
-    const sitting = r.isPlayer && S.sitting;  // the player as a rester: never pays, sinks to the back
+    const sitting = r.isPlayer && S.input.mode === "sit";  // the player as a rester: never pays, sinks to the back
     // ...and the same idea for anyone: whoever is not working holds the back of the line
     const resting = sitting || (!r.isPlayer && (r.sf ?? 1) < PULL_MIN_SF);
     // the turn was called over in stepSim — by the ledger or by his body, whichever
@@ -58,7 +58,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
     // button lit — position 2 rolls through on the SAME tick the front eases
-    const frontDone = !finale && !inFront && (front.isPlayer && !S.pulling ? true : !!front.done);
+    const frontDone = !finale && !inFront && (front.isPlayer && S.input.mode !== "relay" ? true : !!front.done);
     if (r.hold && (shel === 0 || !ahead || (!sitting && !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0)))))) r.hold = false;
     if (inFront) {
       r.hold = false;
@@ -143,7 +143,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       let nextUp = null, fullest = null;
       for (let k = 1; k < grp.length; k++) {
         const o = grp[k];
-        if (o.offline || (o.isPlayer && S.sitting)) continue;
+        if (o.offline || (o.isPlayer && S.input.mode === "sit")) continue;
         if (!fullest || (o.sf ?? 1) > (fullest.sf ?? 1)) fullest = o;
         if (nextUp == null && (o.sf ?? 1) >= PULL_MIN_SF) nextUp = o;
       }

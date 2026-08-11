@@ -31,7 +31,7 @@ export const deadWheel = (o, r) => (o.sf ?? 1) < WHEEL_COOKED_SF && (r.sf ?? 1) 
 
 // whoever is actually taking his turn: role decides it for the player, the tank for
 // everyone else — and nobody drifting back down the outside counts as a turn-taker
-export const working = (S, o) => !o.offline && (o.isPlayer ? !S.sitting : (o.sf ?? 1) >= PULL_MIN_SF);
+export const working = (S, o) => !o.offline && (o.isPlayer ? S.input.mode !== "sit" : (o.sf ?? 1) >= PULL_MIN_SF);
 
 // where he opens up, read off his sprint against the rest of his group. The fastest man
 // can afford to wait on a wheel; the slowest has to go long and try to blunt him, which

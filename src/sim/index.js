@@ -7,3 +7,11 @@ export { stepSim, finalize } from "./step.js";
 export { raceGroups, gapRows } from "./groups.js";
 export { bodyNow, usableSurge } from "./body.js";
 export { SHEL_MAX } from "./physics.js";
+export { clamp } from "./rng.js";
+
+/* The one way in. The engine reads S.input and nothing else the player touches, so a
+   script can run a race at "relay" without knowing there are buttons, and the button
+   handlers cannot reach past this into the simulation's own state. */
+export function setInput(S, patch) {
+  Object.assign(S.input, patch);
+}

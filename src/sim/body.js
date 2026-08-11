@@ -1,11 +1,11 @@
 import { COOP_PULL_SEC, COOP_SEED, FUEL_START } from "../content/tuning.js";
+import { COLORS, ROSTER } from "../content/riders.js";
 import { clamp, gaussOf } from "./rng.js";
 
 /* The body: a power-duration curve and three tanks. Everything a rider can do today
    is read off these — nothing anywhere asks who he is. */
 
 /* ---------------- The rider's body ---------------- */
-export const COLORS = ["#f5f2e9", "#ffd23f", "#2ec4b6", "#ff5d73", "#b78bfa", "#4d96ff"];
 
 // the rider's own power–duration curve: regression p = a + b·ln(t) through his
 // 1-, 5- and 20-minute points, readable at any duration
@@ -23,56 +23,41 @@ export function thresholdFrom(c) {
   return clamp(powerAt(c, 3600), 1.02 * c.p60, 1.07 * c.p60);
 }
 
-export function makeRiders(rng) {
-  const riders = [];
-  const mk = (i, name, mass, h, curve) => {
-    const T0 = thresholdFrom(curve);
-    const cda = 0.30 * Math.pow(mass / 70, 0.32) * Math.sqrt(h / 1.8);
-    const form = clamp(1 + gaussOf(rng) * 0.045, 0.9, 1.1);
-    const r = {
-      i, name, color: COLORS[i], isPlayer: i === 0, mass, h, cda,
-      curve, T0, form,
-      // his own pull, read off his own curve — not everyone's constant
-      pullX: powerAt(curve, COOP_PULL_SEC) / T0,
-      // his sprint measured against his own engine: what he gains by arriving together
-      sprintX: curve.p5s / T0,
-      // the anaerobic battery. A sprinter is a man with a big one and a climber's is
-      // small, and reading it off the five-minute power cannot tell those apart — it
-      // only knows the engine. So it is given in kilojoules, and derived only if not.
-      surgeMax: curve.wp ? curve.wp * 1000 : Math.max((curve.p5 - T0) * 300, 6000), surge: 0,
-      fuelMax: 125000 * mass, fuel: 125000 * mass * FUEL_START,
-      legs: clamp(0.42 + gaussOf(rng) * 0.05, 0.3, 0.55), recov: 0.9 + rng() * 0.2,
-      dist: 0, prevDist: 0, speed: 11.5, power: 0, ped: rng() * 6,
-      shel: 0,
-      st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0 },
-      finished: null, caught: false, rampT: 0, rampFrom: 0, hold: false, paid: COOP_SEED,
-      // the turn on the front: the tank he brought to it, how long he has held it,
-      // and whether it has been declared over — a flag, so it survives the drop-back
-      pullMark: null, pullT: 0, done: false,
-    };
-    riders.push(r);
-    r.surge = usableSurge(r);
+/* One rider, built from one row of the roster and nothing else. Frontal area, threshold,
+   the length of turn he can hold, when he must open his sprint and how deep his battery
+   is all fall out of his six numbers — so a new profile needs no new code, and no rule
+   anywhere can be written for a particular man. */
+export function makeRider(spec, i, rng) {
+  const { name, mass, h, curve } = spec;
+  const T0 = thresholdFrom(curve);
+  const r = {
+    i, name, color: COLORS[i % COLORS.length], isPlayer: i === 0, mass, h,
+    cda: 0.30 * Math.pow(mass / 70, 0.32) * Math.sqrt(h / 1.8),
+    curve, T0,
+    form: clamp(1 + gaussOf(rng) * 0.045, 0.9, 1.1),
+    // his own pull, read off his own curve — not everyone's constant
+    pullX: powerAt(curve, COOP_PULL_SEC) / T0,
+    // his sprint measured against his own engine: what he gains by arriving together
+    sprintX: curve.p5s / T0,
+    // the anaerobic battery. A sprinter is a man with a big one and a climber's is
+    // small, and reading it off the five-minute power cannot tell those apart — it
+    // only knows the engine. So it is given in kilojoules, and derived only if not.
+    surgeMax: curve.wp ? curve.wp * 1000 : Math.max((curve.p5 - T0) * 300, 6000), surge: 0,
+    fuelMax: 125000 * mass, fuel: 125000 * mass * FUEL_START,
+    legs: clamp(0.42 + gaussOf(rng) * 0.05, 0.3, 0.55), recov: 0.9 + rng() * 0.2,
+    dist: 0, prevDist: 0, speed: 11.5, power: 0, ped: rng() * 6,
+    shel: 0,
+    st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0 },
+    finished: null, caught: false, rampT: 0, rampFrom: 0, hold: false, paid: COOP_SEED,
+    // the turn on the front: the tank he brought to it, how long he has held it,
+    // and whether it has been declared over — a flag, so it survives the drop-back
+    pullMark: null, pullT: 0, done: false,
   };
-  // three all-rounders, a climber and a big diesel — everything that separates them
-  // (cda, threshold, the pull, the sprint) falls out of these numbers on its own.
-  // wp is the anaerobic battery in kilojoules: what a man has above his threshold.
-  // No pure sprinter here — one would never have survived 150 km and a six per cent
-  // climb to reach this move in the first place.
-  mk(0, "PEDERSEN", 76, 1.80, { p5s: 1450, p1: 800, p5: 560, p20: 490, p60: 455, wp: 26 });
-  mk(1, "V.D.POEL", 75, 1.84, { p5s: 1560, p1: 800, p5: 565, p20: 495, p60: 460, wp: 28 });
-  mk(2, "VAN AERT", 78, 1.90, { p5s: 1600, p1: 820, p5: 570, p20: 500, p60: 465, wp: 29 });
-  // ...and the climber is the explosive kind, not the diesel: he is the best man in this
-  // group from about four minutes upward, which is what this stage's hill actually lasts.
-  // A flatter, more aerobic climber would beat him on a twenty-minute col and lose to him
-  // here. The low p5s and the small wp are the same rider seen from the other end: he
-  // attacks with an aerobic engine and cannot sprint at all — the worst finish in the
-  // break, so being together at the line is the one thing he must not allow. And he
-  // weighs what the last man weighed: any lighter and he falls off the back on descents,
-  // where the road hands speed out by the kilogram.
-  mk(3, "PANTANI", 62, 1.72, { p5s: 800, p1: 590, p5: 517, p20: 455, p60: 402, wp: 15 });
-  mk(4, "KÜNG", 83, 1.93, { p5s: 1300, p1: 720, p5: 555, p20: 480, p60: 450, wp: 24 });
-  return riders;
+  r.surge = usableSurge(r);
+  return r;
 }
+
+export const makeRiders = (rng, roster = ROSTER) => roster.map((spec, i) => makeRider(spec, i, rng));
 
 // What a man can hold for an effort of this length, tired as he is right now: his own
 // curve read at that duration, carrying the same fatigue discount his threshold does.
