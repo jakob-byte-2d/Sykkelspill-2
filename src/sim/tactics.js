@@ -1,7 +1,6 @@
 import { DH_GRAD, PULL_MIN_SF, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF } from "../content/tuning.js";
 import { bodyNow, durPower } from "./body.js";
 import { BIKE, SHEL_MAX, powerFor } from "./physics.js";
-import { planSpeedAt } from "./plan.js";
 
 /* Reading the race: whose wheel is worth taking, whose is about to go backwards,
    who the road suits, and when each man has to open his sprint. */
@@ -61,8 +60,9 @@ export function wantPos(grp, r) {
 // IS the terrain's verdict, and no rider has to be labelled a climber for it to come
 // out right. Reported with what a wheel is worth here, which decides whether a lift
 // sheds anybody at all or merely tows the group to the line.
-export function terrainEdge(S, grp, r, grad, rho, hw, tTop) {
-  const v = planSpeedAt(S.plan, r.dist);
+// The speed, gradient and density are handed in rather than read at the wheel, because
+// the question is asked about a whole climb and not about the metre he is standing on.
+export function terrainEdge(grp, r, v, grad, rho, hw, tTop) {
   let mine = 1, best = Infinity, worst = 0;
   for (const o of grp) {
     if (o.caught || o.finished != null) continue;

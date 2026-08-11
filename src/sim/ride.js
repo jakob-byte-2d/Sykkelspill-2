@@ -1,6 +1,6 @@
 import { CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { durPower } from "./body.js";
-import { BIKE, SHEL_MAX, coast, powerFor, powerRaw, speedFor } from "./physics.js";
+import { BIKE, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
 import { chaseTarget, deadWheel, dist0, launchAt, queueWheel, terrainEdge, validWheel, wantPos, wheelGap0, working } from "./tactics.js";
@@ -42,12 +42,32 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // The terrain read, made once and used twice: it decides both how hard he rides
     // when the road is his, and whether he comes to the front to ride it at all. A
     // climber who waited his turn in the rotation would attack about once a race.
-    const tTop = Math.max(planTimeAt(S.plan, S.course.climbTopAt(r.dist)) - planTimeAt(S.plan, r.dist), 0);
+    const here = Math.max(r.dist, 0);
+    const top = S.course.climbTopAt(r.dist);
+    const tTop = Math.max(planTimeAt(S.plan, top) - planTimeAt(S.plan, r.dist), 0);
+    // ...read as a whole hill, not as the metre he is standing on. At the foot of a
+    // three-kilometre climb the road under his wheels still reads one per cent and a
+    // wheel is worth a third — judged there, every climb says "flat, sit in", and by
+    // the time the gradient under him agrees he is most of the way up it. A rider
+    // does not do that: he looks at the profile, sees four minutes at three and a
+    // half, and knows at the bottom whether the hill is his. So the price is taken
+    // at the climb's average gradient, at the average speed the plan holds over it.
+    const len = Math.max(top - here, 1);
+    const gAvg = (S.course.eleAt(top) - S.course.eleAt(here)) / len;
+    const rhoAvg = rhoAt((S.course.eleAt(top) + S.course.eleAt(here)) / 2);
+    // ...and once he has said the hill is his, it stays his to the top. Asked afresh
+    // every second the answer flips the moment his own effort makes him the second
+    // cheapest man in the group — so he would hand the front back halfway up, which is
+    // the one thing a rider committed to a climb never does. His body can still end it:
+    // an empty tank ends a dig in stepSim, the same as any other turn.
+    if (r.digTo != null && (r.dist >= r.digTo || finale || overpaid || resting)) r.digTo = null;
+    const onward = r.digTo != null;
     // ...and there is nothing to read where there is no climb: the duration is the
     // whole point of the reading, so with no summit ahead the question is not asked
-    const e = finale || overpaid || resting || tTop < CLIMB_MIN_T
-      ? null : terrainEdge(S, grp, r, grad, rho, hw, tTop);
-    const mine = !!e && e.cheapest && e.spread >= TERRAIN_EDGE && e.wheel <= TERRAIN_WHEEL;
+    const e = onward || finale || overpaid || resting || tTop < CLIMB_MIN_T
+      ? null : terrainEdge(grp, r, len / Math.max(tTop, 1), gAvg, rhoAvg, hw, tTop);
+    const mine = onward || (!!e && e.cheapest && e.spread >= TERRAIN_EDGE && e.wheel <= TERRAIN_WHEEL);
+    if (mine && r.digTo == null) r.digTo = top;
     // ...and the level he settles on is what he can hold to the top — which in a body
     // with a finite battery means the battery divided by the seconds still to climb.
     // He crests the summit empty, because that is what riding all the way to the top
@@ -55,7 +75,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // other half of the same statement. There is no free constant left in it, and
     // nothing here knows which rider it is — the curve, the tank, the mass and the
     // frontal area say everything, so a new profile needs no new code.
-    const digP = mine ? Math.min(b.T + r.surge / tTop, durPower(r, tTop, b.T), b.ceil) : 0;
+    // The horizon never drops under CLIMB_MIN_T: inside the last minute the tank over
+    // the seconds left is a sprint, and pacing is over — he holds what he has been
+    // holding and crests on it, rather than emptying himself into the descent.
+    const tPace = Math.max(tTop, CLIMB_MIN_T);
+    const digP = mine ? Math.min(b.T + r.surge / tPace, durPower(r, tPace, b.T), b.ceil) : 0;
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
     // button lit — position 2 rolls through on the SAME tick the front eases
