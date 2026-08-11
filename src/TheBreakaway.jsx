@@ -29,6 +29,9 @@ const PEL_FINALE_M = 1000; // ...and the finale starts this many metres from the
 const PEL_MASS = 68, PEL_CDA = 0.28;   // the bunch modelled as one body: this one
 const BRK_MASS = 76, BRK_CDA = 0.30;   // and the break as another: the man on the front
 const PACE_MARGIN = 15;    // seconds the break wants to cross the line ahead of the bunch
+const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
+                           // is handed a rotation that is already turning rather than five men
+                           // dropped abreast on identical speeds
 const PEL_LEAD = 0.10;     // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. That ride is the deadline the break races
@@ -822,8 +825,8 @@ function breakSpeed(course, dist, v, base) {
   return speedFor(base, BRK_MASS, BRK_CDA, course.gradAt(d), rhoAt(course.eleAt(d)), course.windAt(d), 0, v);
 }
 
-function breakTime(course, base) {
-  let dist = 0, v = 11.5, t = 0;
+function breakTime(course, base, v0 = 11.5) {
+  let dist = 0, v = v0, t = 0;
   while (dist < course.total && t < 12000) {
     t++;
     v = breakSpeed(course, dist, v, base);
@@ -832,24 +835,24 @@ function breakTime(course, base) {
   return t - (dist - course.total) / Math.max(v, 1);
 }
 
-function calibrateBreak(course, targetT) {
+function calibrateBreak(course, targetT, v0) {
   let lo = 200, hi = 520;
   for (let k = 0; k < 18; k++) {
     const mid = (lo + hi) / 2;
-    if (breakTime(course, mid) > targetT) lo = mid; else hi = mid;
+    if (breakTime(course, mid, v0) > targetT) lo = mid; else hi = mid;
   }
   return (lo + hi) / 2;
 }
 
 /* One more run at the solved effort, keeping the clock every 100 m: distance → time.
    Reading it later is an array lookup, so the controller costs nothing per tick. */
-function breakSchedule(course, targetT) {
-  const base = calibrateBreak(course, targetT);
+function breakSchedule(course, targetT, v0 = 11.5) {
+  const base = calibrateBreak(course, targetT, v0);
   const STEP = 100;
   const n = Math.ceil(course.total / STEP);
   const at = new Float32Array(n + 1);
   const vAt = new Float32Array(n + 1);
-  let dist = 0, v = 11.5, t = 0, next = 1;
+  let dist = 0, v = v0, t = 0, next = 1;
   vAt[0] = v;
   while (dist < course.total && t < 12000) {
     t++;
@@ -955,7 +958,13 @@ function newSim(seed) {
   // ...and in the last kilometre the bunch rides a lead-out off that same threshold
   const finaleP = PEL_FINALE_X * thresholdFull(riders[0]);
   const pelBase = calibratePel(course, startGap, targetT + 1, finaleP);
-  const plan = breakSchedule(course, targetT + 1 - PACE_MARGIN);
+  // The schedule is built twice: once from a standing start to learn the pace it settles
+  // at, then again from that speed. A race that begins mid-stage has no standing start,
+  // and a plan that spends its first kilometre accelerating out of one would ask the
+  // break to slow down on the opening straight.
+  const cold = breakSchedule(course, targetT + 1 - PACE_MARGIN);
+  const v0 = planSpeedAt(cold, 1000);
+  const plan = breakSchedule(course, targetT + 1 - PACE_MARGIN, v0);
   const T0 = bodyNow(riders[0]).T;
   const S = {
     seed, course, riders,
@@ -971,6 +980,28 @@ function newSim(seed) {
     uiAt: 0,
   };
   tagGroups(S);   // the start line is a group from the gun — tags and S.groups live before the first tick
+
+  // ...and then the move is ridden for a minute before the clock is allowed to start.
+  // Dropped in cold, five men on identical speeds and even spacing are not a breakaway
+  // yet: the wheels close from two metres to one and a half, the first man to be
+  // overpaid swings off, and the watts swing by two hundred while the rotation finds
+  // its feet. None of that is the race, so it happens before the race. A minute is a
+  // full turn on the front and then some, so the line is handed over to the player
+  // mid-rotation, at speed, with the ledger already carrying real debts.
+  for (let k = 0; k < WARMUP_S; k++) stepSim(S);
+  // Wind it back to the start line, keeping every gap, speed and flag exactly as the
+  // warm-up left them. The bunch goes back to its cold opening instead, because that is
+  // the ride calibratePel solved for and the deadline has to stay the one it computed.
+  const lead = Math.max(...riders.map((r) => r.dist));
+  for (const r of riders) {
+    r.dist -= lead; r.prevDist = r.dist; r.d0 = r.dist;
+    r.st = { work: 0, wind: 0, above: 0, minFuel: r.fuel / r.fuelMax, t: 0 };
+  }
+  S.pel.dist = -startGap; S.pel.prevDist = -startGap;
+  S.pel.speed = 11.8; S.pel.vAvg = 0; S.pel.gapS = startGap / 11.8;
+  S.t = 0; S.events = [];
+  S.slider = Math.round(bodyNow(riders[0]).T * 0.92);
+  tagGroups(S);
   return S;
 }
 
