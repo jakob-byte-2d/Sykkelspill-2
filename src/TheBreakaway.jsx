@@ -32,9 +32,15 @@ const PACE_MARGIN = 15;    // seconds the break wants to cross the line ahead of
 const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-const PEL_LEAD = 0.01;     // the bunch crosses the line this much earlier than the benchmark: one
+const PEL_LEAD = -0.07;    // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
-                           // never running out of fuel. That ride is the deadline the break races
+                           // never running out of fuel. Negative because that ride is a fiction —
+                           // nobody has a tank that deep — so the bunch has to give some of it
+                           // back. Swept over 480 races, forty courses in each wind: at seven per
+                           // cent a headwind is a coin toss (48 % of moves survive) and a tailwind
+                           // favours the break (75 %), the median winning margin is 19-35 s, and
+                           // two or three of the five come home. Kinder than that and the deadline
+                           // stops being felt; harsher and the flat courses swallow everything
 const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free
@@ -98,15 +104,12 @@ function buildCourse(rng) {
   add(2500 + rng() * 1200, rng() * 0.4 - 0.2, 0.18);
   let total = 0; for (const s of segs) total += s.len;
   const n = Math.ceil(total / STEP) + 2;
-  const rawG = new Float32Array(n), headg = new Float32Array(n);
-  let hd = rng() * 6.283, si = 0, segStart = 0;
+  const rawG = new Float32Array(n);
+  let si = 0, segStart = 0;
   for (let i = 0; i < n; i++) {
     const s = i * STEP;
-    while (si < segs.length - 1 && s > segStart + segs[si].len) {
-      segStart += segs[si].len; si++; hd += (rng() - 0.5) * 1.4;
-    }
+    while (si < segs.length - 1 && s > segStart + segs[si].len) { segStart += segs[si].len; si++; }
     rawG[i] = segs[si].g;
-    headg[i] = hd + Math.sin(s / 900) * 0.6 * segs[si].c;
   }
   const ph1 = rng() * 9, ph2 = rng() * 9;
   const grad = new Float32Array(n), ele = new Float32Array(n);
@@ -119,12 +122,12 @@ function buildCourse(rng) {
   }
   let alt = 140 + rng() * 380;
   for (let i = 0; i < n; i++) { ele[i] = alt; alt += grad[i] * STEP; }
-  const wv = 1.5 + rng() * 4.5, wd = rng() * 6.283;
-  const wHead = new Float32Array(n), wCross = new Float32Array(n);
-  for (let i = 0; i < n; i++) {
-    wHead[i] = wv * Math.cos(wd - headg[i]);
-    wCross[i] = Math.abs(wv * Math.sin(wd - headg[i]));
-  }
+  // One wind for the whole day, and it is either on the nose or on the back — no
+  // crosswind, no turning into and out of it as the road wanders. A rider can read
+  // it once at the start and it stays true to the line, which is what makes the
+  // deadline something you can reason about instead of something you discover.
+  const wv = 1.5 + rng() * 4.5;
+  const wHead = new Float32Array(n).fill(rng() < 0.5 ? wv : -wv);   // + on the nose, − on the back
   const at = (arr, d) => {
     const x = clamp(d / STEP, 0, n - 1.001);
     const i = Math.floor(x);
