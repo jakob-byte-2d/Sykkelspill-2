@@ -2,7 +2,7 @@ import { COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_
 import { bodyNow, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
-import { BIKE, G, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
+import { BIKE, G, LY_FLOOR, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
 import { coopRide } from "./ride.js";
 import { clamp } from "./rng.js";
 import { working } from "./tactics.js";
@@ -39,6 +39,15 @@ export function stepRider(S, r, dt) {
   }
   const shel = shelterStack(each);
   r.shel = shel;
+  // ...and what that is actually worth to him, which is not the same number. Shelter takes
+  // a share of the AIR; the air is only a share of the work. On the flat a wheel saves a
+  // third of his watts, at five per cent barely a tenth — the whole reason an attack up a
+  // climb sheds people and the same attack on the flat tows them home. The denominator has
+  // a floor because rolling downhill off the pedals a wheel saves nearly all of almost
+  // nothing, and a meter reading 100 % there would be true and useless.
+  const open = powerFor(r.speed, r.mass, r.cda, grad, rho, hw, 0);
+  const lee = powerFor(r.speed, r.mass, r.cda, grad, rho, hw, shel);
+  r.ly = clamp((open - lee) / Math.max(open, LY_FLOOR * b.T), 0, 1);
   r.overlap = !!ahead && bestGap < 0 && shel > 0;
 
   // what he asks his legs for

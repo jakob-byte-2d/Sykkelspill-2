@@ -1,5 +1,5 @@
 import { bodyNow } from "../sim/body.js";
-import { BIKE, SHEL_DEEP } from "../sim/physics.js";
+import { BIKE } from "../sim/physics.js";
 import { lerp } from "../sim/rng.js";
 import { drawCyclist } from "./cyclist.js";
 import { drawProfile } from "./profile.js";
@@ -256,7 +256,7 @@ export function draw(S, canvas, alpha) {
         ctx.fillStyle = tankHue(1 - r.legs);
         ctx.fillText("L" + Math.round((1 - r.legs) * 100), R, top + 45);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText("LY" + Math.round((r.shel / SHEL_DEEP) * 100), R, top + 56);
+        ctx.fillText("LY" + Math.round(r.ly * 100), R, top + 56);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
         ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 67);
       }

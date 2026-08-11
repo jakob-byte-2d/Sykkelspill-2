@@ -45,12 +45,14 @@ export const DRAFT_TAU = 3.5;   // it decays by 1/e every 3.5 m
 export const SHEL_MAX = 0.36;   // most drag ONE wheel can take off you — the real figure
                                 // for second wheel, glued on, in a wind tunnel
 export const DEPTH_FALL = 0.35; // ...and every further body up the road adds this much of
-                                // what the ones behind him left, so the line deepens:
-                                // 36 % on second wheel, 44 on third, 46 on fourth, 47 on
-                                // fifth, against a measured 33-38 / 38-43 / 42-47 / 44-48
-// the most the line can ever give, with a full file glued together — the reference the
-// LY readout is a percentage of
-export const SHEL_DEEP = 0.48;
+                                // what the ones behind him left, so the line deepens.
+                                // Measured in play: 34 % of the drag on second wheel, 39
+                                // on third, 41 on fourth and fifth — against a wind-tunnel
+                                // 29 / 34 / 36 for a four-man team pursuit line, which is
+                                // a tighter tuck than anyone holds on the road
+export const LY_FLOOR = 0.25;   // ...and an effort smaller than this share of threshold is
+                                // too small to take a percentage of: freewheeling downhill,
+                                // a wheel saves nearly all of almost nothing
 
 // gap is measured wheel to wheel: from the back of his rear tyre to the front of yours.
 // gap = 0 → your front wheel is touching his rear wheel.

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { DEBUG, draw, setDebug } from "../render/draw.js";
 import { fmtGap, fmtTime } from "../render/format.js";
-import { SHEL_DEEP, bodyNow, clamp, finalize, gapRows, newSim, setInput, stepSim } from "../sim/index.js";
+import { bodyNow, clamp, finalize, gapRows, newSim, setInput, stepSim } from "../sim/index.js";
 import { sliderPts, tFromW, wFromT } from "./slider.js";
 import { ResultRow, btn, card, markerTop, overlay, place } from "./widgets.jsx";
 
@@ -127,7 +127,6 @@ export default function TheBreakaway() {
   if (phase === "race" && S && player && body) {
     const kmToGo = Math.max(0, (S.course.total - player.dist) / 1000);
     const grad = S.course.gradAt(player.dist);
-    const inWheels = player.shel > 0.05;
     // steering yourself, the thumb sits where you put it — not where the ceiling cut you
     // off, or it would spring back down the track while your finger is still up here. The
     // red line is what says you are asking for more than you have. Riding on the wheel or
@@ -253,17 +252,13 @@ export default function TheBreakaway() {
           <Bar label="SURGE" frac={body.sf} color="#35c24d" />
           <Bar label="FUEL" frac={body.ff} color="#2e8fe0" />
           <Bar label="LEGS" frac={1 - player.legs} color="#e0483c" />
-          <Bar label="LY" frac={player.shel / SHEL_DEEP} color="#8e6bd6" />
+          <Bar label="LY" frac={player.ly} color="#8e6bd6" />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontFamily: mono, fontSize: 11 }}>
             <span style={{ color: "#1d7a34", fontWeight: 700 }}>THR {Math.round(body.T)}</span>
             <span style={{ color: "#c22a1e", fontWeight: 700 }}>MAX {Math.round(body.ceil)}</span>
           </div>
-          <div style={{ marginTop: 3, fontFamily: mono, fontSize: 11, color: "#0d3568" }}>
-            I VINDEN <b>{Math.round((player.st.wind / Math.max(player.st.t, 1)) * 100)}%</b>
-            <span style={{ float: "right", color: "#3c5a7a" }}>av tiden</span>
-          </div>
           <div style={{ marginTop: 3, fontFamily: mono, fontSize: 11, color: "#123a6b", fontWeight: 700 }}>
-            {`${Math.round(player.power)} W${inWheels ? " · " + Math.round(player.shel * 100) + "% LY" : ""}`}
+            {`${Math.round(player.power)} W`}
             <span style={{ float: "right", color: "#3c5a7a" }}>{(player.speed * 3.6).toFixed(0)} km/h {grad > 0.005 ? "▲" : grad < -0.005 ? "▼" : ""}{Math.abs(grad * 100).toFixed(0)}%</span>
           </div>
         </div>

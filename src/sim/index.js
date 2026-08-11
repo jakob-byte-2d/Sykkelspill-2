@@ -6,7 +6,6 @@ export { newSim } from "./newRace.js";
 export { stepSim, finalize } from "./step.js";
 export { raceGroups, gapRows } from "./groups.js";
 export { bodyNow, usableSurge } from "./body.js";
-export { SHEL_DEEP } from "./physics.js";
 export { clamp } from "./rng.js";
 
 /* The one way in. The engine reads S.input and nothing else the player touches, so a
