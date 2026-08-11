@@ -32,7 +32,7 @@ const PACE_MARGIN = 15;    // seconds the break wants to cross the line ahead of
 const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-const PEL_LEAD = 0.05;     // the bunch crosses the line this much earlier than the benchmark: one
+const PEL_LEAD = 0.01;     // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. That ride is the deadline the break races
 const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
