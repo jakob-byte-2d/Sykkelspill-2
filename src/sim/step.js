@@ -45,8 +45,11 @@ export function stepRider(S, r, dt) {
     // one rule for the whole break — the player in relay or sitting on rides it too
     const out = coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw);
     P = out.P; brake = out.brake;
-    if (r.isPlayer) { S.playerW = Math.round(P); S.braking = brake; }
   }
+  // ...and whatever he ended up riding is published, in every mode. Left inside the
+  // branch above it never updated while the player was steering, so the slider froze at
+  // whatever the autopilot last did and the whole control looked dead.
+  if (r.isPlayer) { S.playerW = Math.round(P); S.braking = brake; }
 
   // free body: propulsion against rolling, gravity and drag — speed now has inertia
   const v0 = Math.max(r.speed, 0.8);

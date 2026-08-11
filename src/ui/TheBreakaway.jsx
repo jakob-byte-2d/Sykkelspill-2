@@ -126,7 +126,25 @@ export default function TheBreakaway() {
     const kmToGo = Math.max(0, (S.course.total - player.dist) / 1000);
     const grad = S.course.gradAt(player.dist);
     const inWheels = player.shel > 0.05;
-    const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts), tS = tFromW(S.playerW, pts);
+    // steering yourself, the thumb sits where you put it — not where the ceiling cut you
+    // off, or it would spring back down the track while your finger is still up here. The
+    // red line is what says you are asking for more than you have. Riding on the wheel or
+    // in the rotation, it shows what the legs are actually doing.
+    const shownW = S.input.mode === "manual" ? S.input.watts : S.playerW;
+    const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts), tS = tFromW(shownW, pts);
+    // the scale: a mark every hundred watts, thinned out where the track compresses so
+    // the numbers never sit on top of each other. Built from the same pts the thumb
+    // rides, so a mark reading 300 is where 300 watts actually is.
+    const ticks = [];
+    let lastT = -1, lastLabelT = -1;
+    for (let w = 100; w <= pts[pts.length - 1][1]; w += 100) {
+      const t = tFromW(w, pts);
+      if (t - lastT < 0.035) continue;   // a mark this close to the last one is a smudge
+      const label = t - lastLabelT >= 0.05;
+      if (label) lastLabelT = t;
+      lastT = t;
+      ticks.push({ w, t, label });
+    }
 
     raceUI = (
       <>
@@ -251,23 +269,34 @@ export default function TheBreakaway() {
         {/* watt slider — its foot carries the WATTS label, so the column has to stop
             clear of the mode chip below it, not just above the chip's own top edge */}
         <div
-          style={{ position: "absolute", right: 6, top: 84, bottom: 158, width: 74, touchAction: "none", userSelect: "none" }}
+          style={{ position: "absolute", right: 6, top: 84, bottom: 158, width: 104, touchAction: "none", userSelect: "none" }}
           onPointerDown={(e) => { dragRef.current = true; e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
           onPointerMove={(e) => { if (dragRef.current) onSlider(e, e.currentTarget); }}
           onPointerUp={onSliderUp}
           onPointerCancel={onSliderUp}
         >
-          <div style={{ position: "absolute", left: 26, top: 14, bottom: 14, width: 22, borderRadius: 11, background: "linear-gradient(180deg, rgba(224,72,60,0.55), #7e93a8 30%, #55708c)", border: "2px solid #35516e", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.35)" }} />
+          <div style={{ position: "absolute", left: 56, top: 14, bottom: 14, width: 22, borderRadius: 11, background: "linear-gradient(180deg, rgba(224,72,60,0.55), #7e93a8 30%, #55708c)", border: "2px solid #35516e", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.35)" }} />
+          {/* the scale, under everything else: a tick into the track, a number beside it */}
+          {ticks.map((k) => (
+            <div key={k.w}>
+              <div style={{ position: "absolute", left: 50, width: k.label ? 10 : 6, height: 1, background: "rgba(13,53,104,0.55)", top: markerTop(k.t) }} />
+              {k.label && (
+                <div style={{ position: "absolute", left: 0, width: 44, textAlign: "right", top: `calc(${markerTop(k.t)} - 6px)`, fontFamily: mono, fontSize: 9, fontWeight: 700, color: "#0d3568", textShadow: "0 1px 0 rgba(255,255,255,0.75)" }}>
+                  {k.w}
+                </div>
+              )}
+            </div>
+          ))}
           {/* green threshold line */}
-          <div style={{ position: "absolute", left: 20, width: 40, height: 2, background: "#2fdc55", top: markerTop(tT), boxShadow: "0 0 5px #2fdc55" }} />
+          <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#2fdc55", top: markerTop(tT), boxShadow: "0 0 5px #2fdc55" }} />
           {/* red ceiling line — sinks when you burn your matches */}
-          <div style={{ position: "absolute", left: 20, width: 40, height: 2, background: "#ff4b3a", top: markerTop(tC), boxShadow: "0 0 5px #ff4b3a", transition: "top .3s linear" }} />
+          <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#ff4b3a", top: markerTop(tC), boxShadow: "0 0 5px #ff4b3a", transition: "top .3s linear" }} />
           {/* thumb */}
-          <div style={{ position: "absolute", left: 12, width: 50, height: 34, top: `calc(${markerTop(tS)} - 17px)`, borderRadius: 999, background: S.input.mode === "sit" ? "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)" : "linear-gradient(180deg, #eaf3fb, #7db3e0 45%, #2f6cb3)", border: S.input.mode === "sit" ? "2px solid #145c27" : "2px solid #123a6b", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: mono, fontWeight: 800, fontSize: 13, color: "#fff", textShadow: "0 1px 2px rgba(10,30,55,0.7)" }}>
-            {S.input.mode === "sit" ? (S.braking > 1 ? "BREMS" : "HJUL") : S.playerW}
+          <div style={{ position: "absolute", left: 42, width: 50, height: 34, top: `calc(${markerTop(tS)} - 17px)`, borderRadius: 999, background: S.input.mode === "sit" ? "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)" : "linear-gradient(180deg, #eaf3fb, #7db3e0 45%, #2f6cb3)", border: S.input.mode === "sit" ? "2px solid #145c27" : "2px solid #123a6b", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: mono, fontWeight: 800, fontSize: 13, color: "#fff", textShadow: "0 1px 2px rgba(10,30,55,0.7)" }}>
+            {S.input.mode === "sit" ? (S.braking > 1 ? "BREMS" : "HJUL") : shownW}
           </div>
           {S.input.mode === "sit" && (
-            <div style={{ position: "absolute", right: 64, width: 42, textAlign: "right", top: `calc(${markerTop(tS)} - 8px)`, fontFamily: mono, fontWeight: 800, fontSize: 12, color: "#1d7a34", textShadow: "0 1px 0 rgba(255,255,255,0.8)" }}>
+            <div style={{ position: "absolute", left: 46, width: 42, textAlign: "center", top: `calc(${markerTop(tS)} + 19px)`, fontFamily: mono, fontWeight: 800, fontSize: 11, color: "#145c27", background: "rgba(255,255,255,0.82)", borderRadius: 999, padding: "0 2px", boxShadow: "0 1px 3px rgba(15,35,60,0.35)" }}>
               {S.playerW}
             </div>
           )}
