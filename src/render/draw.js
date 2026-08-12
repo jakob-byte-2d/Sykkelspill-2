@@ -3,7 +3,7 @@ import { BIKE } from "../sim/physics.js";
 import { lerp } from "../sim/rng.js";
 import { drawCyclist } from "./cyclist.js";
 import { drawProfile } from "./profile.js";
-import { drawScenery, drawWindsock } from "./scenery.js";
+import { drawScenery, drawWindsock, hash1 } from "./scenery.js";
 
 /* One frame: the road, the riders, the bubbles over their heads, the chyron. Reads
    the simulation and writes pixels; it never changes anything. */
@@ -130,13 +130,92 @@ export function draw(S, canvas, alpha) {
     ctx.textAlign = "center";
     ctx.fillText(label, x, y - 3.25 * M);
   }
+  // the last kilometre, dressed the way a real finale is: the flamme rouge is a
+  // PORTAL over the road with the red pennant hanging from the beam, the crowd
+  // thickens from there to the line behind barriers on the finishing straight, and
+  // the red boards count down 500/400/300/200/150/100/50 — between the portal and
+  // 500 there is nothing, exactly as at a real finish.
   const fr = xOf(C.total - 1000);
-  if (fr > -30 && fr < w + 30) {
+  if (fr > -60 && fr < w + 60) {
     const y = yOf(C.total - 1000);
     const M = pxm;
+    ctx.fillStyle = "#20242a";
+    ctx.fillRect(fr - 2.6 * M, y - 5.2 * M, 0.28 * M, 5.0 * M);
+    ctx.fillRect(fr + 2.32 * M, y - 5.2 * M, 0.28 * M, 5.0 * M);
     ctx.fillStyle = "#c8102e";
-    ctx.beginPath(); ctx.moveTo(fr, y - 4.2 * M); ctx.lineTo(fr + 1.8 * M, y - 3.6 * M); ctx.lineTo(fr, y - 3.1 * M); ctx.fill();
-    ctx.fillStyle = "#20242a"; ctx.fillRect(fr - 0.06 * M, y - 4.2 * M, 0.12 * M, 3.8 * M);
+    ctx.fillRect(fr - 2.6 * M, y - 5.2 * M, 5.2 * M, 1.1 * M);
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 " + Math.max(7, Math.round(0.62 * M)) + "px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("1 KM", fr, y - 4.4 * M);
+    // the pennant, hanging from the beam over the middle of the road
+    ctx.fillStyle = "#c8102e";
+    ctx.beginPath();
+    ctx.moveTo(fr - 0.5 * M, y - 4.1 * M); ctx.lineTo(fr + 0.5 * M, y - 4.1 * M);
+    ctx.lineTo(fr, y - 2.9 * M); ctx.fill();
+  }
+
+  // the countdown boards of the finishing straight
+  for (const bm of [500, 400, 300, 200, 150, 100, 50]) {
+    const bx = xOf(C.total - bm);
+    if (bx < -30 || bx > w + 30) continue;
+    const y = yOf(C.total - bm);
+    const M = pxm;
+    ctx.fillStyle = "#20242a";
+    ctx.fillRect(bx - 0.06 * M, y - 2.6 * M, 0.12 * M, 2.4 * M);
+    ctx.fillStyle = "#c8102e";
+    ctx.fillRect(bx - 0.95 * M, y - 3.7 * M, 1.9 * M, 1.15 * M);
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = Math.max(1, 0.06 * M);
+    ctx.strokeRect(bx - 0.95 * M, y - 3.7 * M, 1.9 * M, 1.15 * M);
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 " + Math.max(8, Math.round(0.68 * M)) + "px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(String(bm), bx, y - 2.82 * M);
+  }
+
+  // the crowd: from the flamme rouge it thickens toward the line — one figure per
+  // ~8 m at the portal, one per ~2 m at the barriers. Deterministic per spot (the
+  // same hash the trees use), so nobody teleports between frames.
+  {
+    const M = pxm;
+    const from = Math.max(C.total - 1000, cx - 60), to = Math.min(C.total, cx + 200 / 1);
+    for (let d = Math.ceil(from / 2) * 2; d < to; d += 2) {
+      const into = 1 - (C.total - d) / 1000;            // 0 at the portal, 1 at the line
+      const density = 0.25 + 0.65 * into;               // chance this 2 m spot holds a fan
+      if (hash1(d * 0.731) > density) continue;
+      const x = xOf(d + hash1(d * 0.377) * 1.6);
+      if (x < -10 || x > w + 10) continue;
+      const y = yOf(d) - 3;
+      const r1 = hash1(d * 1.13), r2 = hash1(d * 2.71);
+      const CROWD = ["#e8443a", "#ffd23f", "#2ec4b6", "#4d96ff", "#f2f6fa", "#b78bfa", "#ff9f43"];
+      const hgt = (1.55 + r2 * 0.25) * M;          // people at people size, like the riders
+      ctx.fillStyle = CROWD[Math.floor(r1 * CROWD.length)];
+      ctx.fillRect(x - 0.26 * M, y - hgt * 0.66, 0.52 * M, hgt * 0.66);   // jacket
+      ctx.fillStyle = r2 > 0.5 ? "#e8b98f" : "#8a5f3c";
+      ctx.beginPath(); ctx.arc(x, y - hgt * 0.79, 0.17 * M, 0, 6.284); ctx.fill();
+      // a few arms in the air near the line
+      if (into > 0.6 && r1 > 0.55) {
+        ctx.strokeStyle = CROWD[Math.floor(r1 * CROWD.length)]; ctx.lineWidth = Math.max(1.5, 0.09 * M);
+        ctx.beginPath(); ctx.moveTo(x - 0.18 * M, y - hgt * 0.62); ctx.lineTo(x - 0.38 * M, y - hgt * 1.02); ctx.stroke();
+      }
+    }
+    // barriers on the last 300 m, in front of the crowd
+    const bFrom = Math.max(C.total - 300, cx - 60), bTo = Math.min(C.total, cx + 200);
+    if (bTo > bFrom) {
+      ctx.strokeStyle = "#c9d4de"; ctx.lineWidth = Math.max(1.5, 0.09 * M);
+      ctx.beginPath();
+      for (let d = bFrom; d <= bTo; d += 6) {
+        const x = xOf(d), y = yOf(d) - 0.85 * M;
+        d === bFrom ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.lineWidth = Math.max(1, 0.05 * M);
+      for (let d = Math.ceil(bFrom / 6) * 6; d < bTo; d += 6) {
+        const x = xOf(d);
+        if (x < -10 || x > w + 10) continue;
+        ctx.beginPath(); ctx.moveTo(x, yOf(d) - 0.85 * M); ctx.lineTo(x, yOf(d)); ctx.stroke();
+      }
+    }
   }
   const fx = xOf(C.total);
   if (fx > -60 && fx < w + 60) {

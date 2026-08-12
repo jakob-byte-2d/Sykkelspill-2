@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { DEBUG, draw, setDebug } from "../render/draw.js";
 import { fmtGap, fmtTime } from "../render/format.js";
-import { bodyNow, clamp, finalize, gapRows, newSim, setInput, stepSim } from "../sim/index.js";
+import { SPRINT_FINALE_M } from "../content/tuning.js";
+import { bodyNow, clamp, finalize, gapRows, newSim, pushEvent, setInput, stepSim } from "../sim/index.js";
 import { sliderPts, tFromW, wFromT } from "./slider.js";
 import { ResultRow, btn, card, markerTop, overlay, place } from "./widgets.jsx";
 
@@ -127,6 +128,19 @@ export default function TheBreakaway() {
   if (phase === "race" && S && player && body) {
     const kmToGo = Math.max(0, (S.course.total - player.dist) / 1000);
     const grad = S.course.gradAt(player.dist);
+    // the flamme rouge takes the autopilot away: inside the last kilometre nobody
+    // rides for anybody, so RELAY and SIT ON stop existing and the watts land in
+    // MANUAL carrying whatever the autopilot was actually doing — a seamless handover,
+    // announced once in the chyron. A rule about the player's CONTROLS, deliberately
+    // not about the sim: headless runs keep the full autopilot (including its sprint),
+    // so the golden fixture and every measurement are untouched.
+    const finale = player.finished == null && !player.caught
+      && S.course.total - player.dist < SPRINT_FINALE_M;
+    if (finale && !S.finaleLock) {
+      S.finaleLock = true;
+      if (S.input.mode !== "manual") setInput(S, { mode: "manual", watts: S.playerW });
+      pushEvent(S, "Flamme rouge — the finale is yours");
+    }
     // the thumb always reads watts — what you are asking for, or what the legs are
     // actually doing on the wheel and in the rotation — and never more than the body
     // has: the display clamps at the ceiling, and pinned there it glows red and
@@ -239,12 +253,13 @@ export default function TheBreakaway() {
             which is the safe move; joining the rotation is the deliberate second one. */}
         <button
           onClick={() => {
-            if (!S || S.ended) return;
+            if (!S || S.ended || finale) return;   // past the flamme rouge nobody rides for you
             setInput(S, { mode: S.input.mode === "sit" ? "relay" : "sit" });
           }}
           style={actionBtn(132, {
-            cursor: "pointer", userSelect: "none", WebkitUserSelect: "none",
+            cursor: finale ? "default" : "pointer", userSelect: "none", WebkitUserSelect: "none",
             WebkitTouchCallout: "none", touchAction: "manipulation",
+            opacity: finale ? 0.35 : 1,
             border: S.input.mode === "sit" ? "2px solid #123a6b" : "2px solid #145c27",
             color: "#fff",
             background: S.input.mode === "sit"
