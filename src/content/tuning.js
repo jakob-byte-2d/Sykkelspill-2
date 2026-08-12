@@ -58,6 +58,11 @@ export const PACE_WINDOW = 20;    // seconds behind schedule that count as full 
 export const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 export const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free
 export const FUEL_START = 0.44;   // fraction of the tank left at the start — 150 km already in the legs
+export const EFF = 0.225;         // gross efficiency, chemical energy to watts — a constant: the
+                           // depleted body's weakness is priced once, in bodyNow's threshold
+export const CARB_BASE = 0.30;    // glycogen's share of the bill at zero effort; rises linearly to all
+                           // of it at threshold. The whole economics of sitting in: a wheel does
+                           // not just cost fewer watts, it costs cheaper ones — fat pays the rest
 export const CLIMB_GRAD = 0.02;   // from here the road is "up"...
 export const CLIMB_SMOOTH = 300;  // ...and a shelf shorter than this is a shelf inside the climb, not the top of it
 export const CLIMB_MIN_T = 60;    // ...and under a minute of climbing there is nothing to pace

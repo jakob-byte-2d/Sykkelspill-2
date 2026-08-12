@@ -1,4 +1,4 @@
-import { COOP_PULL_SEC, COOP_SEED, FUEL_START } from "../content/tuning.js";
+import { CARB_BASE, COOP_PULL_SEC, COOP_SEED, EFF, FUEL_START } from "../content/tuning.js";
 import { COLORS, ROSTER } from "../content/riders.js";
 import { clamp, gaussOf } from "./rng.js";
 
@@ -109,9 +109,15 @@ export function spend(r, P, dt, body, inWind) {
     else r.surge = cap;
   }
   r.wear = clamp(r.wear, 0, 1);
-  const eff = 0.225 - 0.035 * (1 - body.ff);
+  // The glycogen bill. Below threshold fat pays a real share of it — the easier the
+  // riding, the bigger that share, which is the entire economics of sitting in: a wheel
+  // does not just cost fewer watts, it costs CHEAPER watts. At threshold and above,
+  // carbohydrate pays everything, plus the surcharge for going over. Efficiency is a
+  // constant: the depleted body's weakness is already priced once, in bodyNow's
+  // threshold — charging it again here counted the same collapse twice.
   const over = P > T ? 1 + 0.18 * clamp((P - T) / Math.max(T, 1), 0, 1.2) : 1;
-  r.fuel = Math.max(0, r.fuel - (P * dt / eff) * over);
+  const carb = clamp(CARB_BASE + (1 - CARB_BASE) * P / Math.max(T, 1), CARB_BASE, 1);
+  r.fuel = Math.max(0, r.fuel - (P * dt / EFF) * over * carb);
   r.st.work += P * dt; r.st.t += dt;
   if (inWind && P > 60) r.st.wind += dt;
   r.st.minFuel = Math.min(r.st.minFuel, r.fuel / r.fuelMax);
