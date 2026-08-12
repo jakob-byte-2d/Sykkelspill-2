@@ -200,57 +200,66 @@ export default function TheBreakaway() {
         </div>
         </div>
 
-        {/* sit on: park at the back of the rotation */}
-        <button
-          onClick={() => {
-            if (!S || S.ended) return;
-            // leaving SIT ON hands the controls back exactly where the legs are
-            setInput(S, S.input.mode === "sit"
-              ? { mode: "manual", watts: Math.round(player.power) }
-              : { mode: "sit" });
-          }}
-          style={actionBtn(94, {
-            cursor: "pointer",
-            border: "2px solid #145c27", color: "#fff",
-            background: S.input.mode === "sit"
-              ? "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)"
-              : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #2f9e4f",
-          })}>
-          {S.input.mode === "sit" ? "HOLDING" : "SIT ON"}
-        </button>
+        {/* the right column under the slider, top to bottom: the doing-chip, the
+            relay/sit toggle, the motivation one-shot, and the sprint hold. One thumb,
+            one column — grabbing the slider itself is what MANUAL is. */}
+        <div style={{
+          position: "absolute", right: 6, bottom: 170, width: 74, padding: "3px 0",
+          fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.8, fontSize: 10,
+          textAlign: "center", borderRadius: 999, color: "#dfe9f4",
+          background: "rgba(10,25,45,0.55)", border: "1px solid rgba(255,255,255,0.25)",
+        }}>
+          {S.input.sprint ? "SPRINTING"
+            : player.sulT > 0 ? "HTFU " + Math.ceil(player.sulT) + "s"
+            : S.input.mode === "sit" ? "SITTING ON"
+            : S.input.mode === "relay" ? "RELAYING" : "MANUAL"}
+        </div>
 
-        {/* take the front */}
+        {/* relay <-> sit on: one toggle, labelled with where it takes you. From manual
+            it enters the rotation first — parking at the back is a second press away. */}
         <button
           onClick={() => {
             if (!S || S.ended) return;
-            setInput(S, S.input.mode === "relay"
-              ? { mode: "manual", watts: Math.round(player.power) }
-              : { mode: "relay" });
+            setInput(S, { mode: S.input.mode === "relay" ? "sit" : "relay" });
           }}
-          style={actionBtn(56, {
+          style={actionBtn(132, {
             cursor: "pointer",
-            border: "2px solid #123a6b", color: "#fff",
+            border: S.input.mode === "relay" ? "2px solid #145c27" : "2px solid #123a6b",
+            color: "#fff",
             background: S.input.mode === "relay"
-              ? "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #c0392b"
+              ? "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #2f9e4f"
               : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #3a76bd",
           })}>
-          {S.input.mode === "relay" ? "MANUAL" : "RELAY"}
+          {S.input.mode === "relay" ? "SIT ON" : "RELAY"}
         </button>
 
-        {/* the left thumb's two buttons: the sprint is a hold — a commitment that lasts
-            exactly as long as you dare — and the motivation button a one-shot. Both live
-            above the instrument panel so the right thumb keeps the slider and the modes. */}
+        {/* the governor's override, Rule #5 spelling */}
+        <button
+          onClick={() => { if (S && !S.ended) setInput(S, { sul: true }); }}
+          style={actionBtn(94, {
+            cursor: "pointer", userSelect: "none",
+            color: player.sulT > 0 ? "#3d2800" : "#fff",
+            textShadow: player.sulT > 0 ? "none" : "0 1px 1px rgba(0,0,0,0.35)",
+            border: "2px solid #7a5410",
+            opacity: player.sulLeft > 0 || player.sulT > 0 ? 1 : 0.45,
+            background: player.sulT > 0
+              ? "linear-gradient(180deg, #fff3c4, #ffd23f 45%, #d99a1b)"
+              : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #b8791a",
+          })}>
+          HTFU! {player.sulT > 0 ? Math.ceil(player.sulT) + "s"
+            : "\u25cf".repeat(player.sulLeft) + "\u25cb".repeat(Math.max(2 - player.sulLeft, 0))}
+        </button>
+
+        {/* the sprint: a hold — the commitment lasts exactly as long as the finger dares */}
         <button
           onPointerDown={(e) => { e.preventDefault(); if (S && !S.ended) setInput(S, { sprint: true }); }}
           onPointerUp={() => S && setInput(S, { sprint: false })}
           onPointerCancel={() => S && setInput(S, { sprint: false })}
           onPointerLeave={() => S && setInput(S, { sprint: false })}
           onContextMenu={(e) => e.preventDefault()}
-          style={{
-            position: "absolute", left: 10, bottom: 258, width: 92, padding: "12px 0",
-            fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 1.2, fontSize: 14,
-            borderRadius: 999, color: "#fff", cursor: "pointer", touchAction: "none", userSelect: "none",
-            textShadow: "0 1px 1px rgba(0,0,0,0.4)",
+          style={actionBtn(56, {
+            cursor: "pointer", touchAction: "none", userSelect: "none",
+            letterSpacing: 1.2, color: "#fff",
             border: "2px solid #7c1810",
             background: S.input.sprint
               ? "linear-gradient(180deg, #ffd9d2, #ff7a63 45%, #c0392b)"
@@ -258,37 +267,9 @@ export default function TheBreakaway() {
             boxShadow: S.input.sprint
               ? "inset 0 2px 6px rgba(90,10,0,0.55)"
               : "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(20,40,70,0.35)",
-          }}>
+          })}>
           SPRINT
         </button>
-        <button
-          onClick={() => { if (S && !S.ended) setInput(S, { sul: true }); }}
-          style={{
-            position: "absolute", left: 10, bottom: 212, width: 92, padding: "6px 0",
-            fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.6, fontSize: 10.5, lineHeight: 1.2,
-            borderRadius: 999, color: player.sulT > 0 ? "#3d2800" : "#fff", cursor: "pointer", userSelect: "none",
-            textShadow: player.sulT > 0 ? "none" : "0 1px 1px rgba(0,0,0,0.35)",
-            border: "2px solid #7a5410",
-            opacity: player.sulLeft > 0 || player.sulT > 0 ? 1 : 0.45,
-            background: player.sulT > 0
-              ? "linear-gradient(180deg, #fff3c4, #ffd23f 45%, #d99a1b)"
-              : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #b8791a",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(20,40,70,0.35)",
-          }}>
-          {player.sulT > 0
-            ? <>SHUT UP LEGS<br />{Math.ceil(player.sulT)} s</>
-            : <>SHUT UP LEGS<br />{"●".repeat(player.sulLeft) + "○".repeat(Math.max(2 - player.sulLeft, 0))}</>}
-        </button>
-
-        {/* mode chip — where you ARE; the buttons say where you can go */}
-        <div style={{
-          position: "absolute", right: 6, bottom: 132, width: 74, padding: "3px 0",
-          fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.8, fontSize: 10,
-          textAlign: "center", borderRadius: 999, color: "#dfe9f4",
-          background: "rgba(10,25,45,0.55)", border: "1px solid rgba(255,255,255,0.25)",
-        }}>
-          {S.input.mode === "sit" ? "SIT ON" : S.input.mode === "relay" ? "RELAY" : "MANUAL"}
-        </div>
 
         {/* instrument panel */}
         <div style={{ position: "absolute", left: 10, bottom: 56, width: 168, background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "10px 12px 8px" }}>
@@ -312,7 +293,7 @@ export default function TheBreakaway() {
         {/* watt slider — its foot carries the WATTS label, so the column has to stop
             clear of the mode chip below it, not just above the chip's own top edge */}
         <div
-          style={{ position: "absolute", right: 6, top: 84, bottom: 158, width: 104, touchAction: "none", userSelect: "none" }}
+          style={{ position: "absolute", right: 6, top: 84, bottom: 196, width: 104, touchAction: "none", userSelect: "none" }}
           onPointerDown={(e) => { dragRef.current = true; setDragging(true); e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
           onPointerMove={(e) => { if (dragRef.current) onSlider(e, e.currentTarget); }}
           onPointerUp={onSliderUp}
