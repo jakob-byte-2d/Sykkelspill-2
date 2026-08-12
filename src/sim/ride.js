@@ -188,16 +188,19 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         P = coast(digP, r.speed);
       } else if (r === nextUp && !sitting && (frontDone || !usable)) {
         // the front is done, or the wheel ahead is dying — ride through at the plan's
-        // price plus the swing differential: enough to pass the man easing off at
-        // −SWING_W, without burning a dig's worth of tank on every handover
+        // price, no more. The differential that swaps the positions is the OTHER man's:
+        // he eases off at −SWING_W and falls below the plan's speed while you hold it.
+        // A surcharge here (+SWING_W, as this read for a long time) accelerated the
+        // whole line instead — the followers hold the roller-through's wheel, so his
+        // extra watts became everyone's: measured over 776 handovers the group gained
+        // a median 0.76 km/h at every change. A real through-and-off happens at the
+        // group's own speed.
         r.hold = false;
         const behind = S.t - planTimeAt(S.plan, r.dist);
         const urgency = clamp(behind / PACE_WINDOW, 0, 1);
         const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
           * (1 + PACE_GAIN * urgency);
-        // ...and the swing differential is watts, not speed: at sixty downhill it buys
-        // nothing and is simply spent, so the same taper the front pull already has
-        P = coast(Math.min(pWant + SWING_W, r.pullX * b.T, b.ceil), r.speed);
+        P = coast(Math.min(pWant, r.pullX * b.T, b.ceil), r.speed);
       } else if (usable && (movingUp || r.hold || ((bestGap >= 0 || sitting) && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);
         const need = powerFor(tgt.speed, r.mass, r.cda, grad, rho, hw, shel);
