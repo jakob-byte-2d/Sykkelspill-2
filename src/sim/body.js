@@ -29,6 +29,7 @@ export function thresholdFrom(c) {
    anywhere can be written for a particular man. */
 export function makeRider(spec, i, rng) {
   const { name, mass, h, curve } = spec;
+  const dura = spec.dura || 1;
   const T0 = thresholdFrom(curve);
   const r = {
     i, name, color: COLORS[i % COLORS.length], isPlayer: i === 0, mass, h,
@@ -44,7 +45,9 @@ export function makeRider(spec, i, rng) {
     // only knows the engine. So it is given in kilojoules, and derived only if not.
     surgeMax: curve.wp ? curve.wp * 1000 : Math.max((curve.p5 - T0) * 300, 6000), surge: 0,
     fuelMax: 125000 * mass, fuel: 125000 * mass * FUEL_START,
-    wear: clamp(0.42 + gaussOf(rng) * 0.05, 0.3, 0.55), recov: 0.9 + rng() * 0.2,
+    // ...and the day so far has already worn him — divided by his durability, because
+    // a durable man took less damage from those 150 km too, not just from the ones ahead
+    dura, wear: clamp(0.42 / dura + gaussOf(rng) * 0.05, 0.25, 0.60), recov: 0.9 + rng() * 0.2,
     dist: 0, prevDist: 0, speed: 11.5, power: 0, ped: rng() * 6,
     shel: 0,
     st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0 },
@@ -93,12 +96,14 @@ export function bodyNow(r) {
 /* Every pedal stroke costs; the three tanks update */
 export function spend(r, P, dt, body, inWind) {
   const { T } = body;
-  // wear: every kilojoule costs durability, hard ones far more — and it never comes back today
+  // wear: every kilojoule costs durability, hard ones far more — and it never comes back
+  // today. Divided by dura: the one number that says how slowly the day eats a man,
+  // which is the quality that separates a classics hardman from everyone else.
   const kJ = P * dt / 1000;
-  r.wear += kJ * 3.0e-4 * Math.pow(Math.max(P, 1) / Math.max(T, 1), 2.2) * (body.sf < 0.15 ? 2.2 : 1);
+  r.wear += kJ * 3.0e-4 / (r.dura || 1) * Math.pow(Math.max(P, 1) / Math.max(T, 1), 2.2) * (body.sf < 0.15 ? 2.2 : 1);
   if (P > T) {
     r.surge -= (P - T) * dt;
-    if (r.surge < 0) { r.wear += (-r.surge) * 2.2e-5; r.surge = 0; }
+    if (r.surge < 0) { r.wear += (-r.surge) * 2.2e-5 / (r.dura || 1); r.surge = 0; }
     r.st.above += dt;
   } else {
     const below = clamp((T - P) / Math.max(T, 1), 0, 1);
