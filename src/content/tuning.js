@@ -26,6 +26,13 @@ export const COOP_COAST_KMH = 50; // past this speed a pace-setting effort buys 
 export const COOP_COAST_SPAN = 8; // ...watts tapering to zero over the next this-many km/h
 export const PULL_MIN_SF = 0.3;   // under this much tank you stop taking turns — drop-backs slot in ahead of you
 export const WHEEL_COOKED_SF = 0.2; // ...and under this much, his wheel is about to go backwards
+export const WHEEL_DEAD_EDGE = 0.15; // ...but you only look through it if you hold this much more tank
+                              // than him. Judged on a hair's difference, a break where everyone
+                              // is empty dissolved: each man refused the next man's wheel (0.93
+                              // dead-wheel pairs per second against 0.02 healthy) and rode beside
+                              // it instead. Equally dead men keep the line — shelter is still
+                              // free watts, and grinding on in a slow file is what a cooked
+                              // break actually does
 export const DOOR_NEAR = 10;      // this close ahead of a resting rider, a man dropping back becomes his wheel
 export const SPRINT_FINALE_M = 1000; // inside this the ledger stops deciding: everyone holds a wheel
 export const SPRINT_M = 200;      // the fastest man in the group can afford to wait until here...

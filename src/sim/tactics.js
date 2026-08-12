@@ -1,4 +1,4 @@
-import { DH_GRAD, PULL_MIN_SF, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF } from "../content/tuning.js";
+import { DH_GRAD, PULL_MIN_SF, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
 import { bodyNow, durPower } from "./body.js";
 import { BIKE, SHEL_MAX, powerFor } from "./physics.js";
 
@@ -24,9 +24,12 @@ export const validWheel = (o, r, grad) => o.speed > r.speed - 2 / 3.6 || grad < 
 // the speed test above only fires once the deficit is already there, and a man on an
 // empty tank lets go gently — slowly enough to pass it for a long while, and take
 // whoever is on his wheel out the back with him. So read the tank, not just the pace:
-// look through a wheel that is about to die — unless you are no better off yourself,
-// in which case there is nothing better to sit on and you may as well take it
-export const deadWheel = (o, r) => (o.sf ?? 1) < WHEEL_COOKED_SF && (r.sf ?? 1) > (o.sf ?? 1);
+// look through a wheel that is about to die — but only if you hold CLEARLY more than
+// him, because looking through a wheel means having the legs to ride past it and away.
+// Judged on a hair's difference, a break where everyone was empty dissolved: each man
+// refused the next man's wheel and rode beside it. Equally dead men keep the line —
+// shelter is still free watts, and a cooked break grinds on in a slow file.
+export const deadWheel = (o, r) => (o.sf ?? 1) < WHEEL_COOKED_SF && (r.sf ?? 1) > (o.sf ?? 1) + WHEEL_DEAD_EDGE;
 
 // whoever is actually taking his turn: role decides it for the player, the tank for
 // everyone else — and nobody drifting back down the outside counts as a turn-taker
