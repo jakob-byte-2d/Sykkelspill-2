@@ -4,9 +4,9 @@ import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
 import { BIKE, G, LY_FLOOR, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
 import { planSpeedAt } from "./plan.js";
+import { working } from "./tactics.js";
 import { coopRide } from "./ride.js";
 import { clamp } from "./rng.js";
-import { working } from "./tactics.js";
 
 /* One second of racing. */
 
@@ -170,10 +170,19 @@ export function stepSim(S) {
     // in play the pull runs at a median 1.03 × T, so 2 % of the tank is about forty
     // seconds of tempo — and far fewer where the road tips up and the gap widens
     const spent = r.surge < r.pullMark - COOP_PULL_SPEND * usableSurge(r);
-    // an empty tank only ends the turn if someone fresher can take it on — and a
-    // rester refilling at the back is no relief at all. When the whole break is
-    // equally cooked, somebody still has to ride
-    const empty = b.sf < PULL_MIN_SF && g.some((o) => o !== r && working(S, o) && (o.sf ?? 1) > b.sf);
+    // an empty tank ends the turn if someone fresher can take it on. While anyone in
+    // the group is still working, a rester refilling at the back is no relief and does
+    // not count — the five-man truth, and judged without it the healthy rotation's
+    // turns halved. But when NOBODY works, the fresher rester is all the relief there
+    // is, and he counts: judged only on "working", a cooked pair left the emptier man
+    // towing for minutes while his fresher companion refilled in the wheel — and two
+    // dead men in a real break swap short soft turns precisely because even a dying
+    // wheel is relief. Excused always: a man drifting off the line, and the player
+    // who has SAID he is sitting on.
+    const avail = (o) => !o.offline && !(o.isPlayer && S.input.mode === "sit");
+    const anyWork = g.some((o) => o !== r && working(S, o));
+    const empty = b.sf < PULL_MIN_SF && g.some((o) => o !== r
+      && (working(S, o) || (!anyWork && avail(o))) && (o.sf ?? 1) > b.sf);
     // ...and a clock, because uphill none of the three above can fire. The gift shrinks
     // to a fifth, a man under his threshold drains no tank, and a full one is not empty
     // — so the strongest climber would simply stay there for the whole climb. The clock
@@ -196,13 +205,19 @@ export function stepSim(S) {
   // second's. Anyone not on the front is between turns and carries no mark.
   for (const r of S.riders) {
     if (r.groupPos !== 1) { r.pullMark = null; r.pullT = 0; }
-    // the turn is over once nobody still working sits behind him. NOT "last in the
-    // group": a rider sitting on parks at the very rear for good, so that test would
-    // never come true again for anyone else and the flag would stick all race —
-    // leaving every AI permanently offline and the rotation with no engine at all
+    // the turn stays over while a working man sits behind him — or, in a group where
+    // NOBODY works, while anyone available does: ride.js hands the front to the
+    // fullest man then, and the flag must survive long enough for that handover to
+    // happen. Judged on "working" alone it died the same tick in a cooked pair and
+    // the empty front towed on. NOT "last in the group" either: the player sitting on
+    // parks at the very rear for good, and he is excused — a flag waiting on him
+    // would stick all race, leaving every AI permanently offline and the rotation
+    // with no engine at all.
     if (r.done && r.groupNo != null) {
       const g = S.groups[r.groupNo - 1];
-      if (!g || g.length < 2 || !g.some((o) => o !== r && o.groupPos > r.groupPos && working(S, o))) r.done = false;
+      const anyWork = g && g.some((o) => o !== r && working(S, o));
+      if (!g || g.length < 2 || !g.some((o) => o !== r && o.groupPos > r.groupPos
+        && (working(S, o) || (!anyWork && !o.offline && !(o.isPlayer && S.input.mode === "sit"))))) r.done = false;
     }
   }
 }
