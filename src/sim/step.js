@@ -1,5 +1,5 @@
 import { COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF } from "../content/tuning.js";
-import { bodyNow, spend, usableSurge } from "./body.js";
+import { bodyNow, shutUpLegs, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
 import { BIKE, G, LY_FLOOR, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
@@ -51,11 +51,28 @@ export function stepRider(S, r, dt) {
   r.ly = clamp((open - lee) / Math.max(open, LY_FLOOR * b.T), 0, 1);
   r.overlap = !!ahead && bestGap < 0 && shel > 0;
 
+  // the motivation button: pressed once, consumed once — the physiology answers in
+  // body.js, and an AI could call the same function one day. Applied before the power
+  // decision, and the body re-read, so this very tick's ceiling already has the
+  // governor silenced.
+  if (r.isPlayer && S.input.sul) {
+    S.input.sul = false;
+    if (shutUpLegs(r)) Object.assign(b, bodyNow(r));
+  }
+
   // what he asks his legs for
   let P;
   let brake = 0;
-  if (r.isPlayer && S.input.mode === "manual") {
+  if (r.isPlayer && S.input.sprint) {
+    // the sprint button: a binary commitment, exactly what the AI already does from
+    // its own launch — everything the body has, for as long as the finger dares.
+    // It overrides every mode, which also makes it the attack button: a jump out of
+    // the wheel mid-race is the same gesture as a sprint for the line.
+    P = b.ceil;
+    r.sprinting = 1; r.offline = 0; r.digging = 0; r.chasing = 0;
+  } else if (r.isPlayer && S.input.mode === "manual") {
     P = Math.min(S.input.watts, b.ceil);   // manual: your watts, your problem
+    r.sprinting = 0;   // the button was released — coopRide clears this for the AI modes
     // ...but swinging off is a thing you have to be able to SAY. The AI says it with
     // r.offline and the whole line listens — queueWheel looks through him, the resters
     // open the door. In manual that flag never got set, so however low the slider went

@@ -1,4 +1,4 @@
-import { CARB_BASE, COOP_PULL_SEC, COOP_SEED, EFF, FUEL_START } from "../content/tuning.js";
+import { CARB_BASE, COOP_PULL_SEC, COOP_SEED, EFF, FUEL_START, SUL_N, SUL_T, SUL_WEAR } from "../content/tuning.js";
 import { COLORS, ROSTER } from "../content/riders.js";
 import { clamp, gaussOf } from "./rng.js";
 
@@ -51,6 +51,8 @@ export function makeRider(spec, i, rng) {
     dist: 0, prevDist: 0, speed: 11.5, power: 0, ped: rng() * 6,
     shel: 0,
     st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0 },
+    // the governor's override: charges left, seconds running, and the joules it lent
+    sulLeft: SUL_N, sulT: 0, sulGave: 0,
     finished: null, caught: false, rampT: 0, rampFrom: 0, hold: false, paid: COOP_SEED,
     // the turn on the front: the tank he brought to it, how long he has held it,
     // and whether it has been declared over — a flag, so it survives the drop-back
@@ -71,8 +73,10 @@ export const makeRiders = (rng, roster = ROSTER) => roster.map((spec, i) => make
 export const durPower = (o, t, T) => T * powerAt(o.curve, clamp(t, 30, 3600)) / o.T0;
 
 /* Threshold right now, and the ceiling */
-// accumulated wear shrinks the tank you can actually fill — this is where most of the penalty lives
-export const usableSurge = (r) => r.surgeMax * (1 - 0.35 * r.wear);
+// accumulated wear shrinks the tank you can actually fill — this is where most of the
+// penalty lives. Except while the legs have been told to shut up: the lock IS the
+// governor, and for those few seconds the whole tank answers.
+export const usableSurge = (r) => (r.sulT > 0 ? r.surgeMax : r.surgeMax * (1 - 0.35 * r.wear));
 
 // ...and his threshold with the tank taken out of the question: bodyNow's own reading
 // with the two terms that describe running out of fuel set aside. It is not a number he
@@ -93,9 +97,45 @@ export function bodyNow(r) {
   return { T, ceil, sf, ff };
 }
 
+/* "Shut up legs": the governor overridden, Voigt's way. The brain brakes a rider
+   before the body is truly empty — the locked share of the tank above is exactly that
+   reserve, and for a few seconds motivation opens it. No energy is invented: the
+   injection is precisely the joules wear had hidden. The bill comes at expiry, in
+   spend() below. Lives on the rider, not in the UI, so an AI can press it too one day. */
+export function shutUpLegs(r) {
+  if (!(r.sulLeft > 0) || r.sulT > 0) return false;
+  const locked = 0.35 * r.wear * r.surgeMax;
+  r.sulLeft -= 1;
+  r.sulT = SUL_T;
+  r.sulGave = Math.min(locked, r.surgeMax - r.surge);
+  r.surge += r.sulGave;
+  return true;
+}
+
 /* Every pedal stroke costs; the three tanks update */
 export function spend(r, P, dt, body, inWind) {
   const { T } = body;
+  // ...and the governor's override runs out. Whatever of the loan is unspent simply
+  // evaporates — motivation unused is not damage — but every joule that WAS drawn
+  // from the locked reserve gets billed as wear, at the same rate as grinding on an
+  // empty tank: that protection existed for a reason.
+  if (r.sulT > 0) {
+    r.sulT -= dt;
+    if (r.sulT <= 0) {
+      r.sulT = 0;
+      // loan accounting, borrowed joules last out: whatever of the loan he still
+      // holds is repaid — it evaporates, it was never his — and only the shortfall
+      // was actually burned. A level test instead of this billed a man who sat
+      // still through the whole window, because inside the cap his own joules and
+      // the loan's are indistinguishable.
+      const unspent = Math.min(Math.max(r.surge, 0), r.sulGave);
+      const drawn = r.sulGave - unspent;
+      r.surge -= unspent;
+      r.wear += drawn * 2.2e-5 * SUL_WEAR / (r.dura || 1);
+      r.surge = Math.min(r.surge, usableSurge(r));
+      r.sulGave = 0;
+    }
+  }
   // wear: every kilojoule costs durability, hard ones far more — and it never comes back
   // today. Divided by dura: the one number that says how slowly the day eats a man,
   // which is the quality that separates a classics hardman from everyone else.

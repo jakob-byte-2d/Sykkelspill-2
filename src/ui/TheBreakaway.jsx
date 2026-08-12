@@ -237,6 +237,49 @@ export default function TheBreakaway() {
           {S.input.mode === "relay" ? "MANUAL" : "RELAY"}
         </button>
 
+        {/* the left thumb's two buttons: the sprint is a hold — a commitment that lasts
+            exactly as long as you dare — and the motivation button a one-shot. Both live
+            above the instrument panel so the right thumb keeps the slider and the modes. */}
+        <button
+          onPointerDown={(e) => { e.preventDefault(); if (S && !S.ended) setInput(S, { sprint: true }); }}
+          onPointerUp={() => S && setInput(S, { sprint: false })}
+          onPointerCancel={() => S && setInput(S, { sprint: false })}
+          onPointerLeave={() => S && setInput(S, { sprint: false })}
+          onContextMenu={(e) => e.preventDefault()}
+          style={{
+            position: "absolute", left: 10, bottom: 258, width: 92, padding: "12px 0",
+            fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 1.2, fontSize: 14,
+            borderRadius: 999, color: "#fff", cursor: "pointer", touchAction: "none", userSelect: "none",
+            textShadow: "0 1px 1px rgba(0,0,0,0.4)",
+            border: "2px solid #7c1810",
+            background: S.input.sprint
+              ? "linear-gradient(180deg, #ffd9d2, #ff7a63 45%, #c0392b)"
+              : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #d8432f",
+            boxShadow: S.input.sprint
+              ? "inset 0 2px 6px rgba(90,10,0,0.55)"
+              : "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(20,40,70,0.35)",
+          }}>
+          SPRINT
+        </button>
+        <button
+          onClick={() => { if (S && !S.ended) setInput(S, { sul: true }); }}
+          style={{
+            position: "absolute", left: 10, bottom: 212, width: 92, padding: "6px 0",
+            fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.6, fontSize: 10.5, lineHeight: 1.2,
+            borderRadius: 999, color: player.sulT > 0 ? "#3d2800" : "#fff", cursor: "pointer", userSelect: "none",
+            textShadow: player.sulT > 0 ? "none" : "0 1px 1px rgba(0,0,0,0.35)",
+            border: "2px solid #7a5410",
+            opacity: player.sulLeft > 0 || player.sulT > 0 ? 1 : 0.45,
+            background: player.sulT > 0
+              ? "linear-gradient(180deg, #fff3c4, #ffd23f 45%, #d99a1b)"
+              : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #b8791a",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(20,40,70,0.35)",
+          }}>
+          {player.sulT > 0
+            ? <>SHUT UP LEGS<br />{Math.ceil(player.sulT)} s</>
+            : <>SHUT UP LEGS<br />{"●".repeat(player.sulLeft) + "○".repeat(Math.max(2 - player.sulLeft, 0))}</>}
+        </button>
+
         {/* mode chip — where you ARE; the buttons say where you can go */}
         <div style={{
           position: "absolute", right: 6, bottom: 132, width: 74, padding: "3px 0",
