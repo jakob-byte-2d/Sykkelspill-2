@@ -16,3 +16,11 @@ body {
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* the slider thumb pinned against the ceiling: asking for more than the body has */
+@keyframes dirre {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-1.5px); }
+  75%  { transform: translateX(1.5px); }
+  100% { transform: translateX(0); }
+}

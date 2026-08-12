@@ -127,12 +127,25 @@ export default function TheBreakaway() {
   if (phase === "race" && S && player && body) {
     const kmToGo = Math.max(0, (S.course.total - player.dist) / 1000);
     const grad = S.course.gradAt(player.dist);
-    // steering yourself, the thumb sits where you put it — not where the ceiling cut you
-    // off, or it would spring back down the track while your finger is still up here. The
-    // red line is what says you are asking for more than you have. Riding on the wheel or
-    // in the rotation, it shows what the legs are actually doing.
-    const shownW = S.input.mode === "manual" ? S.input.watts : S.playerW;
+    // the thumb always reads watts — what you are asking for, or what the legs are
+    // actually doing on the wheel and in the rotation — and never more than the body
+    // has: the display clamps at the ceiling, and pinned there it glows red and
+    // shivers. The red line stays as the ceiling's own mark on the track.
+    const askedW = S.input.mode === "manual" ? S.input.watts : S.playerW;
+    const atMax = askedW >= Math.floor(body.ceil);
+    const shownW = Math.min(askedW, Math.round(body.ceil));
     const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts), tS = tFromW(shownW, pts);
+    // ...and it wears the colour of what you are doing, the same one the chip and the
+    // button carry: the sprint's red beats the override's gold beats the mode's own.
+    const doing = S.input.sprint ? "sprint" : player.sulT > 0 ? "htfu"
+      : S.input.mode === "sit" ? "sit" : S.input.mode === "relay" ? "relay" : "manual";
+    const DOING = {
+      sprint: { bg: "linear-gradient(180deg, #ffd9d2, #ff7a63 45%, #c0392b)", edge: "#7c1810", ink: "#fff" },
+      htfu:   { bg: "linear-gradient(180deg, #fff3c4, #ffd23f 45%, #d99a1b)", edge: "#7a5410", ink: "#3d2800" },
+      sit:    { bg: "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)", edge: "#145c27", ink: "#fff" },
+      relay:  { bg: "linear-gradient(180deg, #eaf3fb, #7db3e0 45%, #2f6cb3)", edge: "#123a6b", ink: "#fff" },
+      manual: { bg: "linear-gradient(180deg, #e8eef4, #93a9bf 45%, #55708c)", edge: "#35516e", ink: "#fff" },
+    }[doing];
     // the scale: a mark every hundred watts, thinned out where the track compresses so
     // the numbers never sit on top of each other. Built from the same pts the thumb
     // rides, so a mark reading 300 is where 300 watts actually is.
@@ -206,8 +219,9 @@ export default function TheBreakaway() {
         <div style={{
           position: "absolute", right: 6, bottom: 170, width: 74, padding: "3px 0",
           fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.8, fontSize: 10,
-          textAlign: "center", borderRadius: 999, color: "#dfe9f4",
-          background: "rgba(10,25,45,0.55)", border: "1px solid rgba(255,255,255,0.25)",
+          textAlign: "center", borderRadius: 999,
+          background: DOING.bg, border: "1px solid " + DOING.edge, color: DOING.ink,
+          textShadow: DOING.ink === "#fff" ? "0 1px 1px rgba(0,0,0,0.35)" : "none",
         }}>
           {S.input.sprint ? "SPRINTING"
             : player.sulT > 0 ? "HTFU " + Math.ceil(player.sulT) + "s"
@@ -315,16 +329,24 @@ export default function TheBreakaway() {
           <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#2fdc55", top: markerTop(tT), boxShadow: "0 0 5px #2fdc55" }} />
           {/* red ceiling line — sinks when you burn your matches */}
           <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#ff4b3a", top: markerTop(tC), boxShadow: "0 0 5px #ff4b3a", transition: "top .3s linear" }} />
-          {/* thumb */}
-          <div style={{ position: "absolute", left: 42, width: 50, height: 34, top: `calc(${markerTop(tS)} - 17px)`, borderRadius: 999, background: S.input.mode === "sit" ? "linear-gradient(180deg, #d8f7dd, #5fc978 45%, #1d7a34)" : "linear-gradient(180deg, #eaf3fb, #7db3e0 45%, #2f6cb3)", border: S.input.mode === "sit" ? "2px solid #145c27" : "2px solid #123a6b", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: mono, fontWeight: 800, fontSize: 13, color: "#fff", textShadow: "0 1px 2px rgba(10,30,55,0.7)" }}>
-            {S.input.mode === "sit" ? (S.braking > 1 ? "BREMS" : "HJUL") : shownW}
+          {/* thumb: always the watts, in the colour of what you are doing — and pinned
+              against the ceiling it turns red and shivers: asking for more than you have */}
+          <div style={{
+            position: "absolute", left: 42, width: 50, height: 34, top: `calc(${markerTop(tS)} - 17px)`,
+            borderRadius: 999,
+            background: atMax ? "linear-gradient(180deg, #ffb3a6, #ff5a42 45%, #b31d0e)" : DOING.bg,
+            border: atMax ? "2px solid #7c1810" : "2px solid " + DOING.edge,
+            boxShadow: atMax
+              ? "0 0 12px rgba(255,46,26,0.85), inset 0 1px 0 rgba(255,255,255,0.6)"
+              : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)",
+            animation: atMax ? "dirre .12s linear infinite" : "none",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: mono, fontWeight: 800, fontSize: 13,
+            color: atMax ? "#fff" : DOING.ink,
+            textShadow: atMax || DOING.ink === "#fff" ? "0 1px 2px rgba(10,30,55,0.7)" : "none",
+          }}>
+            {shownW}
           </div>
-          {/* sitting on, the grip says which it is — so the wheel's price goes just under it */}
-          {S.input.mode === "sit" && (
-            <div style={{ position: "absolute", left: 46, width: 42, textAlign: "center", top: `calc(${markerTop(tS)} + 19px)`, fontFamily: mono, fontWeight: 800, fontSize: 11, color: "#145c27", background: "rgba(255,255,255,0.82)", borderRadius: 999, padding: "0 2px", boxShadow: "0 1px 3px rgba(15,35,60,0.35)" }}>
-              {S.playerW}
-            </div>
-          )}
           {/* ...and a finger covers what it points at, so while you are holding the grip the
               value stands well clear of it: two thumb-heights up, out from under the hand
               entirely. Near the top of the track there is no room for that, so it flips to
@@ -334,9 +356,11 @@ export default function TheBreakaway() {
               position: "absolute", left: 34, width: 66, height: 30, borderRadius: 999,
               top: `calc(${markerTop(tS)} ${tS > 0.80 ? "+ 57px" : "- 79px"})`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              background: "linear-gradient(180deg, #ffffff, #dcebfa)", border: "2px solid #2f6cb3",
-              boxShadow: "0 3px 10px rgba(15,35,60,0.45)", fontFamily: mono, fontWeight: 800,
-              fontSize: 16, color: "#0d3568", pointerEvents: "none",
+              background: "linear-gradient(180deg, #ffffff, #dcebfa)",
+              border: "2px solid " + (atMax ? "#b31d0e" : DOING.edge),
+              boxShadow: atMax ? "0 0 12px rgba(255,46,26,0.7)" : "0 3px 10px rgba(15,35,60,0.45)",
+              fontFamily: mono, fontWeight: 800,
+              fontSize: 16, color: atMax ? "#b31d0e" : "#0d3568", pointerEvents: "none",
             }}>
               {shownW} W
             </div>
