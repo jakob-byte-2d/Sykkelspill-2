@@ -131,8 +131,13 @@ export default function TheBreakaway() {
     // actually doing on the wheel and in the rotation — and never more than the body
     // has: the display clamps at the ceiling, and pinned there it glows red and
     // shivers. The red line stays as the ceiling's own mark on the track.
-    const askedW = S.input.mode === "manual" ? S.input.watts : S.playerW;
-    const atMax = askedW >= Math.floor(body.ceil);
+    // While the sprint is held the slider's remembered value means nothing: the body
+    // rides the ceiling, so the thumb shows what was actually ridden and is at max by
+    // definition — read from input.watts it stood at the old number while the player
+    // sprinted at four figures, which is a bubble telling a straight lie.
+    const askedW = S.input.sprint ? S.playerW
+      : S.input.mode === "manual" ? S.input.watts : S.playerW;
+    const atMax = S.input.sprint || askedW >= Math.floor(body.ceil);
     const shownW = Math.min(askedW, Math.round(body.ceil));
     const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts), tS = tFromW(shownW, pts);
     // ...and it wears the colour of what you are doing, the same one the chip and the
@@ -229,29 +234,32 @@ export default function TheBreakaway() {
             : S.input.mode === "relay" ? "RELAYING" : "MANUAL"}
         </div>
 
-        {/* relay <-> sit on: one toggle, labelled with where it takes you. From manual
-            it enters the rotation first — parking at the back is a second press away. */}
+        {/* relay <-> sit on: one toggle, labelled with where it takes you — and its
+            resting face is SIT ON: from manual the first press parks you at the back,
+            which is the safe move; joining the rotation is the deliberate second one. */}
         <button
           onClick={() => {
             if (!S || S.ended) return;
-            setInput(S, { mode: S.input.mode === "relay" ? "sit" : "relay" });
+            setInput(S, { mode: S.input.mode === "sit" ? "relay" : "sit" });
           }}
           style={actionBtn(132, {
-            cursor: "pointer",
-            border: S.input.mode === "relay" ? "2px solid #145c27" : "2px solid #123a6b",
+            cursor: "pointer", userSelect: "none", WebkitUserSelect: "none",
+            WebkitTouchCallout: "none", touchAction: "manipulation",
+            border: S.input.mode === "sit" ? "2px solid #123a6b" : "2px solid #145c27",
             color: "#fff",
-            background: S.input.mode === "relay"
-              ? "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #2f9e4f"
-              : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #3a76bd",
+            background: S.input.mode === "sit"
+              ? "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #3a76bd"
+              : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #2f9e4f",
           })}>
-          {S.input.mode === "relay" ? "SIT ON" : "RELAY"}
+          {S.input.mode === "sit" ? "RELAY" : "SIT ON"}
         </button>
 
         {/* the governor's override, Rule #5 spelling */}
         <button
           onClick={() => { if (S && !S.ended) setInput(S, { sul: true }); }}
           style={actionBtn(94, {
-            cursor: "pointer", userSelect: "none",
+            cursor: "pointer", userSelect: "none", WebkitUserSelect: "none",
+            WebkitTouchCallout: "none", touchAction: "manipulation",
             color: player.sulT > 0 ? "#3d2800" : "#fff",
             textShadow: player.sulT > 0 ? "none" : "0 1px 1px rgba(0,0,0,0.35)",
             border: "2px solid #7a5410",
@@ -264,22 +272,31 @@ export default function TheBreakaway() {
             : "\u25cf".repeat(player.sulLeft) + "\u25cb".repeat(Math.max(2 - player.sulLeft, 0))}
         </button>
 
-        {/* the sprint: a hold — the commitment lasts exactly as long as the finger dares */}
+        {/* the sprint: a hold — the commitment lasts exactly as long as the finger
+            dares. The pointer is captured so a thumb sliding a millimetre off the pill
+            does not drop the sprint, and releasing lands you in MANUAL at threshold:
+            after a sprint you are on your own for the dosing, and threshold is the one
+            level the body can actually hold from there. */}
         <button
-          onPointerDown={(e) => { e.preventDefault(); if (S && !S.ended) setInput(S, { sprint: true }); }}
-          onPointerUp={() => S && setInput(S, { sprint: false })}
-          onPointerCancel={() => S && setInput(S, { sprint: false })}
-          onPointerLeave={() => S && setInput(S, { sprint: false })}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            if (S && !S.ended) setInput(S, { sprint: true });
+          }}
+          onPointerUp={() => S && S.input.sprint && setInput(S, { sprint: false, mode: "manual", watts: Math.round(body.T) })}
+          onPointerCancel={() => S && S.input.sprint && setInput(S, { sprint: false, mode: "manual", watts: Math.round(body.T) })}
           onContextMenu={(e) => e.preventDefault()}
           style={actionBtn(56, {
             cursor: "pointer", touchAction: "none", userSelect: "none",
+            WebkitUserSelect: "none", WebkitTouchCallout: "none",
             letterSpacing: 1.2, color: "#fff",
-            border: "2px solid #7c1810",
+            border: S.input.sprint ? "2px solid #ffb3a6" : "2px solid #7c1810",
+            transform: S.input.sprint ? "scale(0.94)" : "none",
             background: S.input.sprint
-              ? "linear-gradient(180deg, #ffd9d2, #ff7a63 45%, #c0392b)"
+              ? "linear-gradient(180deg, #a01608, #7c0e04 60%, #5c0a02)"
               : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #d8432f",
             boxShadow: S.input.sprint
-              ? "inset 0 2px 6px rgba(90,10,0,0.55)"
+              ? "0 0 14px rgba(255,46,26,0.9), inset 0 2px 6px rgba(0,0,0,0.55)"
               : "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(20,40,70,0.35)",
           })}>
           SPRINT
