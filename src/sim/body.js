@@ -44,7 +44,7 @@ export function makeRider(spec, i, rng) {
     // only knows the engine. So it is given in kilojoules, and derived only if not.
     surgeMax: curve.wp ? curve.wp * 1000 : Math.max((curve.p5 - T0) * 300, 6000), surge: 0,
     fuelMax: 125000 * mass, fuel: 125000 * mass * FUEL_START,
-    legs: clamp(0.42 + gaussOf(rng) * 0.05, 0.3, 0.55), recov: 0.9 + rng() * 0.2,
+    wear: clamp(0.42 + gaussOf(rng) * 0.05, 0.3, 0.55), recov: 0.9 + rng() * 0.2,
     dist: 0, prevDist: 0, speed: 11.5, power: 0, ped: rng() * 6,
     shel: 0,
     st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0 },
@@ -68,24 +68,24 @@ export const makeRiders = (rng, roster = ROSTER) => roster.map((spec, i) => make
 export const durPower = (o, t, T) => T * powerAt(o.curve, clamp(t, 30, 3600)) / o.T0;
 
 /* Threshold right now, and the ceiling */
-// heavy legs shrink the tank you can actually fill — this is where most of the penalty lives
-export const usableSurge = (r) => r.surgeMax * (1 - 0.35 * r.legs);
+// accumulated wear shrinks the tank you can actually fill — this is where most of the penalty lives
+export const usableSurge = (r) => r.surgeMax * (1 - 0.35 * r.wear);
 
 // ...and his threshold with the tank taken out of the question: bodyNow's own reading
 // with the two terms that describe running out of fuel set aside. It is not a number he
 // can really hold for four hundred kilometres — that is the point. It is a fixed
 // reference the deadline can be built on, immune to how the race actually goes.
-export const thresholdFull = (r) => r.T0 * r.form * (1 - 0.15 * r.legs);
+export const thresholdFull = (r) => r.T0 * r.form * (1 - 0.15 * r.wear);
 
 export function bodyNow(r) {
   const ff = clamp(r.fuel / r.fuelMax, 0, 1);
   const fuelFac = 0.74 + 0.26 * Math.pow(ff, 0.7);
   const collapse = ff < 0.08 ? Math.pow(ff / 0.08, 2) : 1;
-  const T = r.T0 * r.form * fuelFac * Math.max(collapse, 0.15) * (1 - 0.15 * r.legs);
+  const T = r.T0 * r.form * fuelFac * Math.max(collapse, 0.15) * (1 - 0.15 * r.wear);
   const cap = usableSurge(r);
   const sf = clamp(cap > 0 ? r.surge / cap : 0, 0, 1);
   const fl = T * (0.8 + 0.2 * sf);
-  let ceil = (fl + (r.curve.p5s * r.form - fl) * Math.sqrt(sf)) * (1 - 0.07 * r.legs) * Math.max(collapse, 0.25);
+  let ceil = (fl + (r.curve.p5s * r.form - fl) * Math.sqrt(sf)) * (1 - 0.07 * r.wear) * Math.max(collapse, 0.25);
   ceil = Math.max(ceil, T * 0.5, 140);
   return { T, ceil, sf, ff };
 }
@@ -93,22 +93,22 @@ export function bodyNow(r) {
 /* Every pedal stroke costs; the three tanks update */
 export function spend(r, P, dt, body, inWind) {
   const { T } = body;
-  // durability: every kilojoule wears the legs, hard ones far more — and it never comes back today
+  // wear: every kilojoule costs durability, hard ones far more — and it never comes back today
   const kJ = P * dt / 1000;
-  r.legs += kJ * 3.0e-4 * Math.pow(Math.max(P, 1) / Math.max(T, 1), 2.2) * (body.sf < 0.15 ? 2.2 : 1);
+  r.wear += kJ * 3.0e-4 * Math.pow(Math.max(P, 1) / Math.max(T, 1), 2.2) * (body.sf < 0.15 ? 2.2 : 1);
   if (P > T) {
     r.surge -= (P - T) * dt;
-    if (r.surge < 0) { r.legs += (-r.surge) * 2.2e-5; r.surge = 0; }
+    if (r.surge < 0) { r.wear += (-r.surge) * 2.2e-5; r.surge = 0; }
     r.st.above += dt;
   } else {
     const below = clamp((T - P) / Math.max(T, 1), 0, 1);
-    let tau = (420 / r.recov) * (1 + 1.1 * r.legs) * (1 + 0.5 * (1 - body.ff)) * (1 - 0.35 * below);
+    let tau = (420 / r.recov) * (1 + 1.1 * r.wear) * (1 + 0.5 * (1 - body.ff)) * (1 - 0.35 * below);
     tau = clamp(tau, 290, 800);
     const cap = usableSurge(r);
     if (r.surge < cap) r.surge += (cap - r.surge) * (1 - Math.exp(-dt / tau));
     else r.surge = cap;
   }
-  r.legs = clamp(r.legs, 0, 1);
+  r.wear = clamp(r.wear, 0, 1);
   const eff = 0.225 - 0.035 * (1 - body.ff);
   const over = P > T ? 1 + 0.18 * clamp((P - T) / Math.max(T, 1), 0, 1.2) : 1;
   r.fuel = Math.max(0, r.fuel - (P * dt / eff) * over);

@@ -18,7 +18,7 @@ const race = (seed) => {
       fin: r.finished == null ? null : r3(r.finished),
       caught: !!r.caught,
       work: Math.round(r.st.work),
-      legs: Math.round(r.legs * 1e6) / 1e6,
+      legs: Math.round(r.wear * 1e6) / 1e6,
     })),
   };
 };

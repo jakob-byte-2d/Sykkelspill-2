@@ -234,7 +234,7 @@ export function draw(S, canvas, alpha) {
         ctx.fillText("S" + Math.round(b.sf * 100) + "%", m.bx, top + 36);
         ctx.font = "800 9px ui-monospace, monospace";
         ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 47);
+        ctx.fillText(m.share == null ? "—" : "DR" + m.share + "%", m.bx, top + 47);
       } else {
         ctx.font = "800 9px ui-monospace, monospace";
         const L = m.bx - BW / 2 + 16, R = m.bx + BW / 2 - 15;
@@ -251,17 +251,18 @@ export function draw(S, canvas, alpha) {
         ctx.fillText("S" + Math.round(b.sf * 100), R, top + 23);
         ctx.fillStyle = tankHue(b.ff);
         ctx.fillText("F" + Math.round(b.ff * 100), R, top + 34);
-        // legs reads as what is LEFT, the same way the instrument panel shows it —
-        // so the number agrees with its own colour, and with the bar below
-        ctx.fillStyle = tankHue(1 - r.legs);
-        ctx.fillText("L" + Math.round((1 - r.legs) * 100), R, top + 45);
+        // durability reads as what is LEFT, the same way the instrument panel shows it —
+        // so the number agrees with its own colour, and with the bar below. Prefix D;
+        // the draft-share row below is DR so the two cannot be confused
+        ctx.fillStyle = tankHue(1 - r.wear);
+        ctx.fillText("D" + Math.round((1 - r.wear) * 100), R, top + 45);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
         // the share he is taking in the wind — the complement of the wheel's saving.
         // Two characters like S/F/L above it: the bubble is 59 px and this column
         // shares its row with the wheel gap on the left
         ctx.fillText("WI" + Math.round((1 - r.ly) * 100), R, top + 56);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText(m.share == null ? "—" : "D" + m.share + "%", m.bx, top + 67);
+        ctx.fillText(m.share == null ? "—" : "DR" + m.share + "%", m.bx, top + 67);
       }
     }
   }

@@ -64,7 +64,7 @@ export function newSim(seed) {
   // ...but what the warm-up costs is not part of the race. Somebody has to be on the
   // front for it, and he should not start the day two per cent down on his tank — worst
   // case eight — for the privilege of being the man the rotation happened to leave there.
-  const rest = riders.map((r) => ({ surge: r.surge, fuel: r.fuel, legs: r.legs }));
+  const rest = riders.map((r) => ({ surge: r.surge, fuel: r.fuel, wear: r.wear }));
   for (let k = 0; k < WARMUP_S; k++) stepSim(S);
   // Wind it back to the start line, keeping every gap, speed and flag exactly as the
   // warm-up left them. The bunch goes back to its cold opening instead, because that is
@@ -75,7 +75,7 @@ export function newSim(seed) {
   const lead = Math.max(...riders.map((r) => r.dist));
   riders.forEach((r, i) => {
     r.dist -= lead; r.prevDist = r.dist; r.d0 = r.dist;
-    r.surge = rest[i].surge; r.fuel = rest[i].fuel; r.legs = rest[i].legs;
+    r.surge = rest[i].surge; r.fuel = rest[i].fuel; r.wear = rest[i].wear;
     r.paid = COOP_SEED;
     r.st = { work: 0, wind: 0, above: 0, minFuel: r.fuel / r.fuelMax, t: 0 };
   });
