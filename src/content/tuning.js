@@ -87,6 +87,9 @@ export const ATT_HESIT = 6;       // the look-around: how long the group hesitat
 export const ATT_GIVEUP = 25;     // seconds of gap at which the chase stops bothering — "let him die
                            // out there" — and the group rides for the remaining placings
 
+export const JUMP_TAU = 240;     // the alactic tank (the jump) refills on about this clock below
+                           // threshold — roughly one jump per situation, the way
+                           // creatine-phosphate actually behaves
 export const SUL_N = 2;           // "shut up legs": times per race the governor can be silenced
 export const SUL_T = 25;          // ...for this many seconds each time
 export const SUL_WEAR = 0.5;      // ...billed afterwards at this multiple of the empty-tank wear rate.

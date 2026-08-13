@@ -1,5 +1,5 @@
 import { ATT_COMMIT, ATT_COOL, ATT_GIVEUP, ATT_HESIT, ATT_SF, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
-import { durPower } from "./body.js";
+import { burstCeil, durPower } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
@@ -21,7 +21,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
   // branch, and before coast(), which would otherwise wipe the watts out above 58 km/h
   // — coast describes tempo buying nothing at speed, not a sprint being impossible.
   r.launch = grp && grp.length > 1 ? launchAt(grp, r) : SPRINT_M;
-  if (togo < r.launch) { r.sprinting = 1; return { P: b.ceil, brake: 0 }; }
+  // ...and the launch is all-out for everyone: the burst ceiling, not the ordinary
+  // one — the jump opens near fresh p5s and fades as it drains, which is what a real
+  // sprint looks like and why the man who saved his kick beats the man who is merely
+  // least empty.
+  if (togo < r.launch) { r.sprinting = 1; return { P: burstCeil(r, b), brake: 0 }; }
   r.sprinting = 0;
   // The attack, mid-commitment: everything else waits. He rides what empties the tank
   // exactly at the end of the commitment — the same sentence as the dig and the chase —

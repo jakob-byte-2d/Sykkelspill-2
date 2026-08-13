@@ -321,7 +321,11 @@ export default function TheBreakaway() {
         <div style={{ position: "absolute", left: 10, bottom: 56, width: 168, background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "10px 12px 8px" }}>
           <Bar label="SURGE" frac={body.sf} color="#35c24d" />
           <Bar label="FUEL" frac={body.ff} color="#2e8fe0" />
-          <Bar label="DURA" frac={1 - player.wear} color="#e0483c" />
+          {/* the jump: the ten seconds above everything else, spent only all-out.
+              It took DURA's slot — wear moves 0.42 to 0.62 over a whole race and
+              told you little, while this drains in a sprint and refills in minutes:
+              a gauge there is actually a fight over. Wear stays in the debug bubble. */}
+          <Bar label="JUMP" frac={player.jump / player.jumpMax} color="#e0483c" />
           {/* the complement of the shelter: the share of the work he is taking in the
               wind himself. Same number, read the way a rider says it — and it uses the
               whole scale, where the saving alone sat in the bottom third all race */}

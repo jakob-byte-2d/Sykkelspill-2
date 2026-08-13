@@ -1,4 +1,4 @@
-import { CARB_BASE, COOP_PULL_SEC, COOP_SEED, EFF, FUEL_START, SUL_N, SUL_T, SUL_WEAR } from "../content/tuning.js";
+import { CARB_BASE, COOP_PULL_SEC, COOP_SEED, EFF, FUEL_START, JUMP_TAU, SUL_N, SUL_T, SUL_WEAR } from "../content/tuning.js";
 import { COLORS, ROSTER } from "../content/riders.js";
 import { clamp, gaussOf } from "./rng.js";
 
@@ -44,6 +44,12 @@ export function makeRider(spec, i, rng) {
     // small, and reading it off the five-minute power cannot tell those apart — it
     // only knows the engine. So it is given in kilojoules, and derived only if not.
     surgeMax: curve.wp ? curve.wp * 1000 : Math.max((curve.p5 - T0) * 300, 6000), surge: 0,
+    // the third motor: the alactic jump, the ten seconds above everything else. Read
+    // off the curve like all the rest — the gap between his 5-second and his 1-minute
+    // power is the alactic signature, so the sprinters get the longer fuse from
+    // numbers they already carry. Full at the start: creatine-phosphate comes back
+    // quickly, even after 150 km.
+    jumpMax: Math.max((curve.p5s - curve.p1) * 10, 3000), jump: Math.max((curve.p5s - curve.p1) * 10, 3000),
     fuelMax: 125000 * mass, fuel: 125000 * mass * FUEL_START,
     // ...and the day so far has already worn him — divided by his durability, because
     // a durable man took less damage from those 150 km too, not just from the ones ahead
@@ -100,6 +106,19 @@ export function bodyNow(r) {
   return { T, ceil, sf, ff };
 }
 
+/* The burst ceiling: what an ALL-OUT effort opens at. The ordinary ceiling is what
+   the aerobic-plus-W' body delivers; the jump sits above it, and only a maximal
+   sprint taps it — which is why a rider whose W' is gone still has one kick left.
+   Full jump opens near fresh p5s whatever the tank says; as the jump drains the
+   watts fall back to the ordinary ceiling. Same collapse floor as the ceiling's own,
+   so a bonked man does not sprint like a fresh one. */
+export function burstCeil(r, b) {
+  const ff = clamp(r.fuel / r.fuelMax, 0, 1);
+  const collapse = ff < 0.08 ? Math.pow(ff / 0.08, 2) : 1;
+  const jf = r.jumpMax > 0 ? clamp(r.jump / r.jumpMax, 0, 1) : 0;
+  return b.ceil + Math.max(r.curve.p5s * r.form * Math.max(collapse, 0.25) - b.ceil, 0) * jf;
+}
+
 /* "Shut up legs": the governor overridden, Voigt's way. The brain brakes a rider
    before the body is truly empty — the locked share of the tank above is exactly that
    reserve, and for a few seconds motivation opens it. No energy is invented: the
@@ -139,6 +158,10 @@ export function spend(r, P, dt, body, inWind) {
       r.sulGave = 0;
     }
   }
+  // the jump pays for everything above the ordinary ceiling — and only an all-out
+  // sprint asks for that. Refilled below threshold, on its own slow clock, further
+  // down with the surge refill.
+  if (r.sprinting && P > body.ceil) r.jump = Math.max(r.jump - (P - body.ceil) * dt, 0);
   // wear: every kilojoule costs durability, hard ones far more — and it never comes back
   // today. Divided by dura: the one number that says how slowly the day eats a man,
   // which is the quality that separates a classics hardman from everyone else.
@@ -155,6 +178,7 @@ export function spend(r, P, dt, body, inWind) {
     const cap = usableSurge(r);
     if (r.surge < cap) r.surge += (cap - r.surge) * (1 - Math.exp(-dt / tau));
     else r.surge = cap;
+    if (r.jump < r.jumpMax) r.jump += (r.jumpMax - r.jump) * (1 - Math.exp(-dt / JUMP_TAU));
   }
   r.wear = clamp(r.wear, 0, 1);
   // The glycogen bill. Below threshold fat pays a real share of it — the easier the

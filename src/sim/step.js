@@ -1,5 +1,5 @@
 import { COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF } from "../content/tuning.js";
-import { bodyNow, shutUpLegs, spend, usableSurge } from "./body.js";
+import { bodyNow, burstCeil, shutUpLegs, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
 import { BIKE, G, LY_FLOOR, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
@@ -64,11 +64,14 @@ export function stepRider(S, r, dt) {
   let P;
   let brake = 0;
   if (r.isPlayer && S.input.sprint) {
-    // the sprint button: a binary commitment, exactly what the AI already does from
-    // its own launch — everything the body has, for as long as the finger dares.
-    // It overrides every mode, which also makes it the attack button: a jump out of
-    // the wheel mid-race is the same gesture as a sprint for the line.
-    P = b.ceil;
+    // the sprint button: a binary commitment, exactly what the AI does from its own
+    // launch — everything the body has, for as long as the finger dares. It overrides
+    // every mode, which also makes it the attack button: a jump out of the wheel
+    // mid-race is the same gesture as a sprint for the line. And all-out is the key
+    // that unlocks the third motor: the burst ceiling opens near fresh p5s while the
+    // jump lasts, and falls back to the ordinary ceiling as it drains — spend() bills
+    // the jump for every watt above that ceiling, so asking and paying are one act.
+    P = burstCeil(r, b);
     r.sprinting = 1; r.offline = 0; r.digging = 0; r.chasing = 0;
   } else if (r.isPlayer && S.input.mode === "manual") {
     P = Math.min(S.input.watts, b.ceil);   // manual: your watts, your problem
