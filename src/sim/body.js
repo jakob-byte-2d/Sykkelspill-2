@@ -53,6 +53,9 @@ export function makeRider(spec, i, rng) {
     st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0 },
     // the governor's override: charges left, seconds running, and the joules it lent
     sulLeft: SUL_N, sulT: 0, sulGave: 0,
+    // the attack: seconds of commitment left, cooldown after being brought back,
+    // loading (skipping turns to fill the tank), clear-and-gone, and when it launched
+    attT: 0, attCool: 0, attLoad: 0, attacked: 0, attAt: null,
     finished: null, caught: false, rampT: 0, rampFrom: 0, hold: false, paid: COOP_SEED,
     // the turn on the front: the tank he brought to it, how long he has held it,
     // and whether it has been declared over — a flag, so it survives the drop-back

@@ -48,7 +48,7 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.028;   // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.045;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
@@ -68,6 +68,25 @@ export const EFF = 0.225;         // gross efficiency, chemical energy to watts 
 export const CARB_BASE = 0.30;    // glycogen's share of the bill at zero effort; rises linearly to all
                            // of it at threshold. The whole economics of sitting in: a wheel does
                            // not just cost fewer watts, it costs cheaper ones — fat pays the rest
+/* ---- attacks: the cooperation's endgame ---- */
+export const ATT_FROM = 8000;     // the racing-each-other window opens this far from the line...
+export const ATT_SAFE = 42;       // ...but only once the bunch is this many seconds back: the gap the
+                           // group built together is the capital an attack spends. Measured: races
+                           // the break survives show 46 s here at 8 km, races it loses show 23
+export const ATT_SPRINT_EDGE = 0.10; // motive one: you attack when your sprint gives away this share to
+                              // the group's best — the man who loses the gallop must go early
+export const ATT_ENGINE_EDGE = 0.05; // motive two: you attack when the rest of the course costs you this
+                              // much less (as a share of what you can hold to the line) than it costs
+                              // the next man — the strongest rider drops his passengers rather than
+                              // tow them home
+export const ATT_SF = 0.55;       // matches needed to fire: below this he LOADS instead — skips his
+                           // turns, sits at the back and refills, the gun loading everyone can see
+export const ATT_COMMIT = 75;     // seconds of full commitment before the attack is judged
+export const ATT_COOL = 150;      // seconds before a brought-back attacker considers going again
+export const ATT_HESIT = 6;       // the look-around: how long the group hesitates before anyone chases
+export const ATT_GIVEUP = 25;     // seconds of gap at which the chase stops bothering — "let him die
+                           // out there" — and the group rides for the remaining placings
+
 export const SUL_N = 2;           // "shut up legs": times per race the governor can be silenced
 export const SUL_T = 25;          // ...for this many seconds each time
 export const SUL_WEAR = 0.5;      // ...billed afterwards at this multiple of the empty-tank wear rate.

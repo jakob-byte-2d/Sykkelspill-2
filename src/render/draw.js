@@ -48,6 +48,8 @@ export function drawBubble(ctx, x, top, w, h, color, tipX, tipY) {
 
 // what he is doing right now, in one word the bubble has room for
 export function roleOf(S, r) {
+  if ((r.attT ?? 0) > 0 || (r.attacked && r.groupSize <= 1)) return "ATTACK";
+  if (r.attLoad) return "loading";
   if (r.groupSize <= 1) return "solo";
   if (r.isPlayer && S.input.mode === "sit") return "sit";
   if (r.groupPos === 1 && !r.offline) return "FRONT";

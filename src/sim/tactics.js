@@ -1,6 +1,7 @@
-import { DH_GRAD, PULL_MIN_SF, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
+import { ATT_ENGINE_EDGE, ATT_FROM, ATT_SAFE, ATT_SPRINT_EDGE, DH_GRAD, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
 import { bodyNow, durPower } from "./body.js";
-import { BIKE, SHEL_MAX, powerFor } from "./physics.js";
+import { BIKE, SHEL_MAX, powerFor, rhoAt } from "./physics.js";
+import { planTimeAt } from "./plan.js";
 
 /* Reading the race: whose wheel is worth taking, whose is about to go backwards,
    who the road suits, and when each man has to open his sprint. */
@@ -78,6 +79,59 @@ export function terrainEdge(grp, r, v, grad, rho, hw, tTop) {
   return { cheapest: mine <= best + 1e-9, spread: worst - best, wheel };
 }
 
+// Whose race is the REST of it? terrainEdge's question asked about everything left:
+// the price of the plan's pace to the line as a share of what each man could hold
+// that long. The man this comes out cheapest for, by a real margin, is the strongest
+// rider for what remains — and every watt he gives the rotation tows his rivals home.
+export function lineEdge(S, grp, r) {
+  const total = S.course.total;
+  const here = Math.max(r.dist, 0);
+  const tLine = Math.max(planTimeAt(S.plan, total) - planTimeAt(S.plan, r.dist), 30);
+  const len = Math.max(total - here, 1);
+  const gAvg = (S.course.eleAt(total) - S.course.eleAt(here)) / len;
+  const rho = rhoAt((S.course.eleAt(total) + S.course.eleAt(here)) / 2);
+  const v = len / tLine, hw = S.course.windAt(here);
+  let mine = 1, best = Infinity, second = Infinity, cheapest = null;
+  for (const o of grp) {
+    if (o.caught || o.finished != null) continue;
+    const c = powerFor(v, o.mass, o.cda, gAvg, rho, hw, 0) / Math.max(durPower(o, tLine, bodyNow(o).T), 1);
+    if (o === r) mine = c;
+    if (c < best) { second = best; best = c; cheapest = o; } else if (c < second) second = c;
+  }
+  return { mine, second, cheapest: cheapest === r };
+}
+
+// The attack question, asked by every AI rider once a second: does the cooperation
+// still serve ME? Two motives end it, both read off attributes. You lose the group's
+// sprint by a real margin — the man who loses the gallop must go early. Or the rest
+// of the course is clearly cheapest for you — the strongest man drops his passengers
+// rather than tow them to a finish they will contest. Either way the attack only
+// spends capital the group actually has: the window opens at ATT_FROM, and never
+// while the bunch is close enough that he still needs these wheels to survive.
+export function wantsAttack(S, grp, r) {
+  if (r.isPlayer || (r.attCool ?? 0) > 0 || grp.length < 2) return false;
+  const togo = S.course.total - r.dist;
+  if (togo < SPRINT_FINALE_M || togo > ATT_FROM) return false;
+  if ((S.pel.gapS ?? 0) < ATT_SAFE) return false;
+  if (grp.some((o) => o !== r && ((o.attT ?? 0) > 0 || o.attLoad))) return false;
+  let bestX = 0;
+  for (const o of grp) bestX = Math.max(bestX, o.sprintX);
+  if ((bestX - r.sprintX) / bestX >= ATT_SPRINT_EDGE) return true;
+  const e = lineEdge(S, grp, r);
+  return e.cheapest && (e.second - e.mine) >= ATT_ENGINE_EDGE;
+}
+
+// the attacker up the road, committed or clear — the man the group has to answer
+export function attackerAhead(S, r) {
+  let best = null;
+  for (const o of S.riders) {
+    if (o === r || o.caught || o.finished != null) continue;
+    if (!((o.attT ?? 0) > 0 || o.attacked)) continue;
+    if (dist0(o) > dist0(r) && (!best || dist0(o) < dist0(best))) best = o;
+  }
+  return best;
+}
+
 // the nearest man up the road, whoever he is riding with — what a rider alone off the
 // back is looking at. Same scan as queueWheel, without any of its filters: a wheel you
 // cannot yet sit on is still the wheel you are chasing.
@@ -94,7 +148,10 @@ export function queueWheel(S, r, ahead) {
   if (!ahead) return ahead;
   let best = null;
   for (const o of S.riders) {
-    if (o === r || o.caught || o.finished != null || o.offline || deadWheel(o, r)
+    // an attacking rider is not a wheel: the line looks through him and reforms
+    // behind the next man at its own pace — following the jump is the chaser's
+    // decision, not the queue's reflex
+    if (o === r || o.caught || o.finished != null || o.offline || (o.attT ?? 0) > 0 || deadWheel(o, r)
       || !validWheel(o, r, S.course.gradAt(Math.max(dist0(o), 0)))) continue;
     if (dist0(o) > dist0(r) && (best == null || dist0(o) < dist0(best))) best = o;
   }

@@ -142,6 +142,16 @@ export function stepSim(S) {
     }
   }
 
+  // attack bookkeeping: cooldowns tick down, and the news gets told — set as flags in
+  // ride.js because the event feed lives up here, and an attack is exactly the kind of
+  // thing the commentary exists for
+  for (const r of S.riders) {
+    if (r.attCool > 0) r.attCool -= 1;
+    if (r.attNews === 1) pushEvent(S, r.name + " attacks!");
+    else if (r.attNews === 2) pushEvent(S, r.name + " is brought back");
+    r.attNews = 0;
+  }
+
   tagGroups(S);
   // pay the front for the gift, not the clock: what he spends over what the same
   // second would have cost him sitting in. No terrain rule — the physics decides,
