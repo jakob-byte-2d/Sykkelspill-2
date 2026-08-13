@@ -62,7 +62,7 @@ export function roleOf(S, r) {
   if (r.isPlayer && S.input.mode === "sit") return "SITTING ON";
   if (r.offline) return "TURN DONE";
   if (!r.isPlayer && (r.sf ?? 1) < PULL_MIN_SF) return "SITTING ON";
-  if (r.digging) return "DIGGING";
+  if (r.digging) return "RIDING OWN PACE";
   return "RELAYING";
 }
 
@@ -71,7 +71,7 @@ export function roleOf(S, r) {
 const ROLE_SHORT = {
   SPRINTING: "SPR", ATTACKING: "ATK!", LOADING: "load", CHASING: "chse",
   DROPPED: "drop", "GOING SOLO": "SOLO", "SITTING ON": "sit", "TURN DONE": "done",
-  DIGGING: "DIG", RELAYING: "relay",
+  "RIDING OWN PACE": "own", RELAYING: "relay",
 };
 export const roleShort = (S, r) => ROLE_SHORT[roleOf(S, r)] || "?";
 
@@ -335,9 +335,12 @@ export function draw(S, canvas, alpha) {
         ctx.fillStyle = "rgba(190,210,230,0.9)";
         ctx.fillText(m.share == null ? "—" : "DR" + m.share + "%", m.bx, top + 47);
         // what he is DOING, in the player's own vocabulary — the whole point of the
-        // bubble is that a glance reads the race, and the race is made of intentions
+        // bubble is that a glance reads the race, and the race is made of intentions.
+        // The longest states shrink to fit rather than bleed over the pill's edge.
+        const role = roleOf(S, r);
         ctx.fillStyle = "#ffd23f";
-        ctx.fillText(roleOf(S, r), m.bx, top + 58);
+        if (ctx.measureText(role).width > BW - 8) ctx.font = "800 7px ui-monospace, monospace";
+        ctx.fillText(role, m.bx, top + 58);
       } else {
         ctx.font = "800 9px ui-monospace, monospace";
         const L = m.bx - BW / 2 + 16, R = m.bx + BW / 2 - 15;

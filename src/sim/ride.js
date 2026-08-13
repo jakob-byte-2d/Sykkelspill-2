@@ -87,34 +87,35 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     const len = Math.max(top - here, 1);
     const gAvg = (S.course.eleAt(top) - S.course.eleAt(here)) / len;
     const rhoAvg = rhoAt((S.course.eleAt(top) + S.course.eleAt(here)) / 2);
-    // ...and once he has said the hill is his, it stays his to the top. Asked afresh
-    // every second the answer flips the moment his own effort makes him the second
-    // cheapest man in the group — so he would hand the front back halfway up, which is
-    // the one thing a rider committed to a climb never does. His body can still end it:
-    // an empty tank ends a dig in stepSim, the same as any other turn.
-    if (r.digTo != null && (r.dist >= r.digTo || finale || overpaid || resting)) r.digTo = null;
+    // The horizon never drops under CLIMB_MIN_T: inside the last minute the tank over
+    // the seconds left is a sprint, and pacing is over — he holds what he has been
+    // holding and crests on it, rather than emptying himself into the descent.
+    const tPace = Math.max(tTop, CLIMB_MIN_T);
+    // What he can hold to the summit — the dig rides it, and the men behind may not
+    // go above it whatever the wheel in front is doing. Computed for everyone, and
+    // computed BEFORE the claim below, because it is also the claim's own test.
+    const holdTop = Math.min(b.T + r.surge / tPace, durPower(r, tPace, b.T), b.ceil);
+    // ...and the plan's price for HIM right here: riding your own pace only means
+    // anything if that pace beats the group's. A tired man whose summit power has
+    // sunk below the tempo is not claiming the hill, he is being dropped politely —
+    // and a claimant slower than the front never passes it, which once wedged the
+    // whole rotation behind a position-two digger nobody could hand over to.
+    const pPlan = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0);
+    // Once he has said the hill is his, it stays his to the top. Asked afresh every
+    // second the answer flips the moment his own effort makes him the second cheapest
+    // man in the group — so he would hand the front back halfway up, which is the one
+    // thing a rider committed to a climb never does. His body can still end it: an
+    // empty tank ends a dig in stepSim, and a summit power fallen below the plan's
+    // tempo ends the claim here — the hill has stopped being his.
+    if (r.digTo != null && (r.dist >= r.digTo || finale || overpaid || resting || holdTop < pPlan)) r.digTo = null;
     const onward = r.digTo != null;
     // ...and there is nothing to read where there is no climb: the duration is the
     // whole point of the reading, so with no summit ahead the question is not asked
     const e = onward || finale || overpaid || resting || tTop < CLIMB_MIN_T
       ? null : terrainEdge(grp, r, len / Math.max(tTop, 1), gAvg, rhoAvg, hw, tTop);
-    const mine = onward || (!!e && e.cheapest && e.spread >= TERRAIN_EDGE && e.wheel <= TERRAIN_WHEEL);
+    const mine = onward || (!!e && e.cheapest && e.spread >= TERRAIN_EDGE && e.wheel <= TERRAIN_WHEEL
+      && holdTop > pPlan);
     if (mine && r.digTo == null) r.digTo = top;
-    // ...and the level he settles on is what he can hold to the top — which in a body
-    // with a finite battery means the battery divided by the seconds still to climb.
-    // He crests the summit empty, because that is what riding all the way to the top
-    // costs. Never above his own curve for an effort that long either: the curve is the
-    // other half of the same statement. There is no free constant left in it, and
-    // nothing here knows which rider it is — the curve, the tank, the mass and the
-    // frontal area say everything, so a new profile needs no new code.
-    // The horizon never drops under CLIMB_MIN_T: inside the last minute the tank over
-    // the seconds left is a sprint, and pacing is over — he holds what he has been
-    // holding and crests on it, rather than emptying himself into the descent.
-    const tPace = Math.max(tTop, CLIMB_MIN_T);
-    // ...and the same number answers a second question, for everyone and not just the man
-    // the hill belongs to: this is simply what he can hold to the summit. The digger rides
-    // it. The men behind him may not go above it, whatever the wheel in front is doing.
-    const holdTop = Math.min(b.T + r.surge / tPace, durPower(r, tPace, b.T), b.ceil);
     const digP = mine ? holdTop : 0;
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
@@ -226,11 +227,13 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // or a rester there would leave the break with no engine at all. A rider on an
       // empty tank is no engine either, so he is passed over too; but if nobody has
       // anything left, the fullest tank takes it anyway. Somebody still has to ride.
-      // An attacker or a man loading one is not in the rotation at all.
+      // An attacker, a man loading one, or a man riding his own pace up a hill is
+      // not in the rotation at all — hand the front to one of them and nobody rolls
+      // through, which is exactly how a position-two digger once wedged the line.
       let nextUp = null, fullest = null;
       for (let k = 1; k < grp.length; k++) {
         const o = grp[k];
-        if (o.offline || (o.attT ?? 0) > 0 || o.attLoad || (o.isPlayer && S.input.mode === "sit")) continue;
+        if (o.offline || (o.attT ?? 0) > 0 || o.attLoad || o.digging || (o.isPlayer && S.input.mode === "sit")) continue;
         if (!fullest || (o.sf ?? 1) > (fullest.sf ?? 1)) fullest = o;
         if (nextUp == null && (o.sf ?? 1) >= PULL_MIN_SF) nextUp = o;
       }
