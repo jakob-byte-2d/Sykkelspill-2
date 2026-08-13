@@ -53,7 +53,8 @@ export function drawBubble(ctx, x, top, w, h, color, tipX, tipY) {
 export function roleOf(S, r) {
   if (r.sprinting) return "SPRINTING";
   if ((r.attT ?? 0) > 0 || (r.attacked && r.groupSize <= 1)) return "ATTACKING";
-  if (r.chasing) return "CHASING";   // in a group too: the chase-duty man closing on an attack
+  if (r.attChase) return "COVERING";   // he chose to go with the move — marking it, not towing it
+  if (r.chasing) return "CHASING";
   if ((r.groupSize ?? 1) <= 1) {
     const anyAhead = S.riders.some((o) => o !== r && !o.caught && o.finished == null && o.dist > r.dist);
     return anyAhead ? "DROPPED" : "GOING SOLO";
@@ -72,7 +73,7 @@ export function roleOf(S, r) {
 // ...and the debug bubble's column has room for five characters, so the same states
 // wear their race-radio call signs there
 const ROLE_SHORT = {
-  SPRINTING: "SPR", ATTACKING: "ATK!", LOADING: "load", CHASING: "chse",
+  SPRINTING: "SPR", ATTACKING: "ATK!", LOADING: "load", COVERING: "cvr", CHASING: "chse",
   DROPPED: "drop", "GOING SOLO": "SOLO", "SITTING ON": "sit", "TURN DONE": "done",
   "RIDING OWN PACE": "own", PULLING: "PULL", RELAYING: "relay",
 };

@@ -62,6 +62,10 @@ export function makeRider(spec, i, rng) {
     // the attack: seconds of commitment left, cooldown after being brought back,
     // loading (skipping turns to fill the tank), clear-and-gone, and when it launched
     attT: 0, attCool: 0, attLoad: 0, attLoadT: 0, attacked: 0, attAt: null,
+    // ...and the cover: whose move he chose to go with (rider index, 0 = nobody —
+    // the player is 0 and never attacks), how long he has been on that errand, and
+    // the launch he has already given his once-per-attack answer to
+    attChase: 0, attChaseT: 0, attSeen: null,
     finished: null, caught: false, rampT: 0, rampFrom: 0, hold: false, paid: COOP_SEED,
     // the turn on the front: the tank he brought to it, how long he has held it,
     // and whether it has been declared over — a flag, so it survives the drop-back
@@ -159,9 +163,11 @@ export function spend(r, P, dt, body, inWind) {
     }
   }
   // the jump pays for everything above the ordinary ceiling — and only an all-out
-  // sprint asks for that. Refilled below threshold, on its own slow clock, further
-  // down with the surge refill.
-  if (r.sprinting && P > body.ceil) r.jump = Math.max(r.jump - (P - body.ceil) * dt, 0);
+  // gesture asks for that: the sprint, an attack's opening kick, a follower's jump
+  // to cover it. Every source of P above the ceiling is a burstCeil branch, so the
+  // gate is the wattage itself. Refilled below threshold, on its own slow clock,
+  // further down with the surge refill.
+  if (P > body.ceil) r.jump = Math.max(r.jump - (P - body.ceil) * dt, 0);
   // wear: every kilojoule costs durability, hard ones far more — and it never comes back
   // today. Divided by dura: the one number that says how slowly the day eats a man,
   // which is the quality that separates a classics hardman from everyone else.

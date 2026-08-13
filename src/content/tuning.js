@@ -83,7 +83,16 @@ export const ATT_SF = 0.55;       // matches needed to fire: below this he LOADS
                            // turns, sits at the back and refills, the gun loading everyone can see
 export const ATT_COMMIT = 75;     // seconds of full commitment before the attack is judged
 export const ATT_COOL = 150;      // seconds before a brought-back attacker considers going again
-export const ATT_HESIT = 6;       // the look-around: how long the group hesitates before anyone chases
+export const ATT_KICK_T = 10;     // the opening jump: this many seconds at the burst ceiling before the
+                           // attack settles into its dosing — an attack IS a sprint out of the group,
+                           // and the alactic tank pays for it
+export const ATT_REACT = 2;       // a jump is answered at once or not at all: seconds before a rider
+                           // who chooses to cover it launches
+export const ATT_FOLLOW_SF = 0.35; // the tank it takes to even try to go with an attack
+export const ATT_FOLLOW_EDGE = 0.03; // the motive: you only follow a man you would beat (or match) in the
+                              // sprint — being towed to the line by one who beats you is pointless
+export const ATT_FOLLOW_N = 2;    // at most this many cover the move; the rest free-ride on the strongest
+                           // closers, which is the whole game theory of a break
 export const ATT_GIVEUP = 25;     // seconds of gap at which the chase stops bothering — "let him die
                            // out there" — and the group rides for the remaining placings
 

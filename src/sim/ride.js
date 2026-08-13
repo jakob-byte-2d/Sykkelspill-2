@@ -1,9 +1,9 @@
-import { ATT_COMMIT, ATT_COOL, ATT_FROM, ATT_GIVEUP, ATT_HESIT, ATT_SAFE, ATT_SF, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
+import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_T, ATT_REACT, ATT_SAFE, ATT_SF, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { burstCeil, durPower } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
-import { attackerAhead, chaseTarget, deadWheel, dist0, launchAt, queueWheel, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
+import { attackerAhead, chaseTarget, deadWheel, dist0, launchAt, queueWheel, reacting, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
 
 /* The decision, once per rider per second: how many watts, and why. */
 
@@ -41,12 +41,41 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // that is the other headline — the moment the chase either organises or loses
       else r.attNews = 3;
     }
+    // the opening seconds ARE a sprint — the burst ceiling, the jump paying for it.
+    // A steady dosing from second one never left the wheels: measured, the median
+    // gap after ten seconds was five metres. The kick is what an attack IS; the
+    // dosing below is what SURVIVING one's own attack is.
+    if (ATT_COMMIT - r.attT <= ATT_KICK_T) return { P: burstCeil(r, b), brake: 0 };
     const tc = Math.max(r.attT, 15);
     return { P: Math.min(b.T + r.surge / tc, durPower(r, tc, b.T), b.ceil), brake: 0 };
   }
   // ...and brought back for good: the moment a gone attacker is swallowed by a group
   // again, the attack is over and the ledger's ordinary life resumes
   if (r.attacked && (r.groupSize ?? 1) > 1) { r.attacked = 0; r.attCool = ATT_COOL; r.attNews = 2; }
+  // Covering the move: the man who CHOSE to go with an attack is racing, not rotating,
+  // wherever the road has put him — still buried in the group, alone in between, or on
+  // the attacker's wheel. It ends when the attack ends, when the gap says he lost the
+  // wager, or when his own body does; the finale ends every private errand anyway.
+  if (r.attChase) {
+    const att = S.riders[r.attChase];
+    const gapS = att ? (dist0(att) - dist0(r)) / Math.max(r.speed, 6) : Infinity;
+    const on = att && !att.caught && att.finished == null
+      && ((att.attT ?? 0) > 0 || att.attacked)
+      && gapS < ATT_GIVEUP && b.sf >= 0.10 && togo >= SPRINT_FINALE_M;
+    if (!on) { r.attChase = 0; r.attChaseT = 0; }
+    else {
+      r.attChaseT = (r.attChaseT || 0) + 1;
+      r.hold = false; r.digging = 0;
+      const away = dist0(att) - BIKE - dist0(r);
+      // on the wheel: covering costs the price of holding him from your shelter —
+      // sitting on the attacker is the whole point of marking, not pulling him
+      if (away < DRAFT) return { P: Math.min(Math.max(powerFor(att.speed, r.mass, r.cda, grad, rho, hw, shel), 0), b.ceil), brake: 0 };
+      // still reaching for it: the answer to a jump is a jump — the burst ceiling,
+      // his own matches burnt to hold the move. After that, the chase's arithmetic.
+      if (r.attChaseT <= ATT_KICK_T) return { P: burstCeil(r, b), brake: 0 };
+      return { P: chaseRide(S, r, b, att, grad, rho, hw), brake: 0 };
+    }
+  }
   if (grp && grp.length > 1) {
     const inFront = r.groupPos === 1;
     // inside the finale the ledger stops deciding: nobody owes anybody a turn any more,
@@ -61,7 +90,8 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       const fire = () => {
         r.attLoad = 0; r.attLoadT = 0; r.attT = ATT_COMMIT; r.attAt = S.t; r.attNews = 1;
         r.hold = false; r.digging = 0;
-        return { P: Math.min(b.T + r.surge / ATT_COMMIT, durPower(r, ATT_COMMIT, b.T), b.ceil), brake: 0 };
+        // launched sprinting, not settling: the very first second is already the kick
+        return { P: burstCeil(r, b), brake: 0 };
       };
       if (r.attLoad) {
         // loading is a COMMITMENT, not a per-tick opinion: judged afresh every second
@@ -153,26 +183,35 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // "the front is done" is public: his own flag, or the player without the pull
     // button lit — position 2 rolls through on the SAME tick the front eases
     const frontDone = !finale && !inFront && (front.isPlayer && S.input.mode !== "relay" ? true : !!front.done);
-    // The response to an attack. The group first looks at each other (ATT_HESIT), and
-    // then exactly one man owns the chase: the best sprinter still available — he has
-    // the most to lose if it sticks. Everyone else keeps the rotation's pace and holds
-    // his wheel; towing the chase is HIS bill, which is why breaks hesitate at all.
-    // Past ATT_GIVEUP seconds of gap the group lets him die out there and rides for
-    // the placings — and an attacker nobody can afford to chase simply rides away.
-    let chaseDuty = false, attUp = null;
-    if (!finale && !r.isPlayer && !resting && !r.attLoad) {
-      attUp = attackerAhead(S, r);
-      if (attUp && attUp.attAt != null && S.t - attUp.attAt > ATT_HESIT) {
-        const attGapS = (dist0(attUp) - dist0(r)) / Math.max(r.speed, 6);
-        if (attGapS < ATT_GIVEUP) {
-          let bx = -1, who = null;
+    // The response to an attack is a CHOICE, made once, two seconds after the jump —
+    // a rykk is answered at once or not at all. Each man asks: can I (a real tank,
+    // not loading, not drifting), and is it worth it (I would beat or match him in a
+    // sprint — being towed to the line by a man who beats me is pointless)? Then he
+    // looks around: if enough stronger sprinters are placed to cover it, he free-rides
+    // on their legs — which is why at most ATT_FOLLOW_N go, and why a move nobody can
+    // afford to answer simply rides away. The player is never in this: following an
+    // attack is HIS choice, made with the slider, not the autopilot's reflex.
+    if (!finale && !r.isPlayer && !r.attChase) {
+      const up = attackerAhead(S, r);
+      if (up && up.attAt != null && S.t - up.attAt >= ATT_REACT && r.attSeen !== up.attAt) {
+        r.attSeen = up.attAt;
+        const can = !resting && !r.attLoad && b.sf >= ATT_FOLLOW_SF
+          && r.sprintX >= up.sprintX - ATT_FOLLOW_EDGE;
+        if (can) {
+          let stronger = 0;
           for (const o of grp) {
-            if (o.isPlayer || (o.attT ?? 0) > 0 || o.attLoad || o.offline || (o.sf ?? 1) < PULL_MIN_SF) continue;
-            if (o.sprintX > bx) { bx = o.sprintX; who = o; }
+            if (o === r || o === up || o.isPlayer) continue;
+            if ((o.sf ?? 1) >= ATT_FOLLOW_SF && !o.attLoad && !o.offline
+              && o.sprintX >= up.sprintX - ATT_FOLLOW_EDGE && o.sprintX > r.sprintX) stronger++;
           }
-          chaseDuty = who === r;
-        } else attUp = null;
-      } else attUp = null;
+          if (stronger < ATT_FOLLOW_N) {
+            r.attChase = up.i; r.attChaseT = 1;
+            r.hold = false; r.digging = 0;
+            // his answer opens the same way the attack did: with the jump
+            return { P: burstCeil(r, b), brake: 0 };
+          }
+        }
+      }
     }
     if (r.hold && (shel === 0 || !ahead || (!sitting && !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0)))))) r.hold = false;
     if (inFront) {
@@ -196,9 +235,6 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // ...and where the road is his, the plan's tempo is a wasted chance. pullX is
         // the price of a long turn in the wind and has no say in a dig; the body does
         if (mine) { r.digging = 1; P = Math.max(P, digP); }
-        // ...and the chase's bill lands here when the chaser holds the front: the
-        // closing power over the plan's, and no coast — closing a gap is racing
-        if (chaseDuty && attUp) P = Math.max(P, chaseRide(S, r, b, attUp, grad, rho, hw));
       }
       if (!r.chasing) P = coast(P, r.speed);
     } else if ((overpaid || sitting) && r.groupPos < grp.length) {
@@ -251,9 +287,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         if (dropper) tgt = dropper;
       }
       // a rester may go slower with a man rotating back — that is the whole point of
-      // the wave-in — but not with one who is coming off for good. An attacking wheel
-      // is no wheel either: following the jump is the chaser's decision, not a reflex.
-      const usable = tgt && !deadWheel(tgt, r) && !((tgt.attT ?? 0) > 0)
+      // the wave-in — but not with one who is coming off for good. A wheel that is
+      // racing an attack — the attacker's own, or a man covering it — is no wheel
+      // either: going with the move is a decision each rider makes for himself, and
+      // this rider (the player included) did not make it.
+      const usable = tgt && !deadWheel(tgt, r) && !reacting(tgt)
         && (sitting || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
       // the line hands over to the first man still in it — not literally position 2,
       // or a rester there would leave the break with no engine at all. A rider on an
@@ -265,7 +303,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       let nextUp = null, fullest = null;
       for (let k = 1; k < grp.length; k++) {
         const o = grp[k];
-        if (o.offline || (o.attT ?? 0) > 0 || o.attLoad || o.digging || (o.isPlayer && S.input.mode === "sit")) continue;
+        if (o.offline || reacting(o) || o.attLoad || o.digging || (o.isPlayer && S.input.mode === "sit")) continue;
         if (!fullest || (o.sf ?? 1) > (fullest.sf ?? 1)) fullest = o;
         if (nextUp == null && (o.sf ?? 1) >= PULL_MIN_SF) nextUp = o;
       }
@@ -279,11 +317,6 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         r.hold = false;
         r.digging = 1;
         P = coast(digP, r.speed);
-      } else if (chaseDuty && attUp) {
-        // the chaser comes through the line and closes with the chase's own
-        // arithmetic — what he can hold for as long as the catch takes
-        r.hold = false;
-        P = chaseRide(S, r, b, attUp, grad, rho, hw);
       } else if (r === nextUp && !sitting && (frontDone || !usable)) {
         // the front is done, or the wheel ahead is dying — ride through at the plan's
         // price, no more. The differential that swaps the positions is the OTHER man's:
@@ -324,10 +357,27 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // does here is not a number: he rides what closes the gap. It is the question
         // the man alone off the back already asks, so it gets the same answer.
         r.hold = false;
-        const lead = tgt || chaseTarget(S, r);
+        let lead = tgt || chaseTarget(S, r);
+        // ...but a wheel that is racing an attack is not "his" wheel to close to: paying
+        // the price of holding an accelerating mover's speed was exactly how the whole
+        // group — the player in his wheels included — got towed across to every move.
+        // He looks THROUGH the racers to the nearest man still riding the group's race,
+        // and if the entire road ahead of him IS the move, he lets it go: the plan's
+        // price, and the group reforms behind it at its own tempo.
+        let refused = false;
+        if (lead && reacting(lead)) {
+          refused = true;
+          lead = null;
+          for (const o of S.riders) {
+            if (o === r || o.caught || o.finished != null || reacting(o)) continue;
+            if (dist0(o) > dist0(r) && (!lead || dist0(o) < dist0(lead))) lead = o;
+          }
+        }
         const away = lead ? dist0(lead) - BIKE - dist0(r) : Infinity;
         if (!lead) {
-          P = Math.min(0.92 * b.T, b.ceil);
+          P = refused
+            ? Math.min(powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, shel), b.ceil)
+            : Math.min(0.92 * b.T, b.ceil);
         } else if (away < DRAFT) {
           // still in his wake, or alongside him: this is not a chase and must not be
           // priced as one. A chase solved for a four-metre gap asks for the tank over
@@ -346,7 +396,19 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // Alone. Off the front there is nothing to read and nothing to chase, so the old
     // steady tempo stands. Off the back there is a wheel up the road, and the whole
     // question a dropped rider asks is whether he can reach it before the line.
-    const lead = chaseTarget(S, r);
+    let lead = chaseTarget(S, r);
+    // ...unless that wheel IS the move: a man left alone because the attack went from
+    // right next to him does not reflex-chase it — he did not choose to follow, and
+    // "let him die out there" is the group's whole answer to a move it cannot afford.
+    // He looks through the racers to the nearest wheel still riding the ordinary race,
+    // and with nothing but the move on the road ahead he rides his own tempo.
+    if (lead && reacting(lead)) {
+      lead = null;
+      for (const o of S.riders) {
+        if (o === r || o.caught || o.finished != null || reacting(o)) continue;
+        if (dist0(o) > dist0(r) && (!lead || dist0(o) < dist0(lead))) lead = o;
+      }
+    }
     let racing = false;
     if (!lead) {
       if (r.attacked) {
@@ -363,6 +425,12 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // a tailwind at fifty-six an hour is doing neither of those things, he is racing.
     if (!r.chasing && !racing) P = coast(P, r.speed);
   }
+  // SITTING ON has one ceiling everywhere: threshold. Sitting on means paying the
+  // sheltered price of the group's speed — never digging to close a surge, a reshuffle
+  // or a bridge (measured, the autopilot spent 720 W hauling the sitting player across
+  // one). Above threshold the wheel simply goes, and going with it becomes what it
+  // should be: the player's own choice, made on the slider.
+  if (r.isPlayer && S.input.mode === "sit" && P > b.T) P = b.T;
   return { P, brake };
 }
 

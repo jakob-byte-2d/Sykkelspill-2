@@ -36,6 +36,11 @@ export const deadWheel = (o, r) => (o.sf ?? 1) < WHEEL_COOKED_SF && (r.sf ?? 1) 
 // everyone else — and nobody drifting back down the outside counts as a turn-taker
 export const working = (S, o) => !o.offline && (o.isPlayer ? S.input.mode !== "sit" : (o.sf ?? 1) >= PULL_MIN_SF);
 
+// whoever is racing an attack rather than riding the group's race: the attacker mid-
+// commitment or clear, and any man who chose to cover the move. One word, because the
+// same rule hangs on it everywhere — his wheel is nobody's to follow by reflex.
+export const reacting = (o) => (o.attT ?? 0) > 0 || !!o.attacked || !!o.attChase;
+
 // where he opens up, read off his sprint against the rest of his group. The fastest man
 // can afford to wait on a wheel; the slowest has to go long and try to blunt him, which
 // is the only card a man without a sprint has left to play.
@@ -148,10 +153,10 @@ export function queueWheel(S, r, ahead) {
   if (!ahead) return ahead;
   let best = null;
   for (const o of S.riders) {
-    // an attacking rider is not a wheel: the line looks through him and reforms
-    // behind the next man at its own pace — following the jump is the chaser's
-    // decision, not the queue's reflex
-    if (o === r || o.caught || o.finished != null || o.offline || (o.attT ?? 0) > 0 || deadWheel(o, r)
+    // a rider racing an attack — his own, or one he chose to cover — is not a wheel:
+    // the line looks through him and reforms behind the next man at its own pace.
+    // Going with the move is each rider's decision, never the queue's reflex.
+    if (o === r || o.caught || o.finished != null || o.offline || reacting(o) || deadWheel(o, r)
       || !validWheel(o, r, S.course.gradAt(Math.max(dist0(o), 0)))) continue;
     if (dist0(o) > dist0(r) && (best == null || dist0(o) < dist0(best))) best = o;
   }
