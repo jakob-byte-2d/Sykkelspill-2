@@ -53,18 +53,19 @@ export function drawBubble(ctx, x, top, w, h, color, tipX, tipY) {
 export function roleOf(S, r) {
   if (r.sprinting) return "SPRINTING";
   if ((r.attT ?? 0) > 0 || (r.attacked && r.groupSize <= 1)) return "ATTACKING";
-  if (r.attLoad) return "LOADING";
   if (r.chasing) return "CHASING";   // in a group too: the chase-duty man closing on an attack
   if ((r.groupSize ?? 1) <= 1) {
     const anyAhead = S.riders.some((o) => o !== r && !o.caught && o.finished == null && o.dist > r.dist);
     return anyAhead ? "DROPPED" : "GOING SOLO";
   }
+  if (r.digging) return "RIDING OWN PACE";
+  // WHAT HE DOES beats what he wanted: a rester or a loader stuck on the front is
+  // pulling — the front branch has no rest exemption, and neither does the label.
+  if (r.groupPos === 1 && !r.offline) return "PULLING";
+  if (r.attLoad) return "LOADING";
   if (r.isPlayer && S.input.mode === "sit") return "SITTING ON";
   if (r.offline) return "TURN DONE";
   if (!r.isPlayer && (r.sf ?? 1) < PULL_MIN_SF) return "SITTING ON";
-  if (r.digging) return "RIDING OWN PACE";
-  // the front of the rotation is PULLING; RELAYING is the line behind him
-  if (r.groupPos === 1 && !r.offline) return "PULLING";
   return "RELAYING";
 }
 
