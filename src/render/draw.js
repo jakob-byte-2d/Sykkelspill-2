@@ -1,3 +1,4 @@
+import { PULL_MIN_SF } from "../content/tuning.js";
 import { bodyNow } from "../sim/body.js";
 import { BIKE } from "../sim/physics.js";
 import { lerp } from "../sim/rng.js";
@@ -47,15 +48,32 @@ export function drawBubble(ctx, x, top, w, h, color, tipX, tipY) {
 }
 
 // what he is doing right now, in one word the bubble has room for
+// one vocabulary for everyone, the player's own words: what a rider IS DOING, read
+// off the same state for AI and human alike. The order is the order of drama.
 export function roleOf(S, r) {
-  if ((r.attT ?? 0) > 0 || (r.attacked && r.groupSize <= 1)) return "ATTACK";
-  if (r.attLoad) return "loading";
-  if (r.groupSize <= 1) return "solo";
-  if (r.isPlayer && S.input.mode === "sit") return "sit";
-  if (r.groupPos === 1 && !r.offline) return "FRONT";
-  if (r.offline) return "drop";
-  return "wheel";
+  if (r.sprinting) return "SPRINTING";
+  if ((r.attT ?? 0) > 0 || (r.attacked && r.groupSize <= 1)) return "ATTACKING";
+  if (r.attLoad) return "LOADING";
+  if ((r.groupSize ?? 1) <= 1) {
+    if (r.chasing) return "CHASING";
+    const anyAhead = S.riders.some((o) => o !== r && !o.caught && o.finished == null && o.dist > r.dist);
+    return anyAhead ? "DROPPED" : "GOING SOLO";
+  }
+  if (r.isPlayer && S.input.mode === "sit") return "SITTING ON";
+  if (r.offline) return "TURN DONE";
+  if (!r.isPlayer && (r.sf ?? 1) < PULL_MIN_SF) return "SITTING ON";
+  if (r.digging) return "DIGGING";
+  return "RELAYING";
 }
+
+// ...and the debug bubble's column has room for five characters, so the same states
+// wear their race-radio call signs there
+const ROLE_SHORT = {
+  SPRINTING: "SPR", ATTACKING: "ATK!", LOADING: "load", CHASING: "chse",
+  DROPPED: "drop", "GOING SOLO": "SOLO", "SITTING ON": "sit", "TURN DONE": "done",
+  DIGGING: "DIG", RELAYING: "relay",
+};
+export const roleShort = (S, r) => ROLE_SHORT[roleOf(S, r)] || "?";
 
 export function draw(S, canvas, alpha) {
   const ctx = canvas.getContext("2d");
@@ -289,7 +307,7 @@ export function draw(S, canvas, alpha) {
   // then a nudge pass per row — the same chips-on-stalks trick the race map uses,
   // because five riders wheel to wheel are closer together than their labels are wide
   {
-    const BW = DEBUG ? 59 : 48, BH = DEBUG ? 72 : 50, GAPX = 3;
+    const BW = DEBUG ? 59 : 64, BH = DEBUG ? 72 : 61, GAPX = 3;
     for (const row of [0, 1]) {
       const mine = bubbles.filter((m) => m.row === row).sort((a, m) => m.x - a.x);
       mine.forEach((m) => { m.bx = m.x; });
@@ -316,6 +334,10 @@ export function draw(S, canvas, alpha) {
         ctx.font = "800 9px ui-monospace, monospace";
         ctx.fillStyle = "rgba(190,210,230,0.9)";
         ctx.fillText(m.share == null ? "—" : "DR" + m.share + "%", m.bx, top + 47);
+        // what he is DOING, in the player's own vocabulary — the whole point of the
+        // bubble is that a glance reads the race, and the race is made of intentions
+        ctx.fillStyle = "#ffd23f";
+        ctx.fillText(roleOf(S, r), m.bx, top + 58);
       } else {
         ctx.font = "800 9px ui-monospace, monospace";
         const L = m.bx - BW / 2 + 16, R = m.bx + BW / 2 - 15;
@@ -324,7 +346,7 @@ export function draw(S, canvas, alpha) {
         ctx.fillStyle = "rgba(190,210,230,0.9)";
         ctx.fillText(Math.round(b.T) + "T", L, top + 34);
         ctx.fillStyle = "#ffd23f";
-        ctx.fillText(roleOf(S, r), L, top + 45);
+        ctx.fillText(roleShort(S, r), L, top + 45);
         ctx.fillStyle = "rgba(190,210,230,0.9)";
         // wheels overlap by centimetres in a tight line, and "-0.0" is just noise
         ctx.fillText(m.gap == null ? "—" : (Math.abs(m.gap) < 0.05 ? 0 : m.gap).toFixed(1), L, top + 56);
