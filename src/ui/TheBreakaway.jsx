@@ -19,6 +19,7 @@ export default function TheBreakaway() {
   const wrapRef = useRef(null);
   const seedRef = useRef((Math.random() * 1e9) | 0);
   const dragRef = useRef(false);
+  const alertRef = useRef(null);   // the last big event already reacted to
 
   const start = (seed) => {
     seedRef.current = seed;
@@ -139,8 +140,19 @@ export default function TheBreakaway() {
     if (finale && !S.finaleLock) {
       S.finaleLock = true;
       if (S.input.mode !== "manual") setInput(S, { mode: "manual", watts: S.playerW });
-      pushEvent(S, "Flamme rouge — the finale is yours");
+      pushEvent(S, "Flamme rouge — the finale is yours", 1);
     }
+    // the director's cut: news worth reacting to — an attack going, a man riding
+    // clear, the flamme rouge — slams the replay back to real time and puts itself
+    // over the screen. Handled once per event (the ref remembers the object), so
+    // the player can wind the speed back up without the same headline re-braking him.
+    const ev = S.events[0];
+    if (ev && ev.big && alertRef.current !== ev) {
+      alertRef.current = ev;
+      ev.slowed = speedRef.current > 1 ? 1 : 0;
+      if (ev.slowed) { speedRef.current = 1; setSpeedMode(1); }
+    }
+    const alert = ev && ev.big && S.t - ev.t < 5 && !S.ended ? ev : null;
     // the thumb always reads watts — what you are asking for, or what the legs are
     // actually doing on the wheel and in the rotation — and never more than the body
     // has: the display clamps at the ceiling, and pinned there it glows red and
@@ -231,6 +243,27 @@ export default function TheBreakaway() {
           ))}
         </div>
         </div>
+
+        {/* the headline: big news over the screen — the race just changed, and the
+            speed has already been slammed to 1× so there is time to answer it */}
+        {alert && (
+          <div style={{ position: "absolute", top: "30%", left: 0, right: 0, display: "flex", justifyContent: "center", pointerEvents: "none", zIndex: 5 }}>
+            <div style={{
+              animation: "headline .28s cubic-bezier(.2,1.6,.4,1)",
+              background: "linear-gradient(180deg, #f0a29a, #c0392b 40%, #7c1810)",
+              border: "2px solid #5c1010", borderRadius: 10, padding: "10px 22px 9px",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55), 0 6px 22px rgba(15,35,60,0.55)",
+              textAlign: "center", maxWidth: "86%",
+            }}>
+              <div style={{ fontFamily: font, fontWeight: 800, fontStyle: "italic", fontSize: 24, lineHeight: 1.1, letterSpacing: 1.5, color: "#fff", textShadow: "0 2px 3px rgba(60,10,5,0.8)" }}>
+                {alert.txt.toUpperCase()}
+              </div>
+              {alert.slowed ? (
+                <div style={{ marginTop: 3, fontFamily: mono, fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#ffe57a" }}>SPEED → 1×</div>
+              ) : null}
+            </div>
+          </div>
+        )}
 
         {/* the right column under the slider, top to bottom: the doing-chip, the
             relay/sit toggle, the motivation one-shot, and the sprint hold. One thumb,

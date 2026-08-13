@@ -10,8 +10,11 @@ import { clamp } from "./rng.js";
 
 /* One second of racing. */
 
-export function pushEvent(S, txt) {
-  S.events.unshift({ t: S.t, txt });
+// big marks the events worth reacting to — an attack going, a man riding clear — so
+// the UI can slam the replay speed back to 1× and put the news over the screen, not
+// just in the chyron's small print
+export function pushEvent(S, txt, big = 0) {
+  S.events.unshift({ t: S.t, txt, big });
   if (S.events.length > 4) S.events.pop();
 }
 
@@ -150,8 +153,9 @@ export function stepSim(S) {
   // thing the commentary exists for
   for (const r of S.riders) {
     if (r.attCool > 0) r.attCool -= 1;
-    if (r.attNews === 1) pushEvent(S, r.name + " attacks!");
+    if (r.attNews === 1) pushEvent(S, r.name + " attacks!", 1);
     else if (r.attNews === 2) pushEvent(S, r.name + " is brought back");
+    else if (r.attNews === 3) pushEvent(S, r.name + " rides clear!", 1);
     r.attNews = 0;
   }
 

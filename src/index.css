@@ -17,6 +17,12 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* the headline banner popping over the screen: news worth braking the replay for */
+@keyframes headline {
+  0%   { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
 /* the slider thumb pinned against the ceiling: asking for more than the body has */
 @keyframes dirre {
   0%   { transform: translateX(0); }

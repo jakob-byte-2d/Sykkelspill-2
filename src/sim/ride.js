@@ -37,6 +37,9 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     r.hold = false; r.digging = 0;
     if (r.attT <= 0) {
       if ((r.groupSize ?? 1) > 1) { r.attacked = 0; r.attCool = ATT_COOL; r.attNews = 2; }
+      // ...or the commitment ends with clear road behind him: the attack WORKED, and
+      // that is the other headline — the moment the chase either organises or loses
+      else r.attNews = 3;
     }
     const tc = Math.max(r.attT, 15);
     return { P: Math.min(b.T + r.surge / tc, durPower(r, tc, b.T), b.ceil), brake: 0 };
