@@ -63,6 +63,8 @@ export function roleOf(S, r) {
   if (r.offline) return "TURN DONE";
   if (!r.isPlayer && (r.sf ?? 1) < PULL_MIN_SF) return "SITTING ON";
   if (r.digging) return "RIDING OWN PACE";
+  // the front of the rotation is PULLING; RELAYING is the line behind him
+  if (r.groupPos === 1 && !r.offline) return "PULLING";
   return "RELAYING";
 }
 
@@ -71,7 +73,7 @@ export function roleOf(S, r) {
 const ROLE_SHORT = {
   SPRINTING: "SPR", ATTACKING: "ATK!", LOADING: "load", CHASING: "chse",
   DROPPED: "drop", "GOING SOLO": "SOLO", "SITTING ON": "sit", "TURN DONE": "done",
-  "RIDING OWN PACE": "own", RELAYING: "relay",
+  "RIDING OWN PACE": "own", PULLING: "PULL", RELAYING: "relay",
 };
 export const roleShort = (S, r) => ROLE_SHORT[roleOf(S, r)] || "?";
 

@@ -245,7 +245,9 @@ export default function TheBreakaway() {
           {S.input.sprint ? "SPRINTING"
             : player.sulT > 0 ? "HTFU " + Math.ceil(player.sulT) + "s"
             : S.input.mode === "sit" ? "SITTING ON"
-            : S.input.mode === "relay" ? "RELAYING" : "MANUAL"}
+            : S.input.mode === "relay"
+              ? (player.groupPos === 1 && (player.groupSize ?? 1) > 1 && !player.offline ? "PULLING" : "RELAYING")
+              : "MANUAL"}
         </div>
 
         {/* relay <-> sit on: one toggle, labelled with where it takes you — and its
