@@ -1,4 +1,4 @@
-import { ATT_COMMIT, ATT_COOL, ATT_GIVEUP, ATT_HESIT, ATT_SF, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
+import { ATT_COMMIT, ATT_COOL, ATT_FROM, ATT_GIVEUP, ATT_HESIT, ATT_SAFE, ATT_SF, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { burstCeil, durPower } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
@@ -55,15 +55,33 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // but the tank is short, he LOADS — skips his turns and sits in to fill it, the
     // gun everyone can see being loaded — and fires the moment the matches are there.
     if (!finale && !r.isPlayer) {
-      if (wantsAttack(S, grp, r)) {
-        if (b.sf >= ATT_SF) {
-          // fire, this very second: out of the line, full commitment
-          r.attLoad = 0; r.attT = ATT_COMMIT; r.attAt = S.t; r.attNews = 1;
-          r.hold = false; r.digging = 0;
-          return { P: Math.min(b.T + r.surge / ATT_COMMIT, durPower(r, ATT_COMMIT, b.T), b.ceil), brake: 0 };
+      const fire = () => {
+        r.attLoad = 0; r.attLoadT = 0; r.attT = ATT_COMMIT; r.attAt = S.t; r.attNews = 1;
+        r.hold = false; r.digging = 0;
+        return { P: Math.min(b.T + r.surge / ATT_COMMIT, durPower(r, ATT_COMMIT, b.T), b.ceil), brake: 0 };
+      };
+      if (r.attLoad) {
+        // loading is a COMMITMENT, not a per-tick opinion: judged afresh every second
+        // it flickered off whenever the bunch gap wobbled around the safety line (48
+        // of 53 spells dropped without firing) and the gun never finished loading.
+        // Once loading, he stays loading until it fires, the window genuinely closes
+        // (finale, past the attack zone, the bunch decisively near), or patience runs
+        // out — nobody skips turns forever for an attack that never comes.
+        r.attLoadT = (r.attLoadT || 0) + 1;
+        const open = togo >= SPRINT_FINALE_M && togo <= ATT_FROM
+          && (S.pel.gapS ?? 0) > ATT_SAFE - 8
+          && !grp.some((o) => o !== r && (o.attT ?? 0) > 0);
+        if (!open || r.attLoadT > 150) {
+          // ...and a dropped load takes a breath before reloading: the bunch gap
+          // wobbles around the safety line, and without this the gun was picked up
+          // and put down every few seconds
+          r.attLoad = 0; r.attLoadT = 0; r.attCool = Math.max(r.attCool, 30);
         }
-        r.attLoad = 1;
-      } else r.attLoad = 0;
+        else if (b.sf >= ATT_SF) return fire();
+      } else if (wantsAttack(S, grp, r)) {
+        if (b.sf >= ATT_SF) return fire();
+        r.attLoad = 1; r.attLoadT = 0;
+      }
     }
     // ...and the same idea for anyone: whoever is not working holds the back of the
     // line — including the man loading an attack, whose rest is the point
@@ -111,7 +129,14 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // thing a rider committed to a climb never does. His body can still end it: an
     // empty tank ends a dig in stepSim, and a summit power fallen below the plan's
     // tempo ends the claim here — the hill has stopped being his.
-    if (r.digTo != null && (r.dist >= r.digTo || finale || overpaid || resting || holdTop < pPlan)) r.digTo = null;
+    // A committed dig is NOT ended by the rotation's resting threshold: the dig's
+    // whole plan is to spend the last third the rotation would protect, and cresting
+    // empty is the design. Nor by fading below plan pace while he leads — he is
+    // still first; relief comes through the ledger when his body truly empties. The
+    // slower-than-plan guard applies only from POSITION TWO, where a claimant who
+    // cannot pass wedges the whole line (the bug it was built for).
+    if (r.digTo != null && (r.dist >= r.digTo || finale || overpaid
+      || (holdTop < pPlan && r.groupPos !== 1))) r.digTo = null;
     const onward = r.digTo != null;
     // ...and there is nothing to read where there is no climb: the duration is the
     // whole point of the reading, so with no summit ahead the question is not asked
@@ -314,6 +339,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       }
     }
   } else {
+    r.digTo = null;   // whatever climb he claimed, he is his own group now — clean slate
     // Alone. Off the front there is nothing to read and nothing to chase, so the old
     // steady tempo stands. Off the back there is a wheel up the road, and the whole
     // question a dropped rider asks is whether he can reach it before the line.

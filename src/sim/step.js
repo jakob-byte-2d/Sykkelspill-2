@@ -210,7 +210,11 @@ export function stepSim(S) {
     // his climb ends when the hill does, and the hill decides that, not the rotation.
     // The tank can still end it early, and over the top the ledger takes over again —
     // hopelessly overpaid by then, so he sits up at the summit like anyone would.
-    const over = r.digging ? empty : (paidUp || spent || empty || r.pullT >= maxPull);
+    // ...and for a digger, "empty" means EMPTY: his plan is to spend the last third
+    // the rotation would protect and crest with nothing, so the 30 % resting bar that
+    // ends an ordinary turn would amputate every dig (measured: 266 of 277 died early,
+    // median 40 % still in the tank). Only a truly bare tank hands his climb away.
+    const over = r.digging ? (empty && b.sf < 0.10) : (paidUp || spent || empty || r.pullT >= maxPull);
     if (r.pullT >= COOP_PULL_MIN && over) r.done = true;
   }
   // the turn's bookkeeping: it opens when he reaches the front and closes for good

@@ -54,8 +54,8 @@ export function roleOf(S, r) {
   if (r.sprinting) return "SPRINTING";
   if ((r.attT ?? 0) > 0 || (r.attacked && r.groupSize <= 1)) return "ATTACKING";
   if (r.attLoad) return "LOADING";
+  if (r.chasing) return "CHASING";   // in a group too: the chase-duty man closing on an attack
   if ((r.groupSize ?? 1) <= 1) {
-    if (r.chasing) return "CHASING";
     const anyAhead = S.riders.some((o) => o !== r && !o.caught && o.finished == null && o.dist > r.dist);
     return anyAhead ? "DROPPED" : "GOING SOLO";
   }
