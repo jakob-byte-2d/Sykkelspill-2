@@ -95,8 +95,9 @@ export default function TheBreakaway() {
     const y = e.clientY - rect.top;
     const t = 1 - clamp((y - 14) / (rect.height - 28), 0, 1);
     const asked = Math.round(wFromT(t, pts));
-    // grabbing the slider takes the controls back, whatever mode you were in
-    setInput(S, { mode: "manual", watts: asked });
+    // the slider moves the INSTRUCTION and nothing else: the mode keeps riding —
+    // handing the legs over to the setpoint is the MANUAL button's job
+    setInput(S, { watts: asked });
   };
   const onSliderUp = () => {
     dragRef.current = false;
@@ -153,19 +154,17 @@ export default function TheBreakaway() {
       if (speedRef.current > 1) { speedRef.current = 1; setSpeedMode(1); }
     }
     const alert = ev && ev.big && S.t - ev.t < 5 && !S.ended ? ev : null;
-    // the thumb always reads watts — what you are asking for, or what the legs are
-    // actually doing on the wheel and in the rotation — and never more than the body
-    // has: the display clamps at the ceiling, and pinned there it glows red and
-    // shivers. The red line stays as the ceiling's own mark on the track.
-    // While the sprint is held the slider's remembered value means nothing: the body
-    // rides the ceiling, so the thumb shows what was actually ridden and is at max by
-    // definition — read from input.watts it stood at the old number while the player
-    // sprinted at four figures, which is a bubble telling a straight lie.
-    const askedW = S.input.sprint ? S.playerW
-      : S.input.mode === "manual" ? S.input.watts : S.playerW;
-    const atMax = S.input.sprint || askedW >= Math.floor(body.ceil);
-    const shownW = Math.min(askedW, Math.round(body.ceil));
-    const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts), tS = tFromW(shownW, pts);
+    // Two readings on one track. The INSTRUCTION is the player's setpoint: it sits
+    // exactly where the thumb put it, whatever mode is riding, and only the MANUAL
+    // button hands the legs over to it. The INDICATOR is what the legs are actually
+    // doing right now — the autopilot's pulls, the wheel price, the sprint — and it
+    // moves entirely on its own. The order can exceed the body: pinned at or above
+    // the ceiling (or sprinting), the instruction glows red and shivers.
+    const setW = S.input.watts;
+    const liveW = S.playerW;
+    const atMax = S.input.sprint || setW >= Math.floor(body.ceil);
+    const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts);
+    const tSet = tFromW(setW, pts), tLive = tFromW(liveW, pts);
     // ...and it wears the colour of what you are doing, the same one the chip and the
     // button carry: the sprint's red beats the override's gold beats the mode's own.
     const doing = S.input.sprint ? "sprint" : player.sulT > 0 ? "htfu"
@@ -270,9 +269,29 @@ export default function TheBreakaway() {
         {/* the right column under the slider, top to bottom: the doing-chip, the
             relay/sit toggle, the motivation one-shot, and the sprint hold. One thumb,
             one column — grabbing the slider itself is what MANUAL is. */}
+        {/* manual: the third intention — the legs answer to the setpoint bubble and
+            nothing else. Relay and sit on keep their whole autopilot; this button is
+            how the standing order on the slider becomes the ride. */}
+        <button
+          onClick={() => { if (S && !S.ended) setInput(S, { mode: "manual" }); }}
+          style={actionBtn(208, {
+            cursor: "pointer", userSelect: "none", WebkitUserSelect: "none",
+            WebkitTouchCallout: "none", touchAction: "manipulation",
+            border: "2px solid #35516e",
+            color: "#fff",
+            background: S.input.mode === "manual"
+              ? "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.25) 45%, rgba(0,0,0,0.10)), #55708c"
+              : "linear-gradient(180deg, rgba(255,255,255,0.30), rgba(0,0,0,0.28)), #3d5570",
+            boxShadow: S.input.mode === "manual"
+              ? "inset 0 1px 0 rgba(255,255,255,0.8), 0 0 8px rgba(147,169,191,0.9)"
+              : "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(20,40,70,0.35)",
+          })}>
+          MANUAL
+        </button>
+
         {/* relay and sit on: two buttons, one per intention — the lit one is the mode
-            you are in, neither lit is MANUAL, and past the flamme rouge both go dark:
-            nobody rides for anybody in the last kilometre. */}
+            you are in, and past the flamme rouge both go dark: nobody rides for
+            anybody in the last kilometre. */}
         <button
           onClick={() => { if (S && !S.ended && !finale) setInput(S, { mode: "relay" }); }}
           style={actionBtn(170, {
@@ -416,7 +435,7 @@ export default function TheBreakaway() {
         {/* watt slider — its foot carries the WATTS label, so the column has to stop
             clear of the mode chip below it, not just above the chip's own top edge */}
         <div
-          style={{ position: "absolute", right: 6, top: 84, bottom: 212, width: 104, touchAction: "none", userSelect: "none" }}
+          style={{ position: "absolute", right: 6, top: 84, bottom: 250, width: 104, touchAction: "none", userSelect: "none" }}
           onPointerDown={(e) => { dragRef.current = true; setDragging(true); e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
           onPointerMove={(e) => { if (dragRef.current) onSlider(e, e.currentTarget); }}
           onPointerUp={onSliderUp}
@@ -438,11 +457,26 @@ export default function TheBreakaway() {
           <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#2fdc55", top: markerTop(tT), boxShadow: "0 0 5px #2fdc55" }} />
           {/* red ceiling line — sinks when you burn your matches */}
           <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#ff4b3a", top: markerTop(tC), boxShadow: "0 0 5px #ff4b3a", transition: "top .3s linear" }} />
-          {/* thumb: always the watts, in the colour of what you are doing — and pinned
-              against the ceiling it turns red and shivers: asking for more than you have */}
+          {/* the INDICATOR: what the legs are actually doing, moving on its own —
+              deliberately flat and un-pressable: no gloss, no grip, just a reading */}
           <div style={{
-            position: "absolute", left: 42, width: 50, height: 34, top: `calc(${markerTop(tS)} - 17px)`,
-            borderRadius: 999,
+            position: "absolute", left: 44, width: 46, height: 18, top: `calc(${markerTop(tLive)} - 9px)`,
+            borderRadius: 4, pointerEvents: "none",
+            background: "rgba(20,34,52,0.78)",
+            border: "1px solid rgba(160,185,210,0.5)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: mono, fontWeight: 700, fontSize: 10.5,
+            color: "#cfe0f2", transition: "top .15s linear",
+          }}>
+            {liveW}
+          </div>
+          {/* the INSTRUCTION: the player's setpoint, exactly where the thumb put it,
+              in the colour of the mode — and asking for more than the body has (or
+              sprinting), it turns red and shivers. Only the MANUAL button hands the
+              legs over to it; in RELAY and SIT ON it waits, a standing order. */}
+          <div style={{
+            position: "absolute", left: 42, width: 50, height: 34, top: `calc(${markerTop(tSet)} - 17px)`,
+            borderRadius: 999, pointerEvents: "none",
             background: atMax ? "linear-gradient(180deg, #ffb3a6, #ff5a42 45%, #b31d0e)" : DOING.bg,
             border: atMax ? "2px solid #7c1810" : "2px solid " + DOING.edge,
             boxShadow: atMax
@@ -454,7 +488,7 @@ export default function TheBreakaway() {
             color: atMax ? "#fff" : DOING.ink,
             textShadow: atMax || DOING.ink === "#fff" ? "0 1px 2px rgba(10,30,55,0.7)" : "none",
           }}>
-            {shownW}
+            {setW}
           </div>
           {/* ...and a finger covers what it points at, so while you are holding the grip the
               value stands well clear of it: two thumb-heights up, out from under the hand
@@ -463,7 +497,7 @@ export default function TheBreakaway() {
           {dragging && (
             <div style={{
               position: "absolute", left: 34, width: 66, height: 30, borderRadius: 999,
-              top: `calc(${markerTop(tS)} ${tS > 0.80 ? "+ 57px" : "- 79px"})`,
+              top: `calc(${markerTop(tSet)} ${tSet > 0.80 ? "+ 57px" : "- 79px"})`,
               display: "flex", alignItems: "center", justifyContent: "center",
               background: "linear-gradient(180deg, #ffffff, #dcebfa)",
               border: "2px solid " + (atMax ? "#b31d0e" : DOING.edge),
@@ -471,7 +505,7 @@ export default function TheBreakaway() {
               fontFamily: mono, fontWeight: 800,
               fontSize: 16, color: atMax ? "#b31d0e" : "#0d3568", pointerEvents: "none",
             }}>
-              {shownW} W
+              {setW} W
             </div>
           )}
           <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, textAlign: "center", fontSize: 9, letterSpacing: 2, color: "#0d3568", fontWeight: 800, fontStyle: "italic", fontFamily: font }}>WATTS</div>
