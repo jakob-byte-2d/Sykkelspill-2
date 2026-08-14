@@ -95,6 +95,19 @@ export const ATT_FOLLOW_N = 2;    // at most this many cover the move; the rest 
                            // closers, which is the whole game theory of a break
 export const ATT_GIVEUP = 25;     // seconds of gap at which the chase stops bothering — "let him die
                            // out there" — and the group rides for the remaining placings
+/* ---- the player's attack, read off the physics ---- */
+export const ATT_JUMP_X = 1.5;    // the gesture the group registers: watts above this multiple of the
+                           // price of sitting in (the plan's pace at HIS shelter — the offline
+                           // flag's reference, read the other way) while also above threshold
+export const ATT_JUMP_T = 3;      // ...held this many seconds before it is an attack and not a slider
+                           // twitch — then the AI's whole response machinery answers it
+export const ATT_JUMP_DV = 0.8;   // ...and the part that makes it a JUMP: he must actually be pulling
+                           // away — faster than the quickest of his companions by this much (m/s).
+                           // Watts alone flagged a man grinding threshold in the wheels as an
+                           // attacker nine races in fifteen; nobody attacks at the group's speed
+export const ATT_REARM = 20;      // the breather after being brought back before a new jump can
+                           // register. Short, unlike the AI's ATT_COOL: their discipline is
+                           // self-imposed; a real second jump from the player must be answered
 
 export const JUMP_TAU = 240;     // the alactic tank (the jump) refills on about this clock below
                            // threshold — roughly one jump per situation, the way

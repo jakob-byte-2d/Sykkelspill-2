@@ -1,4 +1,4 @@
-import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_T, ATT_REACT, ATT_SAFE, ATT_SF, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
+import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_SAFE, ATT_SF, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { burstCeil, durPower } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
@@ -50,19 +50,20 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     return { P: Math.min(b.T + r.surge / tc, durPower(r, tc, b.T), b.ceil), brake: 0 };
   }
   // ...and brought back for good: the moment a gone attacker is swallowed by a group
-  // again, the attack is over and the ledger's ordinary life resumes
-  if (r.attacked && (r.groupSize ?? 1) > 1) { r.attacked = 0; r.attCool = ATT_COOL; r.attNews = 2; }
+  // again, the attack is over and the ledger's ordinary life resumes. The player's
+  // cooldown is only the detector's re-arm — the AI's long one is its own discipline
+  if (r.attacked && (r.groupSize ?? 1) > 1) { r.attacked = 0; r.attCool = r.isPlayer ? ATT_REARM : ATT_COOL; r.attNews = 2; }
   // Covering the move: the man who CHOSE to go with an attack is racing, not rotating,
   // wherever the road has put him — still buried in the group, alone in between, or on
   // the attacker's wheel. It ends when the attack ends, when the gap says he lost the
   // wager, or when his own body does; the finale ends every private errand anyway.
   if (r.attChase) {
-    const att = S.riders[r.attChase];
-    const gapS = att ? (dist0(att) - dist0(r)) / Math.max(r.speed, 6) : Infinity;
-    const on = att && !att.caught && att.finished == null
+    const att = r.attChase;
+    const gapS = (dist0(att) - dist0(r)) / Math.max(r.speed, 6);
+    const on = !att.caught && att.finished == null
       && ((att.attT ?? 0) > 0 || att.attacked)
       && gapS < ATT_GIVEUP && b.sf >= 0.10 && togo >= SPRINT_FINALE_M;
-    if (!on) { r.attChase = 0; r.attChaseT = 0; }
+    if (!on) { r.attChase = null; r.attChaseT = 0; }
     else {
       r.attChaseT = (r.attChaseT || 0) + 1;
       r.hold = false; r.digging = 0;
@@ -205,7 +206,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
               && o.sprintX >= up.sprintX - ATT_FOLLOW_EDGE && o.sprintX > r.sprintX) stronger++;
           }
           if (stronger < ATT_FOLLOW_N) {
-            r.attChase = up.i; r.attChaseT = 1;
+            r.attChase = up; r.attChaseT = 1;
             r.hold = false; r.digging = 0;
             // his answer opens the same way the attack did: with the jump
             return { P: burstCeil(r, b), brake: 0 };

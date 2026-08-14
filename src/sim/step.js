@@ -1,4 +1,4 @@
-import { COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF } from "../content/tuning.js";
+import { ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, burstCeil, shutUpLegs, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
@@ -63,6 +63,11 @@ export function stepRider(S, r, dt) {
     if (shutUpLegs(r)) Object.assign(b, bodyNow(r));
   }
 
+  // the price of sitting in — the plan's pace at HIS shelter. The manual offline flag
+  // reads it downward (soft-pedalling out of the line) and the attack detection below
+  // reads it upward (jumping out of it), so it is taken once, for the player only.
+  const sitP = r.isPlayer ? powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, shel) : 0;
+
   // what he asks his legs for
   let P;
   let brake = 0;
@@ -92,12 +97,51 @@ export function stepRider(S, r, dt) {
     // "swinging off" in the wind simply holds the wheel from fourth position.
     // Downhill the price is nothing and the flag cannot arm, which is right too —
     // nobody swings off a descent by soft-pedalling, everyone rolls the same.
-    const sit = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, shel);
-    r.offline = (r.groupSize ?? 1) > 1 && P <= sit - DROP_W ? 1 : 0;
+    r.offline = (r.groupSize ?? 1) > 1 && P <= sitP - DROP_W ? 1 : 0;
   } else {
+    // handing the controls to the autopilot ends any manual jump mid-gesture — but a
+    // break he has already ridden clear stays his: the solo branch races it home
+    if (r.isPlayer && (r.attT ?? 0) > 0) {
+      r.attT = 0; r.attArmT = 0;
+      if ((r.groupSize ?? 1) > 1) { r.attacked = 0; r.attCool = ATT_REARM; }
+    }
     // one rule for the whole break — the player in relay or sitting on rides it too
     const out = coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw);
     P = out.P; brake = out.brake;
+  }
+  // The player's attack, read off the physics — the offline derivation's twin, in the
+  // other direction. The AI declares its attacks; the player's hands say nothing, but
+  // the GESTURE is public: watts above threshold and far above the price of sitting
+  // in, held long enough to mean it. Once registered, the response machinery answers
+  // his jump exactly as it answers an AI's — the look around, the covers, the group
+  // refusing to be towed — and the same grammar tells the rest of his story: easing
+  // off alone is riding clear, easing off in the wheels is being brought back.
+  if (r.isPlayer && (S.input.sprint || S.input.mode === "manual")) {
+    const togo = C.total - r.dist;
+    const inGrp = (r.groupSize ?? 1) > 1;
+    // ...and the part that separates an attack from a hard pull: he is pulling AWAY —
+    // faster than the quickest of his companions, not just working harder than them
+    let vBest = 0;
+    const g = r.groupNo != null ? S.groups[r.groupNo - 1] : null;
+    if (g) for (const o of g) if (o !== r && o.speed > vBest) vBest = o.speed;
+    // ...and never on a real descent, where a speed edge is terrain, not a jump —
+    // the same line validWheel draws, because it is the same physics
+    const jump = inGrp && togo >= SPRINT_FINALE_M && grad > DH_GRAD
+      && P > b.T && P > sitP * ATT_JUMP_X && r.speed > vBest + ATT_JUMP_DV;
+    if ((r.attT ?? 0) > 0) {
+      if (jump) r.attT = 2;   // the gesture lives while he keeps riding it
+      else {
+        r.attT = 0; r.attArmT = 0;
+        if (inGrp) { r.attacked = 0; r.attCool = ATT_REARM; r.attNews = 2; }
+        else r.attNews = 3;
+      }
+    } else if (r.attacked) {
+      // clear from an earlier jump: being swallowed again ends it, same as for the AI
+      if (inGrp) { r.attacked = 0; r.attCool = ATT_REARM; r.attNews = 2; r.attArmT = 0; }
+    } else if (jump && (r.attCool ?? 0) <= 0) {
+      r.attArmT = (r.attArmT || 0) + 1;
+      if (r.attArmT >= ATT_JUMP_T) { r.attT = 2; r.attacked = 1; r.attAt = S.t; r.attNews = 1; }
+    } else r.attArmT = 0;
   }
   // ...and whatever he ended up riding is published, in every mode. Left inside the
   // branch above it never updated while the player was steering, so the slider froze at
@@ -153,9 +197,12 @@ export function stepSim(S) {
   // thing the commentary exists for
   for (const r of S.riders) {
     if (r.attCool > 0) r.attCool -= 1;
-    if (r.attNews === 1) pushEvent(S, r.name + " attacks!", 1);
-    else if (r.attNews === 2) pushEvent(S, r.name + " is brought back");
-    else if (r.attNews === 3) pushEvent(S, r.name + " rides clear!", 1);
+    // ...told in the second person for the player, and never as a headline: the big
+    // flag slams the replay to 1× for news you must REACT to, and your own hands are
+    // not news to you
+    if (r.attNews === 1) pushEvent(S, r.isPlayer ? "You attack!" : r.name + " attacks!", r.isPlayer ? 0 : 1);
+    else if (r.attNews === 2) pushEvent(S, r.isPlayer ? "You are brought back" : r.name + " is brought back");
+    else if (r.attNews === 3) pushEvent(S, r.isPlayer ? "You ride clear!" : r.name + " rides clear!", r.isPlayer ? 0 : 1);
     r.attNews = 0;
   }
 

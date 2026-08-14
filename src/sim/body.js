@@ -62,10 +62,11 @@ export function makeRider(spec, i, rng) {
     // the attack: seconds of commitment left, cooldown after being brought back,
     // loading (skipping turns to fill the tank), clear-and-gone, and when it launched
     attT: 0, attCool: 0, attLoad: 0, attLoadT: 0, attacked: 0, attAt: null,
-    // ...and the cover: whose move he chose to go with (rider index, 0 = nobody —
-    // the player is 0 and never attacks), how long he has been on that errand, and
-    // the launch he has already given his once-per-attack answer to
-    attChase: 0, attChaseT: 0, attSeen: null,
+    // ...and the cover: whose move he chose to go with (a rider reference — the
+    // player is index 0, so an index with 0-as-nobody could never point at him),
+    // how long he has been on that errand, and the launch he has already given
+    // his once-per-attack answer to
+    attChase: null, attChaseT: 0, attSeen: null, attArmT: 0,
     finished: null, caught: false, rampT: 0, rampFrom: 0, hold: false, paid: COOP_SEED,
     // the turn on the front: the tank he brought to it, how long he has held it,
     // and whether it has been declared over — a flag, so it survives the drop-back
