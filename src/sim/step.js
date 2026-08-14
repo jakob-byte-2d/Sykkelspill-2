@@ -1,4 +1,4 @@
-import { ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
+import { ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF, PULL_OWN_EFF, SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, burstCeil, shutUpLegs, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
@@ -267,7 +267,18 @@ export function stepSim(S) {
     // the rotation would protect and crest with nothing, so the 30 % resting bar that
     // ends an ordinary turn would amputate every dig (measured: 266 of 277 died early,
     // median 40 % still in the tank). Only a truly bare tank hands his climb away.
-    const over = r.digging ? (empty && b.sf < 0.10) : (paidUp || spent || empty || r.pullT >= maxPull);
+    // ...and none of the four applies to a player who is REFUSING relief: in relay
+    // an instruction parked clearly above his start-line threshold is a decision —
+    // nobody leaves the slider there by accident — and as long as the legs actually
+    // DELIVER it, the front is his. Both halves matter: the fixed bar (S.ownBar,
+    // anchored where the default instruction was cut, so the untouched default sits
+    // under it at any hour of the race), and the delivery test, which hands the
+    // front back the moment coast trims a descent or the caving ceiling caps him —
+    // the body overrides the slider, never the other way.
+    const owns = r.isPlayer && S.input.mode === "relay"
+      && S.input.watts > S.ownBar
+      && r.power > PULL_OWN_EFF * S.input.watts;
+    const over = r.digging ? (empty && b.sf < 0.10) : (!owns && (paidUp || spent || empty || r.pullT >= maxPull));
     if (r.pullT >= COOP_PULL_MIN && over) r.done = true;
   }
   // the turn's bookkeeping: it opens when he reaches the front and closes for good

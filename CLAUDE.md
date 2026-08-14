@@ -98,7 +98,10 @@ parameter, otherwise you create a new artifact instead of updating the user's).
 - Buttons: MANUAL (legs ride the setpoint), RELAY (autopilot rotation, but the
   player's own pulls — front AND roll-through — ride the instruction watts,
   `min(setpoint, ceil)`, no plan price, no dig lift; ledger still times the turn, so
-  a soft setpoint means a long turn and lost seconds), SIT ON (full autopilot
+  a soft setpoint means a long turn and lost seconds — and the slider overrides
+  UPWARD too: setpoint above `S.ownBar` (PULL_OWN_X × start threshold) with the legs
+  delivering ≥ PULL_OWN_EFF of it means he OWNS the front, no turn-end until he
+  eases the slider or coast/ceiling caps the delivery), SIT ON (full autopilot
   rester — chases capped at threshold, wheel price always payable; ignores the
   setpoint), HTFU! (2× per race W′ unlock), SPRINT (hold = burstCeil; release →
   MANUAL at threshold). Tempo column: pause (remembers interrupted speed) +

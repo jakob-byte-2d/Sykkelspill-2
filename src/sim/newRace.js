@@ -1,4 +1,4 @@
-import { COOP_SEED, PACE_MARGIN, PEL_FINALE_X, PEL_LEAD, WARMUP_S } from "../content/tuning.js";
+import { COOP_SEED, PACE_MARGIN, PEL_FINALE_X, PEL_LEAD, PULL_OWN_X, WARMUP_S } from "../content/tuning.js";
 import { bodyNow, makeRiders, thresholdFull } from "./body.js";
 import { buildCourse } from "./course.js";
 import { tagGroups } from "./groups.js";
@@ -85,6 +85,10 @@ export function newSim(seed) {
   S.pel.speed = 11.8; S.pel.vAvg = 0; S.pel.gapS = startGap / 11.8;
   S.t = 0; S.events = []; S.comm = []; S.commSt = null;
   S.input.watts = S.playerW = Math.round(bodyNow(riders[0]).T * 1.04);
+  // the bar the slider must clear to OWN the front in relay (step.js), anchored to
+  // the same start-line threshold the default instruction is cut from — the roster's
+  // fresh T0 belongs to a man without 150 km in his legs and would put it out of reach
+  S.ownBar = bodyNow(riders[0]).T * PULL_OWN_X;
   tagGroups(S);
   return S;
 }
