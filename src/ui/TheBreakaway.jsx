@@ -242,6 +242,20 @@ export default function TheBreakaway() {
             </div>
           ))}
         </div>
+
+        {/* the commentary box — the voice that took over from the bubbles: form,
+            intentions and the race's mood, told as a race. Newest line lit, the
+            older ones fading; a line lives about half a minute and the box folds
+            away when the commentator has nothing. */}
+        {S.comm && S.comm.some((c) => S.t - c.t < 28) && (
+          <div style={{ margin: "6px 0 0 10px", width: 196, pointerEvents: "none", background: "linear-gradient(180deg, rgba(16,30,48,0.88), rgba(10,20,34,0.88))", border: "1.5px solid rgba(111,140,171,0.7)", borderRadius: 8, boxShadow: "0 3px 8px rgba(15,35,60,0.35)", padding: "4px 8px 5px", fontFamily: font, fontStyle: "italic" }}>
+            {S.comm.filter((c) => S.t - c.t < 28).slice(0, 3).map((c, k) => (
+              <div key={c.t + c.txt} style={{ fontSize: k === 0 ? 12.5 : 10.5, fontWeight: 800, lineHeight: 1.2, letterSpacing: 0.3, marginTop: k === 0 ? 0 : 3, color: k === 0 ? "#ffe57a" : "rgba(205,220,238,0.72)", textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>
+                {k === 0 ? "🎙 " : ""}{c.txt}
+              </div>
+            ))}
+          </div>
+        )}
         </div>
 
         {/* the headline: big news over the screen — the race just changed, and the

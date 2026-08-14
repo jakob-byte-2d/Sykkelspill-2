@@ -6,6 +6,7 @@ import { BIKE, G, LY_FLOOR, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack }
 import { planSpeedAt } from "./plan.js";
 import { working } from "./tactics.js";
 import { coopRide } from "./ride.js";
+import { stepComm } from "./commentary.js";
 import { clamp } from "./rng.js";
 
 /* One second of racing. */
@@ -288,6 +289,10 @@ export function stepSim(S) {
         && (working(S, o) || (!anyWork && !o.offline && !(o.isPlayer && S.input.mode === "sit"))))) r.done = false;
     }
   }
+
+  // ...and the commentator, last of all: pure observation over this second's finished
+  // state, so nothing he says can move a single watt
+  stepComm(S);
 }
 
 export function finalize(S) {

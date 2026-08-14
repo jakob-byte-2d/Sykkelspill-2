@@ -297,21 +297,25 @@ export function draw(S, canvas, alpha) {
       ctx.fillStyle = "#ffd23f";
       ctx.beginPath(); ctx.moveTo(x, y - 20); ctx.lineTo(x - 4, y - 27); ctx.lineTo(x + 4, y - 27); ctx.fill();
     }
-    // the wheel he is on, for the gap readout — nearest man up the road
-    let gap = null;
-    for (const o of S.riders) {
-      if (o === r || o.caught || o.finished != null || o.dist <= r.dist) continue;
-      const wg = (o.dist - BIKE) - r.dist;
-      if (gap == null || wg < gap) gap = wg;
+    // the wheel he is on, for the gap readout — nearest man up the road. Only the
+    // debug bubble wants any of this: the ordinary view keeps the road clean and
+    // lets the commentary tell the race instead.
+    if (DEBUG) {
+      let gap = null;
+      for (const o of S.riders) {
+        if (o === r || o.caught || o.finished != null || o.dist <= r.dist) continue;
+        const wg = (o.dist - BIKE) - r.dist;
+        if (gap == null || wg < gap) gap = wg;
+      }
+      bubbles.push({ r, b, x, tipY: y - 29, gap, share: shareOf(r), row: (r.groupPos || 1) % 2 });
     }
-    bubbles.push({ r, b, x, tipY: y - 29, gap, share: shareOf(r), row: (r.groupPos || 1) % 2 });
   }
 
   // ...and the bubbles last, so no rider is ever drawn over one. Two staggered rows,
   // then a nudge pass per row — the same chips-on-stalks trick the race map uses,
   // because five riders wheel to wheel are closer together than their labels are wide
   {
-    const BW = DEBUG ? 59 : 64, BH = DEBUG ? 72 : 61, GAPX = 3;
+    const BW = 59, BH = 72, GAPX = 3;
     for (const row of [0, 1]) {
       const mine = bubbles.filter((m) => m.row === row).sort((a, m) => m.x - a.x);
       mine.forEach((m) => { m.bx = m.x; });
@@ -329,23 +333,7 @@ export function draw(S, canvas, alpha) {
       ctx.font = "800 8px ui-monospace, monospace";
       ctx.fillStyle = r.color;
       ctx.fillText(r.name.split(".").pop().slice(0, 8), m.bx, top + 10);
-      if (!DEBUG) {
-        ctx.font = "800 10px ui-monospace, monospace";
-        ctx.fillStyle = "#f2f6fa";
-        ctx.fillText(Math.round(r.power) + " W", m.bx, top + 24);
-        ctx.fillStyle = tankHue(b.sf);
-        ctx.fillText("S" + Math.round(b.sf * 100) + "%", m.bx, top + 36);
-        ctx.font = "800 9px ui-monospace, monospace";
-        ctx.fillStyle = "rgba(190,210,230,0.9)";
-        ctx.fillText(m.share == null ? "—" : "DR" + m.share + "%", m.bx, top + 47);
-        // what he is DOING, in the player's own vocabulary — the whole point of the
-        // bubble is that a glance reads the race, and the race is made of intentions.
-        // The longest states shrink to fit rather than bleed over the pill's edge.
-        const role = roleOf(S, r);
-        ctx.fillStyle = "#ffd23f";
-        if (ctx.measureText(role).width > BW - 8) ctx.font = "800 7px ui-monospace, monospace";
-        ctx.fillText(role, m.bx, top + 58);
-      } else {
+      {
         ctx.font = "800 9px ui-monospace, monospace";
         const L = m.bx - BW / 2 + 16, R = m.bx + BW / 2 - 15;
         ctx.fillStyle = "#f2f6fa";

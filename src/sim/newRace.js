@@ -48,7 +48,7 @@ export function newSim(seed) {
     // only ever reads `input`; everything else here is something it writes.
     input: { mode: "relay", watts: Math.round(T0 * 0.92) },
     playerW: Math.round(T0 * 0.92), braking: 0,
-    ended: false, result: null, events: [],
+    ended: false, result: null, events: [], comm: [],
     profile: null,   // drawProfile's cached elevation sample
     uiAt: 0,
   };
@@ -81,7 +81,7 @@ export function newSim(seed) {
   });
   S.pel.dist = -startGap; S.pel.prevDist = -startGap;
   S.pel.speed = 11.8; S.pel.vAvg = 0; S.pel.gapS = startGap / 11.8;
-  S.t = 0; S.events = [];
+  S.t = 0; S.events = []; S.comm = []; S.commSt = null;
   S.input.watts = S.playerW = Math.round(bodyNow(riders[0]).T * 0.92);
   tagGroups(S);
   return S;
