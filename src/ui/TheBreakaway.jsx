@@ -130,7 +130,6 @@ export default function TheBreakaway() {
   let raceUI = null;
   if (phase === "race" && S && player && body) {
     const kmToGo = Math.max(0, (S.course.total - player.dist) / 1000);
-    const grad = S.course.gradAt(player.dist);
     // the flamme rouge takes the autopilot away: inside the last kilometre nobody
     // rides for anybody, so RELAY and SIT ON stop existing and the watts land in
     // MANUAL carrying whatever the autopilot was actually doing — a seamless handover,
@@ -151,8 +150,7 @@ export default function TheBreakaway() {
     const ev = S.events[0];
     if (ev && ev.big && alertRef.current !== ev) {
       alertRef.current = ev;
-      ev.slowed = speedRef.current > 1 ? 1 : 0;
-      if (ev.slowed) { speedRef.current = 1; setSpeedMode(1); }
+      if (speedRef.current > 1) { speedRef.current = 1; setSpeedMode(1); }
     }
     const alert = ev && ev.big && S.t - ev.t < 5 && !S.ended ? ev : null;
     // the thumb always reads watts — what you are asking for, or what the legs are
@@ -265,9 +263,6 @@ export default function TheBreakaway() {
               <div style={{ fontFamily: font, fontWeight: 800, fontStyle: "italic", fontSize: 24, lineHeight: 1.1, letterSpacing: 1.5, color: "#fff", textShadow: "0 2px 3px rgba(60,10,5,0.8)" }}>
                 {alert.txt.toUpperCase()}
               </div>
-              {alert.slowed ? (
-                <div style={{ marginTop: 3, fontFamily: mono, fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#ffe57a" }}>SPEED → 1×</div>
-              ) : null}
             </div>
           </div>
         )}
@@ -275,21 +270,6 @@ export default function TheBreakaway() {
         {/* the right column under the slider, top to bottom: the doing-chip, the
             relay/sit toggle, the motivation one-shot, and the sprint hold. One thumb,
             one column — grabbing the slider itself is what MANUAL is. */}
-        <div style={{
-          position: "absolute", right: 6, bottom: 208, width: 74, padding: "3px 0",
-          fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.8, fontSize: 10,
-          textAlign: "center", borderRadius: 999,
-          background: DOING.bg, border: "1px solid " + DOING.edge, color: DOING.ink,
-          textShadow: DOING.ink === "#fff" ? "0 1px 1px rgba(0,0,0,0.35)" : "none",
-        }}>
-          {S.input.sprint ? "SPRINTING"
-            : player.sulT > 0 ? "HTFU " + Math.ceil(player.sulT) + "s"
-            : S.input.mode === "sit" ? "SITTING ON"
-            : S.input.mode === "relay"
-              ? (player.groupPos === 1 && (player.groupSize ?? 1) > 1 && !player.offline ? "PULLING" : "RELAYING")
-              : "MANUAL"}
-        </div>
-
         {/* relay and sit on: two buttons, one per intention — the lit one is the mode
             you are in, neither lit is MANUAL, and past the flamme rouge both go dark:
             nobody rides for anybody in the last kilometre. */}
@@ -425,20 +405,18 @@ export default function TheBreakaway() {
               wind himself. Same number, read the way a rider says it — and it uses the
               whole scale, where the saving alone sat in the bottom third all race */}
           <Bar label="WIND" frac={1 - player.ly} color="#8e6bd6" />
+          {/* watts, speed and what he is doing moved down to the rider himself —
+              the panel keeps only what the body offers, not what it is spending */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontFamily: mono, fontSize: 11 }}>
             <span style={{ color: "#1d7a34", fontWeight: 700 }}>THR {Math.round(body.T)}</span>
             <span style={{ color: "#c22a1e", fontWeight: 700 }}>MAX {Math.round(body.ceil)}</span>
-          </div>
-          <div style={{ marginTop: 3, fontFamily: mono, fontSize: 11, color: "#123a6b", fontWeight: 700 }}>
-            {`${Math.round(player.power)} W`}
-            <span style={{ float: "right", color: "#3c5a7a" }}>{(player.speed * 3.6).toFixed(0)} km/h {grad > 0.005 ? "▲" : grad < -0.005 ? "▼" : ""}{Math.abs(grad * 100).toFixed(0)}%</span>
           </div>
         </div>
 
         {/* watt slider — its foot carries the WATTS label, so the column has to stop
             clear of the mode chip below it, not just above the chip's own top edge */}
         <div
-          style={{ position: "absolute", right: 6, top: 84, bottom: 238, width: 104, touchAction: "none", userSelect: "none" }}
+          style={{ position: "absolute", right: 6, top: 84, bottom: 212, width: 104, touchAction: "none", userSelect: "none" }}
           onPointerDown={(e) => { dragRef.current = true; setDragging(true); e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
           onPointerMove={(e) => { if (dragRef.current) onSlider(e, e.currentTarget); }}
           onPointerUp={onSliderUp}

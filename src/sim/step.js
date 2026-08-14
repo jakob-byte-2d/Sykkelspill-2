@@ -85,6 +85,7 @@ export function stepRider(S, r, dt) {
   } else if (r.isPlayer && S.input.mode === "manual") {
     P = Math.min(S.input.watts, b.ceil);   // manual: your watts, your problem
     r.sprinting = 0;   // the button was released — coopRide clears this for the AI modes
+    r.digging = 0; r.chasing = 0;   // ...and whatever errand the autopilot was on ended with the handover
     // ...but swinging off is a thing you have to be able to SAY. The AI says it with
     // r.offline and the whole line listens — queueWheel looks through him, the resters
     // open the door. In manual that flag never got set, so however low the slider went
