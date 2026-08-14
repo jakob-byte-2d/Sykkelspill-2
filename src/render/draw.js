@@ -365,12 +365,12 @@ export function draw(S, canvas, alpha) {
     }
   }
 
-  // wind sock — top right corner, clear of the chyron
+  // wind sock — pinned in the window's top right corner, tucked under the chyron
   const hw = C.windAt(cx);
   const wtxt = (hw > 0.4 ? "HEAD" : hw < -0.4 ? "TAIL" : "CROSS") + " " + Math.abs(C.wv).toFixed(1);
   ctx.font = "800 10px ui-monospace, monospace";
   const cw = ctx.measureText(wtxt).width + 62, chh = 20;
-  const cxr = w - 88 - cw, cyr = 88;
+  const cxr = w - cw - 8, cyr = 62;
   const grad = ctx.createLinearGradient(0, cyr, 0, cyr + chh);
   grad.addColorStop(0, "#f4f8fc"); grad.addColorStop(0.55, "#ccd9e6"); grad.addColorStop(1, "#b3c6d8");
   ctx.fillStyle = grad;

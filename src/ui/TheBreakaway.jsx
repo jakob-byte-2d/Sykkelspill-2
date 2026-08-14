@@ -13,7 +13,9 @@ export default function TheBreakaway() {
   const [speedMode, setSpeedMode] = useState(5);
   const [debugOn, setDebugOn] = useState(DEBUG);
   const [dragging, setDragging] = useState(false);   // finger down on the slider
+  const [paused, setPaused] = useState(false);
   const speedRef = useRef(5);
+  const prevSpeedRef = useRef(5);   // what pause interrupted, so resume lands where you were
   const simRef = useRef(null);
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
@@ -26,7 +28,7 @@ export default function TheBreakaway() {
     simRef.current = newSim(seed);
     // the fixture the telemetry reads from — the whole sim, and only when asked for
     if (DEBUG && typeof window !== "undefined") window.__S = simRef.current;
-    speedRef.current = 5; setSpeedMode(5);
+    speedRef.current = 5; setSpeedMode(5); setPaused(false);
     setPhase("race");
   };
 
@@ -201,15 +203,6 @@ export default function TheBreakaway() {
             <span style={{ fontFamily: mono, fontSize: 12, color: "#d7e6f5", fontStyle: "normal" }}>{fmtTime(S.clock0 + S.t)}</span>
             <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: 1, textShadow: "0 1px 2px rgba(10,30,55,0.7)" }}>{kmToGo.toFixed(1)} KM</span>
             <span style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
-              {[1, 5, 10, 100].map((m) => (
-                <button key={m} onClick={() => { speedRef.current = m; setSpeedMode(m); }}
-                  style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, border: "1px solid #0d3568", cursor: "pointer", fontStyle: "normal",
-                    boxShadow: speedMode === m ? "inset 0 1px 0 rgba(255,255,255,0.95), 0 0 6px rgba(255,255,255,0.6)" : "inset 0 1px 0 rgba(255,255,255,0.55)",
-                    background: speedMode === m ? "linear-gradient(180deg, #ffffff, #cfe2f6 60%, #a9cdf0)" : "linear-gradient(180deg, #9cc0e6, #3a76bd 55%, #2a5f9e)",
-                    color: speedMode === m ? "#0d3568" : "#eaf3fb" }}>
-                  {m}×
-                </button>
-              ))}
               <button onClick={toggleDebug}
                 title="Telemetri i boblene over hodene (eller trykk D)"
                 style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, border: "1px solid #0d3568", cursor: "pointer", fontStyle: "normal",
@@ -283,7 +276,7 @@ export default function TheBreakaway() {
             relay/sit toggle, the motivation one-shot, and the sprint hold. One thumb,
             one column — grabbing the slider itself is what MANUAL is. */}
         <div style={{
-          position: "absolute", right: 6, bottom: 170, width: 74, padding: "3px 0",
+          position: "absolute", right: 6, bottom: 208, width: 74, padding: "3px 0",
           fontFamily: font, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.8, fontSize: 10,
           textAlign: "center", borderRadius: 999,
           background: DOING.bg, border: "1px solid " + DOING.edge, color: DOING.ink,
@@ -297,26 +290,79 @@ export default function TheBreakaway() {
               : "MANUAL"}
         </div>
 
-        {/* relay <-> sit on: one toggle, labelled with where it takes you — and its
-            resting face is SIT ON: from manual the first press parks you at the back,
-            which is the safe move; joining the rotation is the deliberate second one. */}
+        {/* relay and sit on: two buttons, one per intention — the lit one is the mode
+            you are in, neither lit is MANUAL, and past the flamme rouge both go dark:
+            nobody rides for anybody in the last kilometre. */}
         <button
-          onClick={() => {
-            if (!S || S.ended || finale) return;   // past the flamme rouge nobody rides for you
-            setInput(S, { mode: S.input.mode === "sit" ? "relay" : "sit" });
-          }}
+          onClick={() => { if (S && !S.ended && !finale) setInput(S, { mode: "relay" }); }}
+          style={actionBtn(170, {
+            cursor: finale ? "default" : "pointer", userSelect: "none", WebkitUserSelect: "none",
+            WebkitTouchCallout: "none", touchAction: "manipulation",
+            opacity: finale ? 0.35 : 1,
+            border: "2px solid #123a6b",
+            color: "#fff",
+            background: S.input.mode === "relay"
+              ? "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.25) 45%, rgba(0,0,0,0.10)), #3a76bd"
+              : "linear-gradient(180deg, rgba(255,255,255,0.30), rgba(0,0,0,0.28)), #2a507c",
+            boxShadow: S.input.mode === "relay"
+              ? "inset 0 1px 0 rgba(255,255,255,0.8), 0 0 8px rgba(125,179,224,0.8)"
+              : "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(20,40,70,0.35)",
+          })}>
+          RELAY
+        </button>
+        <button
+          onClick={() => { if (S && !S.ended && !finale) setInput(S, { mode: "sit" }); }}
           style={actionBtn(132, {
             cursor: finale ? "default" : "pointer", userSelect: "none", WebkitUserSelect: "none",
             WebkitTouchCallout: "none", touchAction: "manipulation",
             opacity: finale ? 0.35 : 1,
-            border: S.input.mode === "sit" ? "2px solid #123a6b" : "2px solid #145c27",
+            border: "2px solid #145c27",
             color: "#fff",
             background: S.input.mode === "sit"
-              ? "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #3a76bd"
-              : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #2f9e4f",
+              ? "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.25) 45%, rgba(0,0,0,0.10)), #2f9e4f"
+              : "linear-gradient(180deg, rgba(255,255,255,0.30), rgba(0,0,0,0.28)), #24693a",
+            boxShadow: S.input.mode === "sit"
+              ? "inset 0 1px 0 rgba(255,255,255,0.8), 0 0 8px rgba(95,201,120,0.8)"
+              : "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(20,40,70,0.35)",
           })}>
-          {S.input.mode === "sit" ? "RELAY" : "SIT ON"}
+          SIT ON
         </button>
+
+        {/* the tempo column, beside the action buttons: a clear pause on top, then
+            the four replay speeds. Pause remembers what it interrupted; any speed
+            press is also the way out of it. */}
+        <button
+          onClick={() => {
+            if (paused) { speedRef.current = prevSpeedRef.current || 1; setPaused(false); }
+            else { prevSpeedRef.current = speedRef.current || 1; speedRef.current = 0; setPaused(true); }
+          }}
+          style={{ position: "absolute", right: 86, bottom: 184, width: 44, padding: "7px 0",
+            fontFamily: mono, fontSize: 15, fontWeight: 800, lineHeight: 1, textAlign: "center",
+            borderRadius: 12, cursor: "pointer", userSelect: "none", WebkitUserSelect: "none",
+            border: paused ? "2px solid #7a5410" : "2px solid #5c1010",
+            color: paused ? "#3d2800" : "#fff",
+            background: paused
+              ? "linear-gradient(180deg, #fff3c4, #ffd23f 45%, #d99a1b)"
+              : "linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.1) 45%, rgba(0,0,0,0.2)), #b03227",
+            boxShadow: paused
+              ? "inset 0 1px 0 rgba(255,255,255,0.95), 0 0 10px rgba(255,210,63,0.8)"
+              : "inset 0 1px 0 rgba(255,255,255,0.55), 0 2px 4px rgba(20,40,70,0.35)",
+          }}>
+          {paused ? "►" : "❚❚"}
+        </button>
+        {[1, 5, 10, 100].map((m, i) => (
+          <button key={m}
+            onClick={() => { speedRef.current = m; setSpeedMode(m); setPaused(false); }}
+            style={{ position: "absolute", right: 86, bottom: 152 - i * 32, width: 44, padding: "6px 0",
+              fontFamily: mono, fontSize: 11, fontWeight: 700, lineHeight: 1, textAlign: "center",
+              borderRadius: 999, border: "1px solid #0d3568", cursor: "pointer",
+              userSelect: "none", WebkitUserSelect: "none",
+              boxShadow: !paused && speedMode === m ? "inset 0 1px 0 rgba(255,255,255,0.95), 0 0 6px rgba(255,255,255,0.6)" : "inset 0 1px 0 rgba(255,255,255,0.55)",
+              background: !paused && speedMode === m ? "linear-gradient(180deg, #ffffff, #cfe2f6 60%, #a9cdf0)" : "linear-gradient(180deg, #9cc0e6, #3a76bd 55%, #2a5f9e)",
+              color: !paused && speedMode === m ? "#0d3568" : "#eaf3fb" }}>
+            {m}×
+          </button>
+        ))}
 
         {/* the governor's override, Rule #5 spelling */}
         <button
@@ -392,7 +438,7 @@ export default function TheBreakaway() {
         {/* watt slider — its foot carries the WATTS label, so the column has to stop
             clear of the mode chip below it, not just above the chip's own top edge */}
         <div
-          style={{ position: "absolute", right: 6, top: 84, bottom: 196, width: 104, touchAction: "none", userSelect: "none" }}
+          style={{ position: "absolute", right: 6, top: 84, bottom: 238, width: 104, touchAction: "none", userSelect: "none" }}
           onPointerDown={(e) => { dragRef.current = true; setDragging(true); e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
           onPointerMove={(e) => { if (dragRef.current) onSlider(e, e.currentTarget); }}
           onPointerUp={onSliderUp}
