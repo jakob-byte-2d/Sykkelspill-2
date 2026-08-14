@@ -8,10 +8,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "bundle": "node tools/bundle.mjs",
     "golden": "node tools/golden.mjs",
     "golden:write": "node tools/golden.mjs --write",
     "sweep": "node tools/sweep.mjs",
-    "race": "node tools/race.mjs"
+    "race": "node tools/race.mjs",
+    "turns": "node tools/turns.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

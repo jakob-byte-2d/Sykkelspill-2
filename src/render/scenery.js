@@ -13,6 +13,7 @@ export function drawScenery(S, ctx, w, xOf, yOf, cx, pxm) {
     const r1 = hash1(i), r2 = hash1(i + 0.37), r3 = hash1(i + 0.91);
     if (r1 > 0.62) continue;                       // most spots stay empty
     const d = i * SP + r2 * 22;
+    if (d > S.course.total - 1000) continue;       // the last km belongs to the crowd
     const x = xOf(d);
     if (x < -70 || x > w + 70) continue;
     const y = yOf(d) - 5;                          // just behind the tarmac

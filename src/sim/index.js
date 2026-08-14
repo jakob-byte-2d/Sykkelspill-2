@@ -3,10 +3,9 @@
    fifteen — and nothing more. No DOM, no React, no canvas anywhere below this line:
    seed in, race out, the same result every time. */
 export { newSim } from "./newRace.js";
-export { stepSim, finalize } from "./step.js";
+export { stepSim, finalize, pushEvent } from "./step.js";
 export { raceGroups, gapRows } from "./groups.js";
 export { bodyNow, usableSurge } from "./body.js";
-export { SHEL_MAX } from "./physics.js";
 export { clamp } from "./rng.js";
 
 /* The one way in. The engine reads S.input and nothing else the player touches, so a

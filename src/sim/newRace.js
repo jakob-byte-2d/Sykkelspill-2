@@ -14,13 +14,12 @@ export function newSim(seed) {
   const rng = mulberry32(seed);
   const course = buildCourse(rng);
   const riders = makeRiders(rng);
-  // the player starts at the back of the line, the AIs rotate ahead of him — and the
-  // ledger slopes with the line: the front man owes the most, the back has paid
+  // the player starts at the back of the line, the AIs rotate ahead of him. The ledger
+  // used to slope with that line — the front man seeded a third under fair, the back a
+  // third over — which handed a whole extra turn to whoever the roster happened to put
+  // in front, every single race. Nobody owes anybody anything before the racing starts.
   const order = [...riders.slice(1), riders[0]];
-  order.forEach((r, k) => {
-    r.dist = -k * 2.2; r.prevDist = r.dist;
-    r.paid = COOP_SEED * (0.7 + (0.6 * k) / Math.max(order.length - 1, 1));
-  });
+  order.forEach((r, k) => { r.dist = -k * 2.2; r.prevDist = r.dist; r.paid = COOP_SEED; });
   const startGap = (65 + rng() * 40) * 11.5;
   // The deadline is one fixed ride: the player, alone in the wind, holding his threshold
   // from the gun with the fuel question set aside — and the bunch beats it by PEL_LEAD.
@@ -49,7 +48,7 @@ export function newSim(seed) {
     // only ever reads `input`; everything else here is something it writes.
     input: { mode: "relay", watts: Math.round(T0 * 0.92) },
     playerW: Math.round(T0 * 0.92), braking: 0,
-    ended: false, result: null, events: [],
+    ended: false, result: null, events: [], comm: [],
     profile: null,   // drawProfile's cached elevation sample
     uiAt: 0,
   };
@@ -62,18 +61,27 @@ export function newSim(seed) {
   // its feet. None of that is the race, so it happens before the race. A minute is a
   // full turn on the front and then some, so the line is handed over to the player
   // mid-rotation, at speed, with the ledger already carrying real debts.
+  // ...but what the warm-up costs is not part of the race. Somebody has to be on the
+  // front for it, and he should not start the day two per cent down on his tank — worst
+  // case eight — for the privilege of being the man the rotation happened to leave there.
+  const rest = riders.map((r) => ({ surge: r.surge, fuel: r.fuel, wear: r.wear }));
   for (let k = 0; k < WARMUP_S; k++) stepSim(S);
   // Wind it back to the start line, keeping every gap, speed and flag exactly as the
   // warm-up left them. The bunch goes back to its cold opening instead, because that is
   // the ride calibratePel solved for and the deadline has to stay the one it computed.
+  // The bodies and the ledger go back to where they were: at the gun every man has the
+  // same tank he was given and owes the same as everyone else, and the only thing the
+  // warm-up hands over is the shape of the line — who is where, at what speed, mid-turn.
   const lead = Math.max(...riders.map((r) => r.dist));
-  for (const r of riders) {
+  riders.forEach((r, i) => {
     r.dist -= lead; r.prevDist = r.dist; r.d0 = r.dist;
+    r.surge = rest[i].surge; r.fuel = rest[i].fuel; r.wear = rest[i].wear;
+    r.paid = COOP_SEED;
     r.st = { work: 0, wind: 0, above: 0, minFuel: r.fuel / r.fuelMax, t: 0 };
-  }
+  });
   S.pel.dist = -startGap; S.pel.prevDist = -startGap;
   S.pel.speed = 11.8; S.pel.vAvg = 0; S.pel.gapS = startGap / 11.8;
-  S.t = 0; S.events = [];
+  S.t = 0; S.events = []; S.comm = []; S.commSt = null;
   S.input.watts = S.playerW = Math.round(bodyNow(riders[0]).T * 0.92);
   tagGroups(S);
   return S;

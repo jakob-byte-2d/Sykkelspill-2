@@ -1,7 +1,7 @@
 # The Breakaway — Legends 0.2
 
 Et road-cycling-spill med én kontroll: en vertikal watt-slider. Du er i bruddet
-med Van der Poel, Van Aert, Küng og Pantani, ~23 km igjen, feltet drøyt et minutt bak
+med Van der Poel, Van Aert, De Gendt og Mohoric, ~23 km igjen, feltet drøyt et minutt bak
 — og feltet er kalibrert til å ta den beste av dere med ett eneste sekund.
 
 ## Kjør det
