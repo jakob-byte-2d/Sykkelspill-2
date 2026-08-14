@@ -472,8 +472,9 @@ export default function TheBreakaway() {
           </div>
           {/* the INSTRUCTION: the player's setpoint, exactly where the thumb put it,
               in the colour of the mode — and asking for more than the body has (or
-              sprinting), it turns red and shivers. Only the MANUAL button hands the
-              legs over to it; in RELAY and SIT ON it waits, a standing order. */}
+              sprinting), it turns red and shivers. MANUAL hands the legs over to it
+              outright; in RELAY it is the price of YOUR pulls — the rotation rides
+              itself, but your turn on the front rides this number. SIT ON ignores it. */}
           <div style={{
             position: "absolute", left: 42, width: 50, height: 34, top: `calc(${markerTop(tSet)} - 17px)`,
             borderRadius: 999, pointerEvents: "none",
