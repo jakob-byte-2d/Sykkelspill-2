@@ -12,8 +12,8 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 762149,
-    "wear": 0.723348
+    "work": 750649,
+    "wear": 0.736391
    },
    {
     "name": "V.D.POEL",
@@ -58,36 +58,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 721903,
-    "wear": 0.650233
+    "work": 723988,
+    "wear": 0.660737
    },
    {
     "name": "V.D.POEL",
-    "fin": 2322.618,
+    "fin": 2313.385,
     "caught": false,
-    "work": 743614,
-    "wear": 0.907595
+    "work": 768989,
+    "wear": 0.869113
    },
    {
     "name": "VAN AERT",
-    "fin": 2320.523,
+    "fin": 2283.883,
     "caught": false,
-    "work": 753140,
-    "wear": 0.782374
+    "work": 784431,
+    "wear": 0.713346
    },
    {
     "name": "DE GENDT",
-    "fin": 2260.997,
+    "fin": 2325.569,
     "caught": false,
-    "work": 727612,
-    "wear": 0.649514
+    "work": 726627,
+    "wear": 0.664125
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 659913,
-    "wear": 0.685332
+    "work": 659280,
+    "wear": 0.68216
    }
   ]
  },
@@ -102,38 +102,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2283.582,
-    "caught": false,
-    "work": 733216,
-    "wear": 0.795627
+    "fin": null,
+    "caught": true,
+    "work": 674281,
+    "wear": 0.565751
    },
    {
     "name": "V.D.POEL",
-    "fin": null,
-    "caught": true,
-    "work": 611778,
-    "wear": 0.650222
+    "fin": 2261.524,
+    "caught": false,
+    "work": 729233,
+    "wear": 0.874039
    },
    {
     "name": "VAN AERT",
-    "fin": null,
-    "caught": true,
-    "work": 606208,
-    "wear": 0.487037
+    "fin": 2262.789,
+    "caught": false,
+    "work": 712015,
+    "wear": 0.699966
    },
    {
     "name": "DE GENDT",
-    "fin": 2287.544,
-    "caught": false,
-    "work": 687059,
-    "wear": 0.775019
+    "fin": null,
+    "caught": true,
+    "work": 641453,
+    "wear": 0.682267
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 491343,
-    "wear": 0.725349
+    "work": 490992,
+    "wear": 0.722091
    }
   ]
  },
@@ -148,38 +148,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2193.361,
+    "fin": 2186.959,
     "caught": false,
-    "work": 685120,
-    "wear": 0.772896
+    "work": 710550,
+    "wear": 0.832213
    },
    {
     "name": "V.D.POEL",
-    "fin": 2204.867,
-    "caught": false,
-    "work": 703294,
-    "wear": 0.708285
+    "fin": null,
+    "caught": true,
+    "work": 469635,
+    "wear": 0.444703
    },
    {
     "name": "VAN AERT",
-    "fin": 2191.246,
+    "fin": 2185.753,
     "caught": false,
-    "work": 706129,
-    "wear": 0.749055
+    "work": 741400,
+    "wear": 0.844376
    },
    {
     "name": "DE GENDT",
-    "fin": 2214.234,
-    "caught": false,
-    "work": 651866,
-    "wear": 0.65523
+    "fin": null,
+    "caught": true,
+    "work": 421024,
+    "wear": 0.487417
    },
    {
     "name": "MOHORIC",
-    "fin": 2193.184,
+    "fin": 2187.476,
     "caught": false,
-    "work": 610068,
-    "wear": 0.63911
+    "work": 612228,
+    "wear": 0.68487
    }
   ]
  },
@@ -196,22 +196,22 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 704869,
-    "wear": 0.717814
+    "work": 703065,
+    "wear": 0.715843
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 789579,
-    "wear": 0.695731
+    "work": 795422,
+    "wear": 0.695059
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 793382,
-    "wear": 0.667845
+    "work": 770077,
+    "wear": 0.656477
    },
    {
     "name": "DE GENDT",
@@ -224,8 +224,8 @@
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 742349,
-    "wear": 0.743291
+    "work": 734226,
+    "wear": 0.750761
    }
   ]
  },
@@ -242,29 +242,29 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 684638,
-    "wear": 0.677769
+    "work": 752037,
+    "wear": 0.725421
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 735597,
-    "wear": 0.644291
+    "work": 730500,
+    "wear": 0.660531
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 760471,
-    "wear": 0.55926
+    "work": 759902,
+    "wear": 0.556683
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 648392,
-    "wear": 0.626017
+    "work": 658524,
+    "wear": 0.637843
    },
    {
     "name": "MOHORIC",
@@ -288,36 +288,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 315085,
-    "wear": 0.515267
+    "work": 436133,
+    "wear": 0.565922
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 314239,
-    "wear": 0.352481
+    "work": 440419,
+    "wear": 0.389204
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 342450,
-    "wear": 0.431576
+    "work": 440259,
+    "wear": 0.463076
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 291611,
-    "wear": 0.461759
+    "work": 402332,
+    "wear": 0.487311
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 282712,
-    "wear": 0.507741
+    "work": 395676,
+    "wear": 0.548056
    }
   ]
  },
@@ -332,38 +332,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2024.798,
-    "caught": false,
-    "work": 609968,
-    "wear": 0.770997
+    "fin": null,
+    "caught": true,
+    "work": 596271,
+    "wear": 0.591573
    },
    {
     "name": "V.D.POEL",
-    "fin": null,
-    "caught": true,
-    "work": 502517,
-    "wear": 0.418485
+    "fin": 2031.579,
+    "caught": false,
+    "work": 632027,
+    "wear": 0.693544
    },
    {
     "name": "VAN AERT",
-    "fin": null,
-    "caught": true,
-    "work": 490760,
-    "wear": 0.418166
+    "fin": 2026.934,
+    "caught": false,
+    "work": 641725,
+    "wear": 0.686298
    },
    {
     "name": "DE GENDT",
-    "fin": 2025.411,
+    "fin": 2025.751,
     "caught": false,
-    "work": 592256,
-    "wear": 0.654889
+    "work": 603719,
+    "wear": 0.620397
    },
    {
     "name": "MOHORIC",
-    "fin": 2022.51,
+    "fin": 2027.138,
     "caught": false,
-    "work": 548492,
-    "wear": 0.74136
+    "work": 560130,
+    "wear": 0.858964
    }
   ]
  },
@@ -378,38 +378,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2777.178,
-    "caught": false,
-    "work": 846322,
-    "wear": 0.864418
+    "fin": null,
+    "caught": true,
+    "work": 683569,
+    "wear": 0.642531
    },
    {
     "name": "V.D.POEL",
-    "fin": 2756.431,
-    "caught": false,
-    "work": 855352,
-    "wear": 0.807311
+    "fin": null,
+    "caught": true,
+    "work": 869443,
+    "wear": 0.636796
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 888306,
-    "wear": 0.689975
+    "work": 888308,
+    "wear": 0.690901
    },
    {
     "name": "DE GENDT",
-    "fin": 2761.149,
-    "caught": false,
-    "work": 829783,
-    "wear": 0.593684
+    "fin": null,
+    "caught": true,
+    "work": 759917,
+    "wear": 0.597339
    },
    {
     "name": "MOHORIC",
-    "fin": 2784.9,
-    "caught": false,
-    "work": 771562,
-    "wear": 0.910524
+    "fin": null,
+    "caught": true,
+    "work": 754678,
+    "wear": 0.758233
    }
   ]
  },
@@ -424,38 +424,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2134.673,
+    "fin": 2123.381,
     "caught": false,
-    "work": 742011,
-    "wear": 0.846813
+    "work": 731437,
+    "wear": 0.821667
    },
    {
     "name": "V.D.POEL",
-    "fin": null,
-    "caught": true,
-    "work": 587643,
-    "wear": 0.567779
+    "fin": 2124.064,
+    "caught": false,
+    "work": 718832,
+    "wear": 0.800141
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 688035,
-    "wear": 0.768883
+    "work": 572446,
+    "wear": 0.70503
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 619790,
-    "wear": 0.652077
+    "work": 643743,
+    "wear": 0.675599
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 511189,
-    "wear": 0.643383
+    "work": 510111,
+    "wear": 0.627538
    }
   ]
  },
@@ -472,36 +472,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 380030,
-    "wear": 0.485479
+    "work": 398409,
+    "wear": 0.500087
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 383290,
-    "wear": 0.536004
+    "work": 383186,
+    "wear": 0.534937
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 394994,
-    "wear": 0.425704
+    "work": 392187,
+    "wear": 0.416095
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 360699,
-    "wear": 0.48679
+    "work": 363016,
+    "wear": 0.484859
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 354782,
-    "wear": 0.505126
+    "work": 361994,
+    "wear": 0.511253
    }
   ]
  },
@@ -516,38 +516,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": null,
-    "caught": true,
-    "work": 417839,
-    "wear": 0.571499
+    "fin": 1534.449,
+    "caught": false,
+    "work": 473656,
+    "wear": 0.808074
    },
    {
     "name": "V.D.POEL",
-    "fin": 1540.009,
+    "fin": 1534.439,
     "caught": false,
-    "work": 455161,
-    "wear": 0.529169
+    "work": 474834,
+    "wear": 0.636202
    },
    {
     "name": "VAN AERT",
-    "fin": 1539.207,
+    "fin": 1534.459,
     "caught": false,
-    "work": 462032,
-    "wear": 0.66463
+    "work": 471343,
+    "wear": 0.75146
    },
    {
     "name": "DE GENDT",
-    "fin": null,
-    "caught": true,
-    "work": 394594,
-    "wear": 0.509832
+    "fin": 1535.273,
+    "caught": false,
+    "work": 432006,
+    "wear": 0.585441
    },
    {
     "name": "MOHORIC",
-    "fin": null,
-    "caught": true,
-    "work": 372239,
-    "wear": 0.548079
+    "fin": 1534.715,
+    "caught": false,
+    "work": 407830,
+    "wear": 0.726289
    }
   ]
  },
@@ -562,38 +562,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1671.844,
+    "fin": 1657.369,
     "caught": false,
-    "work": 492572,
-    "wear": 0.591377
+    "work": 473415,
+    "wear": 0.637034
    },
    {
     "name": "V.D.POEL",
-    "fin": 1650.947,
+    "fin": 1659.346,
     "caught": false,
-    "work": 529546,
-    "wear": 0.693096
+    "work": 508689,
+    "wear": 0.59412
    },
    {
     "name": "VAN AERT",
-    "fin": 1671.625,
+    "fin": 1659.582,
     "caught": false,
-    "work": 498650,
-    "wear": 0.511305
+    "work": 489044,
+    "wear": 0.542048
    },
    {
     "name": "DE GENDT",
-    "fin": 1671.595,
+    "fin": 1660.345,
     "caught": false,
-    "work": 452646,
-    "wear": 0.542453
+    "work": 449578,
+    "wear": 0.558357
    },
    {
     "name": "MOHORIC",
-    "fin": 1671.549,
+    "fin": 1656.951,
     "caught": false,
-    "work": 445359,
-    "wear": 0.60811
+    "work": 441964,
+    "wear": 0.626129
    }
   ]
  },
@@ -610,8 +610,8 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 617584,
-    "wear": 0.556631
+    "work": 653577,
+    "wear": 0.595848
    },
    {
     "name": "V.D.POEL",
@@ -631,15 +631,15 @@
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 563108,
-    "wear": 0.578466
+    "work": 403471,
+    "wear": 0.492261
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 541132,
-    "wear": 0.693285
+    "work": 366092,
+    "wear": 0.610403
    }
   ]
  },
@@ -700,38 +700,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1687.764,
+    "fin": 1677.75,
     "caught": false,
-    "work": 537636,
-    "wear": 0.720435
+    "work": 568782,
+    "wear": 0.754657
    },
    {
     "name": "V.D.POEL",
-    "fin": 1638.928,
+    "fin": 1638.849,
     "caught": false,
-    "work": 515673,
-    "wear": 0.606112
+    "work": 515775,
+    "wear": 0.606116
    },
    {
     "name": "VAN AERT",
-    "fin": 1637.857,
+    "fin": 1637.777,
     "caught": false,
-    "work": 538078,
-    "wear": 0.646962
+    "work": 538163,
+    "wear": 0.64703
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 473295,
-    "wear": 0.63664
+    "work": 338567,
+    "wear": 0.515327
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 453389,
-    "wear": 0.64571
+    "work": 334557,
+    "wear": 0.508173
    }
   ]
  },
@@ -746,38 +746,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1504.954,
+    "fin": 1492.561,
     "caught": false,
-    "work": 415402,
-    "wear": 0.617736
+    "work": 431421,
+    "wear": 0.659498
    },
    {
     "name": "V.D.POEL",
-    "fin": 1478.269,
+    "fin": 1481.049,
     "caught": false,
-    "work": 405511,
-    "wear": 0.569964
+    "work": 434221,
+    "wear": 0.576139
    },
    {
     "name": "VAN AERT",
-    "fin": 1478.458,
+    "fin": 1480.803,
     "caught": false,
-    "work": 419056,
-    "wear": 0.594601
+    "work": 417716,
+    "wear": 0.593124
    },
    {
     "name": "DE GENDT",
-    "fin": 1505.01,
+    "fin": 1492.448,
     "caught": false,
-    "work": 399500,
-    "wear": 0.536729
+    "work": 405487,
+    "wear": 0.538568
    },
    {
     "name": "MOHORIC",
-    "fin": 1477.801,
+    "fin": 1479.971,
     "caught": false,
-    "work": 370961,
-    "wear": 0.662926
+    "work": 380110,
+    "wear": 0.653024
    }
   ]
  },
@@ -792,10 +792,10 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2526.148,
+    "fin": 2521.148,
     "caught": false,
-    "work": 796722,
-    "wear": 0.950609
+    "work": 788413,
+    "wear": 0.968156
    },
    {
     "name": "V.D.POEL",
@@ -806,24 +806,24 @@
    },
    {
     "name": "VAN AERT",
-    "fin": 2524.808,
+    "fin": 2519.485,
     "caught": false,
-    "work": 785641,
-    "wear": 0.87125
+    "work": 810934,
+    "wear": 0.890435
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 558864,
-    "wear": 0.590563
+    "work": 558901,
+    "wear": 0.590508
    },
    {
     "name": "MOHORIC",
-    "fin": null,
-    "caught": true,
-    "work": 727690,
-    "wear": 0.777019
+    "fin": 2524.286,
+    "caught": false,
+    "work": 735620,
+    "wear": 0.903461
    }
   ]
  },
@@ -838,38 +838,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1767.932,
+    "fin": 1765.356,
     "caught": false,
-    "work": 492095,
-    "wear": 0.61252
+    "work": 501112,
+    "wear": 0.713262
    },
    {
     "name": "V.D.POEL",
-    "fin": 1766.901,
+    "fin": 1754.776,
     "caught": false,
-    "work": 474868,
-    "wear": 0.556733
+    "work": 502733,
+    "wear": 0.571596
    },
    {
     "name": "VAN AERT",
-    "fin": 1767.695,
+    "fin": 1743.258,
     "caught": false,
-    "work": 502536,
-    "wear": 0.573319
+    "work": 541086,
+    "wear": 0.678133
    },
    {
     "name": "DE GENDT",
-    "fin": 1767.108,
+    "fin": 1764.781,
     "caught": false,
-    "work": 476779,
-    "wear": 0.592354
+    "work": 483746,
+    "wear": 0.602362
    },
    {
     "name": "MOHORIC",
-    "fin": 1766.993,
+    "fin": 1754.13,
     "caught": false,
-    "work": 438398,
-    "wear": 0.547646
+    "work": 462958,
+    "wear": 0.579623
    }
   ]
  },
@@ -884,38 +884,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2013.915,
+    "fin": 2010.27,
     "caught": false,
-    "work": 665228,
-    "wear": 0.743988
+    "work": 667345,
+    "wear": 0.805338
    },
    {
     "name": "V.D.POEL",
-    "fin": 2013.985,
+    "fin": 2009.231,
     "caught": false,
-    "work": 655560,
-    "wear": 0.596123
+    "work": 673924,
+    "wear": 0.646966
    },
    {
     "name": "VAN AERT",
-    "fin": 2013.741,
+    "fin": 2008.617,
     "caught": false,
-    "work": 686404,
-    "wear": 0.679341
+    "work": 686527,
+    "wear": 0.664023
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 561165,
-    "wear": 0.630763
+    "work": 555047,
+    "wear": 0.625407
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 441102,
-    "wear": 0.604536
+    "work": 447041,
+    "wear": 0.620986
    }
   ]
  },
@@ -932,36 +932,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 736711,
-    "wear": 0.648725
+    "work": 695774,
+    "wear": 0.620601
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 676548,
-    "wear": 0.674831
+    "work": 673420,
+    "wear": 0.664401
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 753679,
-    "wear": 0.68502
+    "work": 744679,
+    "wear": 0.712273
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 679299,
-    "wear": 0.571083
+    "work": 670496,
+    "wear": 0.53073
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 661092,
-    "wear": 0.612994
+    "work": 652594,
+    "wear": 0.583341
    }
   ]
  },
@@ -978,8 +978,8 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 584562,
-    "wear": 0.620611
+    "work": 673367,
+    "wear": 0.703179
    },
    {
     "name": "V.D.POEL",
@@ -999,15 +999,15 @@
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 502815,
-    "wear": 0.589062
+    "work": 464586,
+    "wear": 0.679368
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 555131,
-    "wear": 0.588511
+    "work": 454747,
+    "wear": 0.566151
    }
   ]
  },
@@ -1022,10 +1022,10 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1901.235,
+    "fin": 1896.382,
     "caught": false,
-    "work": 592569,
-    "wear": 0.607539
+    "work": 598670,
+    "wear": 0.65288
    },
    {
     "name": "V.D.POEL",
@@ -1045,15 +1045,15 @@
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 548899,
-    "wear": 0.731286
+    "work": 525442,
+    "wear": 0.652351
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 512093,
-    "wear": 0.872956
+    "work": 489369,
+    "wear": 0.705922
    }
   ]
  },
@@ -1070,8 +1070,8 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 758991,
-    "wear": 0.721693
+    "work": 755157,
+    "wear": 0.732056
    },
    {
     "name": "V.D.POEL",
@@ -1114,10 +1114,10 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1910.951,
+    "fin": 1904.54,
     "caught": false,
-    "work": 591643,
-    "wear": 0.841355
+    "work": 586926,
+    "wear": 0.829114
    },
    {
     "name": "V.D.POEL",
@@ -1135,17 +1135,17 @@
    },
    {
     "name": "DE GENDT",
-    "fin": 1906.842,
+    "fin": 1908.163,
     "caught": false,
-    "work": 598171,
-    "wear": 0.668541
+    "work": 602877,
+    "wear": 0.668829
    },
    {
     "name": "MOHORIC",
-    "fin": 1910.982,
+    "fin": 1905.048,
     "caught": false,
-    "work": 519451,
-    "wear": 0.791914
+    "work": 520011,
+    "wear": 0.793235
    }
   ]
  },
@@ -1162,8 +1162,8 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 704318,
-    "wear": 0.722846
+    "work": 748917,
+    "wear": 0.756881
    },
    {
     "name": "V.D.POEL",
@@ -1183,15 +1183,15 @@
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 709567,
-    "wear": 0.761681
+    "work": 751381,
+    "wear": 0.792181
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 656852,
-    "wear": 0.723103
+    "work": 656936,
+    "wear": 0.725392
    }
   ]
  },
@@ -1206,38 +1206,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": null,
-    "caught": true,
-    "work": 374730,
-    "wear": 0.512085
+    "fin": 1618.226,
+    "caught": false,
+    "work": 544686,
+    "wear": 0.847833
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 436939,
-    "wear": 0.510368
+    "work": 451109,
+    "wear": 0.654651
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 424229,
-    "wear": 0.50257
+    "work": 441551,
+    "wear": 0.5361
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 357785,
-    "wear": 0.513385
+    "work": 441112,
+    "wear": 0.608709
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 391161,
-    "wear": 0.559896
+    "work": 406075,
+    "wear": 0.599646
    }
   ]
  },
@@ -1252,38 +1252,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2531.317,
+    "fin": 2524.154,
     "caught": false,
-    "work": 826879,
-    "wear": 0.947052
+    "work": 818946,
+    "wear": 0.943512
    },
    {
     "name": "V.D.POEL",
-    "fin": null,
-    "caught": true,
-    "work": 656569,
-    "wear": 0.514995
+    "fin": 2551.175,
+    "caught": false,
+    "work": 805016,
+    "wear": 0.790339
    },
    {
     "name": "VAN AERT",
-    "fin": 2531.186,
+    "fin": 2541.363,
     "caught": false,
-    "work": 838594,
-    "wear": 0.892818
+    "work": 831301,
+    "wear": 0.955388
    },
    {
     "name": "DE GENDT",
-    "fin": null,
-    "caught": true,
-    "work": 605470,
-    "wear": 0.579813
+    "fin": 2546.285,
+    "caught": false,
+    "work": 745104,
+    "wear": 0.737605
    },
    {
     "name": "MOHORIC",
-    "fin": null,
-    "caught": true,
-    "work": 697884,
-    "wear": 0.683549
+    "fin": 2524.432,
+    "caught": false,
+    "work": 714401,
+    "wear": 0.838747
    }
   ]
  },
@@ -1298,38 +1298,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1720.723,
+    "fin": 1712.823,
     "caught": false,
-    "work": 514257,
-    "wear": 0.556981
+    "work": 560682,
+    "wear": 0.704342
    },
    {
     "name": "V.D.POEL",
-    "fin": 1709.578,
+    "fin": 1692.643,
     "caught": false,
-    "work": 525124,
-    "wear": 0.548486
+    "work": 556337,
+    "wear": 0.670797
    },
    {
     "name": "VAN AERT",
-    "fin": 1720.706,
+    "fin": 1709.559,
     "caught": false,
-    "work": 506153,
-    "wear": 0.664905
+    "work": 522260,
+    "wear": 0.824249
    },
    {
     "name": "DE GENDT",
-    "fin": 1720.877,
+    "fin": 1714.51,
     "caught": false,
-    "work": 473696,
-    "wear": 0.498987
+    "work": 483456,
+    "wear": 0.577359
    },
    {
     "name": "MOHORIC",
-    "fin": 1709.601,
+    "fin": 1710.075,
     "caught": false,
-    "work": 460976,
-    "wear": 0.71151
+    "work": 477640,
+    "wear": 0.805026
    }
   ]
  },
@@ -1346,36 +1346,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 308975,
-    "wear": 0.512733
+    "work": 443309,
+    "wear": 0.578906
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 302058,
-    "wear": 0.535479
+    "work": 420398,
+    "wear": 0.562784
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 436207,
-    "wear": 0.426449
+    "work": 446372,
+    "wear": 0.429333
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 405631,
-    "wear": 0.459548
+    "work": 412645,
+    "wear": 0.452744
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 285593,
-    "wear": 0.567908
+    "work": 440061,
+    "wear": 0.713837
    }
   ]
  },
@@ -1390,38 +1390,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": null,
-    "caught": true,
-    "work": 398174,
-    "wear": 0.46315
+    "fin": 1724.63,
+    "caught": false,
+    "work": 489166,
+    "wear": 0.593331
    },
    {
     "name": "V.D.POEL",
-    "fin": null,
-    "caught": true,
-    "work": 397827,
-    "wear": 0.385656
+    "fin": 1724.307,
+    "caught": false,
+    "work": 468952,
+    "wear": 0.49915
    },
    {
     "name": "VAN AERT",
-    "fin": null,
-    "caught": true,
-    "work": 420958,
-    "wear": 0.411122
+    "fin": 1724.664,
+    "caught": false,
+    "work": 484503,
+    "wear": 0.51495
    },
    {
     "name": "DE GENDT",
-    "fin": null,
-    "caught": true,
-    "work": 388385,
-    "wear": 0.438331
+    "fin": 1724.379,
+    "caught": false,
+    "work": 443982,
+    "wear": 0.482429
    },
    {
     "name": "MOHORIC",
-    "fin": null,
-    "caught": true,
-    "work": 344502,
-    "wear": 0.534968
+    "fin": 1724.837,
+    "caught": false,
+    "work": 431366,
+    "wear": 0.67388
    }
   ]
  },
@@ -1484,15 +1484,15 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 704551,
-    "wear": 0.678781
+    "work": 710066,
+    "wear": 0.687274
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 691183,
-    "wear": 0.699944
+    "work": 694041,
+    "wear": 0.701222
    },
    {
     "name": "VAN AERT",
@@ -1505,15 +1505,15 @@
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 674091,
-    "wear": 0.609814
+    "work": 670551,
+    "wear": 0.60656
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 605007,
-    "wear": 0.662708
+    "work": 590165,
+    "wear": 0.654668
    }
   ]
  },
@@ -1528,38 +1528,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1720.936,
+    "fin": 1705.233,
     "caught": false,
-    "work": 536727,
-    "wear": 0.790848
+    "work": 563135,
+    "wear": 0.825518
    },
    {
     "name": "V.D.POEL",
-    "fin": 1695.372,
+    "fin": 1697.621,
     "caught": false,
-    "work": 496842,
-    "wear": 0.724921
+    "work": 500639,
+    "wear": 0.721711
    },
    {
     "name": "VAN AERT",
-    "fin": 1693.392,
+    "fin": 1695.705,
     "caught": false,
-    "work": 551713,
-    "wear": 0.67127
+    "work": 549340,
+    "wear": 0.666106
    },
    {
     "name": "DE GENDT",
-    "fin": 1720.985,
+    "fin": 1705.383,
     "caught": false,
-    "work": 490088,
-    "wear": 0.597313
+    "work": 488581,
+    "wear": 0.588778
    },
    {
     "name": "MOHORIC",
-    "fin": 1719.356,
+    "fin": 1705.369,
     "caught": false,
-    "work": 475389,
-    "wear": 0.907883
+    "work": 471696,
+    "wear": 0.882844
    }
   ]
  },
@@ -1620,38 +1620,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2135.859,
+    "fin": 2173.302,
     "caught": false,
-    "work": 675716,
-    "wear": 0.782554
+    "work": 689613,
+    "wear": 0.800422
    },
    {
     "name": "V.D.POEL",
-    "fin": 2134.098,
+    "fin": 2135.213,
     "caught": false,
-    "work": 676709,
-    "wear": 0.695468
+    "work": 671857,
+    "wear": 0.67774
    },
    {
     "name": "VAN AERT",
-    "fin": 2133.157,
+    "fin": 2134.805,
     "caught": false,
-    "work": 694009,
-    "wear": 0.6754
+    "work": 681595,
+    "wear": 0.659995
    },
    {
     "name": "DE GENDT",
-    "fin": 2179.12,
+    "fin": 2184.29,
     "caught": false,
-    "work": 645437,
-    "wear": 0.64201
+    "work": 644086,
+    "wear": 0.615783
    },
    {
     "name": "MOHORIC",
-    "fin": 2135.703,
+    "fin": 2134.544,
     "caught": false,
-    "work": 610152,
-    "wear": 0.745736
+    "work": 593021,
+    "wear": 0.730188
    }
   ]
  },
@@ -1668,36 +1668,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 660981,
-    "wear": 0.578097
+    "work": 758481,
+    "wear": 0.650424
    },
    {
     "name": "V.D.POEL",
     "fin": null,
     "caught": true,
-    "work": 585764,
-    "wear": 0.587284
+    "work": 524471,
+    "wear": 0.548131
    },
    {
     "name": "VAN AERT",
     "fin": null,
     "caught": true,
-    "work": 668205,
-    "wear": 0.67968
+    "work": 776864,
+    "wear": 0.664855
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 615860,
-    "wear": 0.68996
+    "work": 518416,
+    "wear": 0.622197
    },
    {
     "name": "MOHORIC",
     "fin": null,
     "caught": true,
-    "work": 428513,
-    "wear": 0.673803
+    "work": 429205,
+    "wear": 0.674116
    }
   ]
  },
@@ -1712,38 +1712,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1866.074,
+    "fin": 1880.647,
     "caught": false,
-    "work": 583509,
-    "wear": 0.716049
+    "work": 600670,
+    "wear": 0.751837
    },
    {
     "name": "V.D.POEL",
-    "fin": 1846.58,
+    "fin": 1847.268,
     "caught": false,
-    "work": 567518,
-    "wear": 0.642426
+    "work": 567070,
+    "wear": 0.639003
    },
    {
     "name": "VAN AERT",
-    "fin": 1846.605,
+    "fin": 1847.759,
     "caught": false,
-    "work": 574057,
-    "wear": 0.675705
+    "work": 574369,
+    "wear": 0.697451
    },
    {
     "name": "DE GENDT",
-    "fin": 1866.637,
-    "caught": false,
-    "work": 522486,
-    "wear": 0.585035
+    "fin": null,
+    "caught": true,
+    "work": 533132,
+    "wear": 0.583864
    },
    {
     "name": "MOHORIC",
-    "fin": 1846.349,
+    "fin": 1846.796,
     "caught": false,
-    "work": 508202,
-    "wear": 0.669866
+    "work": 505919,
+    "wear": 0.665375
    }
   ]
  },
@@ -1758,38 +1758,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": null,
-    "caught": true,
-    "work": 433850,
-    "wear": 0.584188
+    "fin": 1615.61,
+    "caught": false,
+    "work": 456168,
+    "wear": 0.678217
    },
    {
     "name": "V.D.POEL",
-    "fin": 1565.974,
+    "fin": 1615.148,
     "caught": false,
-    "work": 460368,
-    "wear": 0.550609
+    "work": 471582,
+    "wear": 0.551173
    },
    {
     "name": "VAN AERT",
-    "fin": 1565.934,
+    "fin": 1615.463,
     "caught": false,
-    "work": 460103,
-    "wear": 0.621753
+    "work": 453080,
+    "wear": 0.611825
    },
    {
     "name": "DE GENDT",
-    "fin": 1565.57,
+    "fin": 1615.263,
     "caught": false,
-    "work": 417415,
-    "wear": 0.426596
+    "work": 421086,
+    "wear": 0.420182
    },
    {
     "name": "MOHORIC",
-    "fin": null,
-    "caught": true,
-    "work": 393881,
-    "wear": 0.436423
+    "fin": 1615.569,
+    "caught": false,
+    "work": 401266,
+    "wear": 0.509654
    }
   ]
  },
@@ -1804,38 +1804,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1608.816,
+    "fin": 1609.417,
     "caught": false,
-    "work": 458340,
-    "wear": 0.677822
+    "work": 451475,
+    "wear": 0.679835
    },
    {
     "name": "V.D.POEL",
-    "fin": 1609.236,
+    "fin": 1609.859,
     "caught": false,
-    "work": 458443,
-    "wear": 0.570052
+    "work": 466635,
+    "wear": 0.575826
    },
    {
     "name": "VAN AERT",
-    "fin": 1594.333,
+    "fin": 1594.236,
     "caught": false,
-    "work": 478358,
-    "wear": 0.627626
+    "work": 477894,
+    "wear": 0.627376
    },
    {
     "name": "DE GENDT",
-    "fin": 1595.823,
+    "fin": 1595.685,
     "caught": false,
-    "work": 449274,
-    "wear": 0.587409
+    "work": 448818,
+    "wear": 0.584679
    },
    {
     "name": "MOHORIC",
-    "fin": 1603.789,
+    "fin": 1603.672,
     "caught": false,
-    "work": 431583,
-    "wear": 0.752628
+    "work": 432077,
+    "wear": 0.753125
    }
   ]
  }
