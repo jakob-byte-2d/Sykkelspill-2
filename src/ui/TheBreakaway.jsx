@@ -160,20 +160,23 @@ export default function TheBreakaway() {
     // right now — the autopilot's pulls, the wheel price, the sprint — the solid
     // bubble, moving entirely on its own. The INSTRUCTION is the player's setpoint:
     // it sits exactly where the thumb put it, whatever mode is riding, a glass ring
-    // floating over everything, lit when MANUAL has handed the legs to it. The order
-    // can exceed the body: pinned at or above the ceiling (or sprinting), the
-    // instruction glows red and shivers.
+    // floating over everything, always wearing the same face — an order does not
+    // change with the weather. The BODY is what alarms: legs pinned at the ceiling
+    // (or sprinting), the indicator turns red and shivers.
     const setW = S.input.watts;
     const liveW = S.playerW;
-    const atMax = S.input.sprint || setW >= Math.floor(body.ceil);
+    // the alarm reads the LEGS, not the ask: a sky-high setpoint parked in RELAY
+    // while you sit in a wheel at 200 W is a plan, not an emergency
+    const liveMax = S.input.sprint || liveW >= Math.floor(body.ceil);
+    // ...but the drag readout still answers the thumb: asking over the ceiling is
+    // worth knowing the moment you ask it, before the legs ever get the order
+    const askMax = S.input.sprint || setW >= Math.floor(body.ceil);
     const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts);
     const tSet = tFromW(setW, pts), tLive = tFromW(liveW, pts);
     // ...and the indicator wears the colour of what you are doing, the same one the
     // buttons carry: the sprint's red beats the override's gold beats the mode's own.
     const doing = S.input.sprint ? "sprint" : player.sulT > 0 ? "htfu"
       : S.input.mode === "sit" ? "sit" : S.input.mode === "relay" ? "relay" : "manual";
-    // the ring is IN CHARGE when the legs answer to it and nothing louder is riding
-    const setActive = S.input.mode === "manual" && !S.input.sprint;
     const DOING = {
       sprint: { bg: "linear-gradient(180deg, #ffd9d2, #ff7a63 45%, #c0392b)", edge: "#7c1810", ink: "#fff" },
       htfu:   { bg: "linear-gradient(180deg, #fff3c4, #ffd23f 45%, #d99a1b)", edge: "#7a5410", ink: "#3d2800" },
@@ -479,45 +482,45 @@ export default function TheBreakaway() {
           <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#ff4b3a", top: markerTop(tC), boxShadow: "0 0 5px #ff4b3a", transition: "top .3s linear" }} />
           {/* the INDICATOR: what the legs are actually doing, moving on its own — the
               solid bubble, in the colour of the act the buttons carry: the sprint's
-              red, the override's gold, the mode's blue, green or grey. Un-pressable:
-              it is a reading, however good it looks. */}
+              red, the override's gold, the mode's blue, green or grey. And this is
+              where the body's alarm lives: legs pinned at the ceiling (or sprinting),
+              it turns alarm-red and shivers — the ENGINE is redlining, whatever the
+              order says. Un-pressable: it is a reading, however good it looks. */}
           <div style={{
             position: "absolute", left: 42, width: 50, height: 30, top: `calc(${markerTop(tLive)} - 15px)`,
             borderRadius: 999, pointerEvents: "none",
-            background: DOING.bg,
-            border: "2px solid " + DOING.edge,
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)",
+            background: liveMax ? "linear-gradient(180deg, #ffb3a6, #ff5a42 45%, #b31d0e)" : DOING.bg,
+            border: liveMax ? "2px solid #7c1810" : "2px solid " + DOING.edge,
+            boxShadow: liveMax
+              ? "0 0 12px rgba(255,46,26,0.85), inset 0 1px 0 rgba(255,255,255,0.6)"
+              : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)",
+            animation: liveMax ? "dirre .12s linear infinite" : "none",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontFamily: mono, fontWeight: 800, fontSize: 13,
-            color: DOING.ink,
-            textShadow: DOING.ink === "#fff" ? "0 1px 2px rgba(10,30,55,0.7)" : "none",
+            color: liveMax ? "#fff" : DOING.ink,
+            textShadow: liveMax || DOING.ink === "#fff" ? "0 1px 2px rgba(10,30,55,0.7)" : "none",
             transition: "top .15s linear",
           }}>
             {liveW}
           </div>
           {/* the INSTRUCTION: the player's setpoint, exactly where the thumb put it —
               a glass ring OVER the indicator, so the standing order never hides what
-              the legs are doing. It lights up when it is the one in charge (MANUAL,
-              no sprint); in RELAY it is the price of YOUR pulls — the rotation rides
-              itself, but your turn on the front rides this number, and parked above
-              S.ownBar with the legs delivering, the front stays yours. SIT ON ignores
-              it. Asking for more than the body has (or sprinting) it turns red and
-              shivers. Its number yields when the two bubbles share the same stretch
-              of track — when they agree, one reading is enough. */}
+              the legs are doing. One face, always: an order does not change with the
+              weather — the drama belongs to the indicator. What the ring MEANS still
+              depends on the mode: MANUAL rides it, in RELAY it is the price of YOUR
+              pulls (and parked above S.ownBar with the legs delivering, the front
+              stays yours), SIT ON ignores it. Its number yields when the two bubbles
+              share the same stretch of track — when they agree, one reading is
+              enough. */}
           <div style={{
             position: "absolute", left: 39, width: 56, height: 36, top: `calc(${markerTop(tSet)} - 18px)`,
             borderRadius: 999, pointerEvents: "none",
-            background: atMax ? "rgba(255,64,44,0.30)" : setActive ? "rgba(255,255,255,0.30)" : "rgba(255,255,255,0.12)",
-            border: atMax ? "2.5px solid #ff4b3a" : setActive ? "2.5px solid rgba(255,255,255,0.95)" : "2px solid rgba(255,255,255,0.55)",
-            boxShadow: atMax
-              ? "0 0 0 1px rgba(13,27,42,0.4), 0 0 12px rgba(255,46,26,0.8)"
-              : setActive
-                ? "0 0 0 1px rgba(13,27,42,0.4), 0 0 10px rgba(255,255,255,0.7)"
-                : "0 0 0 1px rgba(13,27,42,0.4)",
-            animation: atMax ? "dirre .12s linear infinite" : "none",
+            background: "rgba(255,255,255,0.16)",
+            border: "2px solid rgba(255,255,255,0.85)",
+            boxShadow: "0 0 0 1px rgba(13,27,42,0.4)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontFamily: mono, fontWeight: 800, fontSize: 12,
-            color: atMax ? "#ffd9d2" : "#f2f6fa",
+            color: "#f2f6fa",
             textShadow: "0 1px 2px rgba(10,30,55,0.8)",
           }}>
             {apart ? setW : ""}
@@ -532,10 +535,10 @@ export default function TheBreakaway() {
               top: `calc(${markerTop(tSet)} ${tSet > 0.80 ? "+ 57px" : "- 79px"})`,
               display: "flex", alignItems: "center", justifyContent: "center",
               background: "linear-gradient(180deg, #ffffff, #dcebfa)",
-              border: "2px solid " + (atMax ? "#b31d0e" : DOING.edge),
-              boxShadow: atMax ? "0 0 12px rgba(255,46,26,0.7)" : "0 3px 10px rgba(15,35,60,0.45)",
+              border: "2px solid " + (askMax ? "#b31d0e" : DOING.edge),
+              boxShadow: askMax ? "0 0 12px rgba(255,46,26,0.7)" : "0 3px 10px rgba(15,35,60,0.45)",
               fontFamily: mono, fontWeight: 800,
-              fontSize: 16, color: atMax ? "#b31d0e" : "#0d3568", pointerEvents: "none",
+              fontSize: 16, color: askMax ? "#b31d0e" : "#0d3568", pointerEvents: "none",
             }}>
               {setW} W
             </div>
