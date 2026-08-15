@@ -156,21 +156,24 @@ export default function TheBreakaway() {
       if (speedRef.current > 1) { speedRef.current = 1; setSpeedMode(1); }
     }
     const alert = ev && ev.big && S.t - ev.t < 5 && !S.ended ? ev : null;
-    // Two readings on one track. The INSTRUCTION is the player's setpoint: it sits
-    // exactly where the thumb put it, whatever mode is riding, and only the MANUAL
-    // button hands the legs over to it. The INDICATOR is what the legs are actually
-    // doing right now — the autopilot's pulls, the wheel price, the sprint — and it
-    // moves entirely on its own. The order can exceed the body: pinned at or above
-    // the ceiling (or sprinting), the instruction glows red and shivers.
+    // Two readings on one track. The INDICATOR is what the legs are actually doing
+    // right now — the autopilot's pulls, the wheel price, the sprint — the solid
+    // bubble, moving entirely on its own. The INSTRUCTION is the player's setpoint:
+    // it sits exactly where the thumb put it, whatever mode is riding, a glass ring
+    // floating over everything, lit when MANUAL has handed the legs to it. The order
+    // can exceed the body: pinned at or above the ceiling (or sprinting), the
+    // instruction glows red and shivers.
     const setW = S.input.watts;
     const liveW = S.playerW;
     const atMax = S.input.sprint || setW >= Math.floor(body.ceil);
     const tT = tFromW(body.T, pts), tC = tFromW(body.ceil, pts);
     const tSet = tFromW(setW, pts), tLive = tFromW(liveW, pts);
-    // ...and it wears the colour of what you are doing, the same one the chip and the
-    // button carry: the sprint's red beats the override's gold beats the mode's own.
+    // ...and the indicator wears the colour of what you are doing, the same one the
+    // buttons carry: the sprint's red beats the override's gold beats the mode's own.
     const doing = S.input.sprint ? "sprint" : player.sulT > 0 ? "htfu"
       : S.input.mode === "sit" ? "sit" : S.input.mode === "relay" ? "relay" : "manual";
+    // the ring is IN CHARGE when the legs answer to it and nothing louder is riding
+    const setActive = S.input.mode === "manual" && !S.input.sprint;
     const DOING = {
       sprint: { bg: "linear-gradient(180deg, #ffd9d2, #ff7a63 45%, #c0392b)", edge: "#7c1810", ink: "#fff" },
       htfu:   { bg: "linear-gradient(180deg, #fff3c4, #ffd23f 45%, #d99a1b)", edge: "#7a5410", ink: "#3d2800" },
@@ -199,6 +202,10 @@ export default function TheBreakaway() {
     // k is exactly 1 and nothing moves.
     const k = wrapH > 0 ? clamp(wrapH / 520, 0.7, 1) : 1;
     const stackB = Math.round(250 * k);   // where the button column now ends, the slider's new foot
+    // ...and the guard's measurements answer one more question: are the two bubbles
+    // on the slider actually clear of each other, in pixels on THIS track? Closer
+    // than a bubble-height, the ring's number would print on top of the indicator's.
+    const apart = Math.abs(tSet - tLive) * Math.max(wrapH - 84 - stackB - 28, 1) > 26;
 
     raceUI = (
       <>
@@ -470,38 +477,48 @@ export default function TheBreakaway() {
           <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#2fdc55", top: markerTop(tT), boxShadow: "0 0 5px #2fdc55" }} />
           {/* red ceiling line — sinks when you burn your matches */}
           <div style={{ position: "absolute", left: 50, width: 40, height: 2, background: "#ff4b3a", top: markerTop(tC), boxShadow: "0 0 5px #ff4b3a", transition: "top .3s linear" }} />
-          {/* the INDICATOR: what the legs are actually doing, moving on its own —
-              deliberately flat and un-pressable: no gloss, no grip, just a reading */}
+          {/* the INDICATOR: what the legs are actually doing, moving on its own — the
+              solid bubble, in the colour of the act the buttons carry: the sprint's
+              red, the override's gold, the mode's blue, green or grey. Un-pressable:
+              it is a reading, however good it looks. */}
           <div style={{
-            position: "absolute", left: 44, width: 46, height: 18, top: `calc(${markerTop(tLive)} - 9px)`,
-            borderRadius: 4, pointerEvents: "none",
-            background: "rgba(20,34,52,0.78)",
-            border: "1px solid rgba(160,185,210,0.5)",
+            position: "absolute", left: 42, width: 50, height: 30, top: `calc(${markerTop(tLive)} - 15px)`,
+            borderRadius: 999, pointerEvents: "none",
+            background: DOING.bg,
+            border: "2px solid " + DOING.edge,
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: mono, fontWeight: 700, fontSize: 10.5,
-            color: "#cfe0f2", transition: "top .15s linear",
+            fontFamily: mono, fontWeight: 800, fontSize: 13,
+            color: DOING.ink,
+            textShadow: DOING.ink === "#fff" ? "0 1px 2px rgba(10,30,55,0.7)" : "none",
+            transition: "top .15s linear",
           }}>
             {liveW}
           </div>
-          {/* the INSTRUCTION: the player's setpoint, exactly where the thumb put it,
-              in the colour of the mode — and asking for more than the body has (or
-              sprinting), it turns red and shivers. Only the MANUAL button hands the
-              legs over to it; in RELAY and SIT ON it waits, a standing order. */}
+          {/* the INSTRUCTION: the player's setpoint, exactly where the thumb put it —
+              a glass ring OVER the indicator, so the standing order never hides what
+              the legs are doing. It lights up when it is the one in charge (MANUAL,
+              no sprint); in RELAY and SIT ON it waits, faint, a standing order. Asking
+              for more than the body has (or sprinting) it turns red and shivers. Its
+              number yields when the two bubbles share the same stretch of track —
+              when they agree, one reading is enough. */}
           <div style={{
-            position: "absolute", left: 42, width: 50, height: 34, top: `calc(${markerTop(tSet)} - 17px)`,
+            position: "absolute", left: 39, width: 56, height: 36, top: `calc(${markerTop(tSet)} - 18px)`,
             borderRadius: 999, pointerEvents: "none",
-            background: atMax ? "linear-gradient(180deg, #ffb3a6, #ff5a42 45%, #b31d0e)" : DOING.bg,
-            border: atMax ? "2px solid #7c1810" : "2px solid " + DOING.edge,
+            background: atMax ? "rgba(255,64,44,0.30)" : setActive ? "rgba(255,255,255,0.30)" : "rgba(255,255,255,0.12)",
+            border: atMax ? "2.5px solid #ff4b3a" : setActive ? "2.5px solid rgba(255,255,255,0.95)" : "2px solid rgba(255,255,255,0.55)",
             boxShadow: atMax
-              ? "0 0 12px rgba(255,46,26,0.85), inset 0 1px 0 rgba(255,255,255,0.6)"
-              : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(15,35,60,0.5)",
+              ? "0 0 0 1px rgba(13,27,42,0.4), 0 0 12px rgba(255,46,26,0.8)"
+              : setActive
+                ? "0 0 0 1px rgba(13,27,42,0.4), 0 0 10px rgba(255,255,255,0.7)"
+                : "0 0 0 1px rgba(13,27,42,0.4)",
             animation: atMax ? "dirre .12s linear infinite" : "none",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: mono, fontWeight: 800, fontSize: 13,
-            color: atMax ? "#fff" : DOING.ink,
-            textShadow: atMax || DOING.ink === "#fff" ? "0 1px 2px rgba(10,30,55,0.7)" : "none",
+            fontFamily: mono, fontWeight: 800, fontSize: 12,
+            color: atMax ? "#ffd9d2" : "#f2f6fa",
+            textShadow: "0 1px 2px rgba(10,30,55,0.8)",
           }}>
-            {setW}
+            {apart ? setW : ""}
           </div>
           {/* ...and a finger covers what it points at, so while you are holding the grip the
               value stands well clear of it: two thumb-heights up, out from under the hand
