@@ -25,8 +25,16 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
    wattages. Behavior falls out of the roster's six numbers and the tuning constants.
    Real-cycling realism is the tiebreaker — when in doubt, ask "what does a real rider
    do?" and verify against real racing.
-4. **After every shipped change:** commit + push to `main`, rebuild the artifact and
-   republish it to the SAME URL (below).
+4. **After every shipped change:** commit + push, PR, merge to `main` AT ONCE, then
+   rebuild the artifact from the merged content and republish it to the SAME URL
+   (below). One change, one merge, one publish — never let a branch accumulate.
+5. **Main is the truth — several chats work this repo in parallel** (sim/AI, UI,
+   content), each on its own session branch. Before ANY work: `git fetch origin main
+   && git merge origin/main` into the session branch. Sim changes re-record the golden
+   fixture, so a branch that hasn't pulled main will see phantom golden diffs that are
+   nobody's bug. Publish ONLY builds that contain main — a build from a stale branch
+   overwrites other chats' shipped work on the artifact (it has happened; that rule is
+   the fix).
 
 ## Verification pipeline
 
