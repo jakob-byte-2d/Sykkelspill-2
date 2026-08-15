@@ -109,16 +109,19 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   player's own pulls — front AND roll-through — ride the instruction watts,
   `min(setpoint, ceil)` and nothing else: no plan price, no dig lift, and no
   `coast()` taper either — an explicit order is not tempo, so RELAY delivers the
-  same number MANUAL always did. Only the ceiling caps it; ledger still times the turn, so
-  a soft setpoint means a long turn and lost seconds — and the slider overrides
-  UPWARD too: setpoint above `S.ownBar` (PULL_OWN_X × start threshold) with the legs
-  delivering ≥ PULL_OWN_EFF of it means he OWNS the front, no turn-end until he
-  eases the slider or coast/ceiling caps the delivery), SIT ON (full autopilot
-  rester on the AI rester's rules — wheelAutopilot's own soft cap holds the wheel;
-  never pays the ledger), HTFU! (2× per race W′ unlock), SPRINT (hold = burstCeil; release →
-  MANUAL at threshold). Tempo column: pause (remembers interrupted speed) +
-  1/5/10/100×. Default/reset setpoint is 1.04·T — a normal pull, so headless races
-  (golden/balance) rotate at the doctrine's price.
+  same number MANUAL always did. Only the ceiling caps it), END TURN (in a break the
+  man on the front says when he has had enough, not a ledger: in RELAY the turn lasts
+  until this is pressed. `S.input.turn` decides who ends it — the UI sets `"manual"`
+  at the gun, and `newRace`'s default `"auto"` keeps the rotation's own rules for
+  headless runs, which is why golden and the balance profile still mean something.
+  `endTurn` is a one-shot consumed every second, like `sul`. Refusing to end it while
+  soft-pedalling — under the sit-in price − DROP_W — publishes `offline` and the line
+  rolls past, the same watts-derived signal MANUAL has always sent), SIT ON (full
+  autopilot rester on the AI rester's rules — wheelAutopilot's own soft cap holds the
+  wheel; never pays the ledger), HTFU! (2× per race W′ unlock), SPRINT (hold =
+  burstCeil; release → MANUAL at threshold). Tempo column: pause (remembers
+  interrupted speed) + 1/5/10/100×. Default/reset setpoint is 1.04·T — a normal pull,
+  so headless races (golden/balance) rotate at the doctrine's price.
 - **The player NEVER enters chase autopilot.** In RELAY and SIT ON, with no usable
   wheel to hold (dropped, lost the wheel, alone/clear), the legs ride the instruction
   — `min(setpoint, ceil)` + coast. Getting back on is the slider's job. The AI's

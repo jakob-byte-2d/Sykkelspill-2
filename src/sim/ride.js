@@ -183,8 +183,14 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     const digP = mine ? holdTop : 0;
     const front = grp[0];
     // "the front is done" is public: his own flag, or the player without the pull
-    // button lit — position 2 rolls through on the SAME tick the front eases
-    const frontDone = !finale && !inFront && (front.isPlayer && S.input.mode !== "relay" ? true : !!front.done);
+    // button lit — position 2 rolls through on the SAME tick the front eases.
+    // ...and a man soft-pedalling the front is done whether he says so or not: with
+    // the turn his to end, refusing to end it while riding below the drop-back's own
+    // level would let one rider park the whole break behind him. The line simply
+    // comes past, which is what happens on the road. `offline` is the same
+    // watts-derived signal the manual player already publishes (step.js).
+    const frontDone = !finale && !inFront
+      && (front.isPlayer && S.input.mode !== "relay" ? true : (!!front.done || (front.isPlayer && !!front.offline)));
     // The response to an attack is a CHOICE, made once, two seconds after the jump —
     // a rykk is answered at once or not at all. Each man asks: can I (a real tank,
     // not loading, not drifting), and is it worth it (I would beat or match him in a
@@ -237,7 +243,15 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
           // taper describes a TEMPO buying nothing at speed, the way the sprint and
           // the chase are already exempt from it. An explicit order is not tempo —
           // and MANUAL has always delivered it whole, so relay must too.
-          return { P: Math.min(S.input.watts, b.ceil), brake: 0 };
+          const own = Math.min(S.input.watts, b.ceil);
+          // ...and when the turn is his to end, soft-pedalling it says the same thing
+          // the manual player's watts say: below the drop-back's own level he is not
+          // riding a turn any more, and the line is free to come past (frontDone).
+          if (S.input.turn === "manual") {
+            const sitP = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, shel);
+            r.offline = own <= sitP - DROP_W ? 1 : 0;
+          }
+          return { P: own, brake: 0 };
         } else {
           const behind = S.t - planTimeAt(S.plan, r.dist);
           const urgency = clamp(behind / PACE_WINDOW, 0, 1);
