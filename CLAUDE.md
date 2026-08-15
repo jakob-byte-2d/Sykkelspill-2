@@ -107,7 +107,9 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   never switches mode. The flat dark **indicator bubble** shows live watts.
 - Buttons: MANUAL (legs ride the setpoint), RELAY (autopilot rotation, but the
   player's own pulls — front AND roll-through — ride the instruction watts,
-  `min(setpoint, ceil)`, no plan price, no dig lift; ledger still times the turn, so
+  `min(setpoint, ceil)` and nothing else: no plan price, no dig lift, and no
+  `coast()` taper either — an explicit order is not tempo, so RELAY delivers the
+  same number MANUAL always did. Only the ceiling caps it; ledger still times the turn, so
   a soft setpoint means a long turn and lost seconds — and the slider overrides
   UPWARD too: setpoint above `S.ownBar` (PULL_OWN_X × start threshold) with the legs
   delivering ≥ PULL_OWN_EFF of it means he OWNS the front, no turn-end until he

@@ -232,8 +232,12 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         if (playerRelay) {
           // the player's pull is HIS: the instruction bubble is the order, absolute —
           // no plan price, no dig lift. The ledger still times the turn, so a soft
-          // pull just takes longer to pay off, and the break eats the lost seconds
-          P = Math.min(S.input.watts, b.ceil);
+          // pull just takes longer to pay off, and the break eats the lost seconds.
+          // Returned straight out, so coast() below never touches it either: that
+          // taper describes a TEMPO buying nothing at speed, the way the sprint and
+          // the chase are already exempt from it. An explicit order is not tempo —
+          // and MANUAL has always delivered it whole, so relay must too.
+          return { P: Math.min(S.input.watts, b.ceil), brake: 0 };
         } else {
           const behind = S.t - planTimeAt(S.plan, r.dist);
           const urgency = clamp(behind / PACE_WINDOW, 0, 1);
@@ -349,8 +353,9 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         r.hold = false;
         if (playerRelay) {
           // rolling through is already the pull: the instruction takes over here, not
-          // at the front line, so the handover doesn't jump between two prices
-          P = coast(Math.min(S.input.watts, b.ceil), r.speed);
+          // at the front line, so the handover doesn't jump between two prices — and
+          // it is delivered whole, coast included, exactly as at the front
+          return { P: Math.min(S.input.watts, b.ceil), brake: 0 };
         } else {
           const behind = S.t - planTimeAt(S.plan, r.dist);
           const urgency = clamp(behind / PACE_WINDOW, 0, 1);
@@ -391,7 +396,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // ...unless he is the PLAYER: the autopilot never chases for him. With no
         // wheel to hold, the legs ride the instruction bubble — getting back on is
         // the slider's job, at the number the thumb has already chosen.
-        if (sitting || playerRelay) return { P: coast(Math.min(S.input.watts, b.ceil), r.speed), brake: 0 };
+        if (sitting || playerRelay) return { P: Math.min(S.input.watts, b.ceil), brake: 0 };
         let lead = tgt || chaseTarget(S, r);
         // ...but a wheel that is racing an attack is not "his" wheel to close to: paying
         // the price of holding an accelerating mover's speed was exactly how the whole
@@ -436,7 +441,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // The PLAYER alone: the autopilot never chases for him, and it never doses a solo
     // ride for him either — dropped or clear, the legs ride the instruction bubble
     // and the slider is how he races. (Same rule as losing the wheel inside a group.)
-    if (r.isPlayer && S.input.mode !== "manual") return { P: coast(Math.min(S.input.watts, b.ceil), r.speed), brake: 0 };
+    if (r.isPlayer && S.input.mode !== "manual") return { P: Math.min(S.input.watts, b.ceil), brake: 0 };
     // Alone. Off the front there is nothing to read and nothing to chase, so the old
     // steady tempo stands. Off the back there is a wheel up the road, and the whole
     // question a dropped rider asks is whether he can reach it before the line.
