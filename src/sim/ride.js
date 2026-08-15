@@ -221,7 +221,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         }
       }
     }
-    if (r.hold && (shel === 0 || !ahead || (!sitting && !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0)))))) r.hold = false;
+    if (r.hold && (shel === 0 || !ahead || !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0))))) r.hold = false;
     if (inFront) {
       r.hold = false;
       // done paying (or sitting): ease off rather than parachute — hold-your-own-speed
@@ -287,10 +287,15 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       P = Math.min(low + (Math.max(price, low) - low) * k, b.ceil);
       P = coast(P, r.speed);
     } else {
-      // a rester keeps the wheel right in front of him: the man dropping back into
-      // that space IS his new wheel, not someone to look through. And he is happy to
-      // go slower with him — the speed test is the working line's business, not his
-      let tgt = ahead ? (sitting ? ahead : queueWheel(S, r, ahead)) : null;
+      // the wheel is chosen the way every rider in the line chooses it: queueWheel,
+      // which looks THROUGH the dying, the offline and the racing to the last man
+      // still in the group's race. The sitting player used to keep `ahead` raw
+      // instead — and on a climb, where cracked riders drift back through the group
+      // nonstop, the deadWheel veto then left him with NO target at all: measured,
+      // 78 % of his losing climb seconds were spent parked behind a cooked wheel
+      // the healthy line was riding away from. Holding the group's wheel means
+      // looking past the men who are no longer in it.
+      let tgt = ahead ? queueWheel(S, r, ahead) : null;
       // in the finale he rides to his slot instead of just holding whatever wheel he
       // has. Sitting too far back, he takes the wheel of the man he wants to be behind
       // and comes up the outside to it — with the autopilot's full authority, because
@@ -330,7 +335,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // either: going with the move is a decision each rider makes for himself, and
       // this rider (the player included) did not make it.
       const usable = tgt && !deadWheel(tgt, r) && !reacting(tgt)
-        && (sitting || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
+        && validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0)));
       // the line hands over to the first man still in it — not literally position 2,
       // or a rester there would leave the break with no engine at all. A rider on an
       // empty tank is no engine either, so he is passed over too; but if nobody has
@@ -377,13 +382,19 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
             * (1 + PACE_GAIN * urgency);
           P = coast(Math.min(pWant, r.pullX * b.T, b.ceil), r.speed);
         }
-      } else if (usable && (movingUp || r.hold || ((bestGap >= 0 || sitting) && shel > 0))) {
+      } else if (usable && (movingUp || r.hold || (bestGap >= 0 && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);
         const need = powerFor(tgt.speed, r.mass, r.cda, grad, rho, hw, shel);
         if (!r.hold) { r.hold = true; r.rampFrom = Math.max(r.power, isFinite(need) ? need : 0); r.rampT = 3; }
         // in the finale you match the jump or you lose the wheel — the soft cap that
-        // keeps a rester from digging is exactly wrong once the sprint is on
-        const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, !movingUp && !finale);
+        // keeps a rester from digging is exactly wrong once the sprint is on. And it
+        // is wrong for SIT ON too: an AI rester's soft cap encodes his own judgement
+        // ("I am resting, I will not dig for this wheel"), but the sitting player has
+        // been given an ORDER — hold that wheel until told otherwise — so the
+        // autopilot gets its full closing authority, and only the body's ceiling
+        // outranks the instruction. Measured before this, the soft cap took the
+        // wheel from him in a quarter of the losing seconds on climbs.
+        const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, !movingUp && !finale && !sitting);
         P = out.P; brake = out.brake;
         // ...and up a climb there is a level above which following him is not following
         // at all, it is blowing up in his wake. A rider knows that: he lets the wheel go
@@ -393,12 +404,15 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // cracking, not one making a choice. Only uphill: on the flat a wheel is worth a
         // third of the work, so hanging on always beats sitting up and the same rule
         // there would be nonsense. Not in the finale either, where you match it or lose.
-        if (!finale && !movingUp && tTop >= CLIMB_MIN_T && P > holdTop) { P = holdTop; brake = 0; }
-        // SITTING ON holds the wheel exactly the way an AI rester does: the
-        // autopilot's own soft cap governs (the `soft` flag above keeps it from
-        // digging). A player-only trim to price+60 lived here once — it stripped
-        // the closing authority, so every reshuffle at the foot of a climb sent
-        // him uphill already metres down, and the climbing cap finished the job.
+        // ...and not for SIT ON: pace-to-the-summit is a CHOICE, and the sitting
+        // player has already made his — hold the wheel until told otherwise. He may
+        // well blow up before the top; that is what the order costs, the slider is
+        // how he takes it back, and the ceiling is the one voice above it. Measured,
+        // this cap alone took the wheel from him in 69 % of the losing climb seconds.
+        if (!finale && !movingUp && !sitting && tTop >= CLIMB_MIN_T && P > holdTop) { P = holdTop; brake = 0; }
+        // (A player-only trim to price+60 lived here once — it stripped the closing
+        // authority, so every reshuffle at the foot of a climb sent him uphill
+        // already metres down, and the climbing cap finished the job.)
       } else {
         // No wheel to sit on: he has lost it, or the one ahead is dying and there is
         // nothing behind it to take. This was a flat 340 W — the one hardcoded wattage

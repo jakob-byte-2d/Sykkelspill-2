@@ -116,9 +116,13 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   headless runs, which is why golden and the balance profile still mean something.
   `endTurn` is a one-shot consumed every second, like `sul`. Refusing to end it while
   soft-pedalling — under the sit-in price − DROP_W — publishes `offline` and the line
-  rolls past, the same watts-derived signal MANUAL has always sent), SIT ON (full
-  autopilot rester on the AI rester's rules — wheelAutopilot's own soft cap holds the
-  wheel; never pays the ledger), HTFU! (2× per race W′ unlock), SPRINT (hold =
+  rolls past, the same watts-derived signal MANUAL has always sent), SIT ON (an ORDER:
+  hold the wheel until told otherwise. queueWheel target like any rider — it looks
+  through dying/offline wheels to the line's last live man — with the autopilot's full
+  closing authority: no rester soft cap, no pace-to-summit cap; only the body's
+  ceiling outranks the order, so you may well blow up before the top. Never pays the
+  ledger; wheel ends only at the body, a dead/reacting wheel, or your own new
+  instruction), HTFU! (2× per race W′ unlock), SPRINT (hold =
   burstCeil; release → MANUAL at threshold). Tempo column: pause (remembers
   interrupted speed) + 1/5/10/100×. Default/reset setpoint is 1.04·T — a normal pull,
   so headless races (golden/balance) rotate at the doctrine's price.
