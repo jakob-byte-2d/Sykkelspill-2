@@ -287,13 +287,24 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // line's wheel through the manoeuvre instead means braking to make room and then
       // digging to close what the brake cost — which is no way for a rester to ride.
       if (resting) {
-        let dropper = null;
+        let dropper = null, nearest = null;
         for (const o of grp) {
-          if (o === r || !o.offline || deadWheel(o, r)) continue;
+          if (o === r) continue;
           const behind = dist0(o) - dist0(r);
-          if (behind > 0 && behind < DOOR_NEAR && (!dropper || behind < dist0(dropper) - dist0(r))) dropper = o;
+          if (behind <= 0) continue;
+          // ...and who is simply the next man up the road, drifting back or not
+          if (!nearest || behind < dist0(nearest) - dist0(r)) nearest = o;
+          if (!o.offline || deadWheel(o, r)) continue;
+          if (behind < DOOR_NEAR && (!dropper || behind < dist0(dropper) - dist0(r))) dropper = o;
         }
-        if (dropper) tgt = dropper;
+        // ...but only the man IMMEDIATELY in front slots into your space. A drop-back
+        // with someone still between you and him is not coming into your wheel at
+        // all — he is passing that rider, and taking him means going backwards past
+        // a wheel that is still going forward. Measured, that was 12 % of a sitting
+        // rider's seconds, 2.3 km/h slower, with a forward wheel right there in
+        // four cases out of five. Nearest man ahead wins; the wave-in stands when
+        // the drop-back IS that man, because then he is genuinely in the way.
+        if (dropper && dropper === nearest) tgt = dropper;
       }
       // a rester may go slower with a man rotating back — that is the whole point of
       // the wave-in — but not with one who is coming off for good. A wheel that is

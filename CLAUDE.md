@@ -76,7 +76,9 @@ parameter, otherwise you create a new artifact instead of updating the user's).
 - **Cooperation (ride.js/step.js):** one ledger, equal shares; front pulls just over
   threshold at the plan's price, swings off when paid up / spent / empty / clock.
   `done` flag + `offline` (drifting down the outside) is the only lateral language —
-  declared for AI, watts-derived for the manual player.
+  declared for AI, watts-derived for the manual player. A rester takes a drop-back as
+  his wheel only when that man is the NEAREST ahead (wave-in); with anyone in between,
+  the nearer wheel wins — a wheel choice never moves you backwards.
 - **Attacks:** wantsAttack (sprint-loser or strongest-engine motives, window 8 km→1 km,
   bunch ≥ ATT_SAFE back), loading (skip turns to refill, visible gun), kick =
   ATT_KICK_T seconds at burstCeil then dosing for ATT_COMMIT. Response = a CHOICE per
