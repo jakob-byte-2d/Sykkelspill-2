@@ -110,8 +110,9 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   UPWARD too: setpoint above `S.ownBar` (PULL_OWN_X × start threshold) with the legs
   delivering ≥ PULL_OWN_EFF of it means he OWNS the front, no turn-end until he
   eases the slider or coast/ceiling caps the delivery), SIT ON (full autopilot
-  rester — chases capped at threshold, wheel price always payable; ignores the
-  setpoint), HTFU! (2× per race W′ unlock), SPRINT (hold = burstCeil; release →
+  rester on the AI rester's rules — wheelAutopilot's own soft cap holds the wheel,
+  and a lost wheel is chased back with the AI's empty-the-tank dosing; ignores the
+  setpoint, never pays the ledger), HTFU! (2× per race W′ unlock), SPRINT (hold = burstCeil; release →
   MANUAL at threshold). Tempo column: pause (remembers interrupted speed) +
   1/5/10/100×. Default/reset setpoint is 1.04·T — a normal pull, so headless races
   (golden/balance) rotate at the doctrine's price.
