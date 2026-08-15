@@ -1,4 +1,4 @@
-import { ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF, PULL_OWN_EFF, SPRINT_FINALE_M } from "../content/tuning.js";
+import { ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, burstCeil, shutUpLegs, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
@@ -267,20 +267,24 @@ export function stepSim(S) {
     // the rotation would protect and crest with nothing, so the 30 % resting bar that
     // ends an ordinary turn would amputate every dig (measured: 266 of 277 died early,
     // median 40 % still in the tank). Only a truly bare tank hands his climb away.
-    // ...and none of the four applies to a player who is REFUSING relief: in relay
-    // an instruction parked clearly above his start-line threshold is a decision —
-    // nobody leaves the slider there by accident — and as long as the legs actually
-    // DELIVER it, the front is his. Both halves matter: the fixed bar (S.ownBar,
-    // anchored where the default instruction was cut, so the untouched default sits
-    // under it at any hour of the race), and the delivery test, which hands the
-    // front back the moment coast trims a descent or the caving ceiling caps him —
-    // the body overrides the slider, never the other way.
-    const owns = r.isPlayer && S.input.mode === "relay"
-      && S.input.watts > S.ownBar
-      && r.power > PULL_OWN_EFF * S.input.watts;
-    const over = r.digging ? (empty && b.sf < 0.10) : (!owns && (paidUp || spent || empty || r.pullT >= maxPull));
-    if (r.pullT >= COOP_PULL_MIN && over) r.done = true;
+    // ...and none of the four decides the PLAYER's turn when he has taken that
+    // decision himself. In a break it is the man on the front who says when he has
+    // had enough, not a ledger — so in relay with manual turn control the turn ends
+    // on his word and nothing else. Headless runs (golden, sweep, scenario scripts)
+    // have no finger on the button and keep the automatic rules; the UI switches
+    // this on at the gun. The ledger still credits his gift either way, so a long
+    // turn is still paid back in a long rest.
+    const mineToEnd = r.isPlayer && S.input.mode === "relay" && S.input.turn === "manual";
+    const over = r.digging ? (empty && b.sf < 0.10)
+      : mineToEnd ? !!S.input.endTurn
+      : (paidUp || spent || empty || r.pullT >= maxPull);
+    // the minimum-turn floor is the rotation's own manners and has no say over a man
+    // who has just announced he is done: pressed at second three, he swings off then
+    if (over && (mineToEnd || r.pullT >= COOP_PULL_MIN)) r.done = true;
   }
+  // the button is a gesture, not a state: consumed every second whether or not he was
+  // on the front, so a press made in the wheels never ends a turn he takes later
+  S.input.endTurn = false;
   // the turn's bookkeeping: it opens when he reaches the front and closes for good
   // once he has drifted to the back — tagGroups ran above, so the positions are this
   // second's. Anyone not on the front is between turns and carries no mark.

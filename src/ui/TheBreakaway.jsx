@@ -27,6 +27,10 @@ export default function TheBreakaway() {
   const start = (seed) => {
     seedRef.current = seed;
     simRef.current = newSim(seed);
+    // there is a human on the controls now, so his turn on the front is his to end:
+    // the END TURN button, not the ledger. A headless run never comes through here
+    // and keeps the rotation's automatic rules, which is what golden measures.
+    setInput(simRef.current, { turn: "manual" });
     // the fixture the telemetry reads from — the whole sim, and only when asked for
     if (DEBUG && typeof window !== "undefined") window.__S = simRef.current;
     speedRef.current = 5; setSpeedMode(5); setPaused(false);
@@ -197,18 +201,24 @@ export default function TheBreakaway() {
       lastT = t;
       ticks.push({ w, t, label });
     }
-    // the bottom guard: the button stack is a fixed 250 px column, and on a window
+    // the bottom guard: the button stack is a fixed 288 px column, and on a window
     // too short to hold the chyron, a usable slider track AND the buttons, something
     // has to give. The whole stack scales down from its bottom-right corner and the
-    // slider keeps every pixel the stack gives up. 520 px is the last height where
+    // slider keeps every pixel the stack gives up. 558 px is the last height where
     // everything fits at full size — any normal screen sits well above it, so there
-    // k is exactly 1 and nothing moves.
-    const k = wrapH > 0 ? clamp(wrapH / 520, 0.7, 1) : 1;
-    const stackB = Math.round(250 * k);   // where the button column now ends, the slider's new foot
+    // k is exactly 1 and nothing moves. (Both numbers grew by one button-pitch when
+    // END TURN joined the column.)
+    const k = wrapH > 0 ? clamp(wrapH / 558, 0.7, 1) : 1;
+    const stackB = Math.round(288 * k);   // where the button column now ends, the slider's new foot
     // ...and the guard's measurements answer one more question: are the two bubbles
     // on the slider actually clear of each other, in pixels on THIS track? Closer
     // than a bubble-height, the ring's number would print on top of the indicator's.
     const apart = Math.abs(tSet - tLive) * Math.max(wrapH - 84 - stackB - 28, 1) > 26;
+    // ...and whether the END TURN button has anything to end: you are in the rotation,
+    // on the front, still pulling (not already swinging off), and not in the finale
+    // where nobody owes anybody a turn any more.
+    const canEndTurn = S.input.mode === "relay" && !finale
+      && player.groupPos === 1 && !player.offline && (player.groupSize ?? 1) > 1;
 
     raceUI = (
       <>
@@ -309,6 +319,25 @@ export default function TheBreakaway() {
               : "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(20,40,70,0.35)",
           })}>
           MANUAL
+        </button>
+
+        {/* END TURN: in a break it is the man on the front who decides when he has
+            had enough, not a ledger — so in RELAY the turn lasts until this is
+            pressed. Live only while you are actually pulling; dark otherwise, the
+            same way RELAY and SIT ON go dark past the flamme rouge. */}
+        <button
+          onClick={() => { if (S && !S.ended && canEndTurn) setInput(S, { endTurn: true }); }}
+          style={actionBtn(246, {
+            cursor: canEndTurn ? "pointer" : "default", userSelect: "none", WebkitUserSelect: "none",
+            WebkitTouchCallout: "none", touchAction: "manipulation",
+            opacity: canEndTurn ? 1 : 0.35,
+            border: "2px solid #6b4a12",
+            color: "#fff",
+            background: canEndTurn
+              ? "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #a8791f"
+              : "linear-gradient(180deg, rgba(255,255,255,0.30), rgba(0,0,0,0.28)), #6f5218",
+          })}>
+          END TURN
         </button>
 
         {/* relay and sit on: two buttons, one per intention — the lit one is the mode

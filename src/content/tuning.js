@@ -22,14 +22,6 @@ export const COOP_PULL_MAX_UP = 150; // ...but at five per cent a wheel is worth
                               // paying for itself, and a real break settles into single file
                               // at its own tempo. Turns lengthen to match — only the
                               // seven-minute solo effort is ruled out.
-export const PULL_OWN_X = 1.05;   // the player's slider overrides upward too: an instruction above
-                           // this times his start-line threshold (S.ownBar, set in newRace) in
-                           // RELAY means he has TAKEN the front, and the ledger does not relieve
-                           // a man refusing relief. The default instruction (1.04·T) sits just
-                           // under it by design, so the headless rotation never triggers this
-export const PULL_OWN_EFF = 0.9;  // ...but only while the legs deliver this share of the asked
-                           // watts: a coast-trimmed descent or a caving ceiling hands the
-                           // front back — the body overrides the slider, never the reverse
 export const COOP_COAST_KMH = 50; // past this speed a pace-setting effort buys nothing...
 export const COOP_COAST_SPAN = 8; // ...watts tapering to zero over the next this-many km/h
 export const PULL_MIN_SF = 0.3;   // under this much tank you stop taking turns — drop-backs slot in ahead of you
