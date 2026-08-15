@@ -364,13 +364,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // third of the work, so hanging on always beats sitting up and the same rule
         // there would be nonsense. Not in the finale either, where you match it or lose.
         if (!finale && !movingUp && tTop >= CLIMB_MIN_T && P > holdTop) { P = holdTop; brake = 0; }
-        // SITTING ON holds the wheel at what the wheel costs — a climb or a fast
-        // group may price that above threshold, and paying it IS sitting on. What
-        // sitting on never does is DIG: the autopilot's closing authority (need
-        // plus up to 560 W of gap-and-speed slack) once spent 722 W hauling the
-        // sitting player across a reshuffle. So the price, a small trim, no more —
-        // fall behind that and the wheel goes, and going with it is the slider's job.
-        if (sitting) P = Math.min(P, Math.max(need, 0) + 60);
+        // SITTING ON holds the wheel exactly the way an AI rester does: the
+        // autopilot's own soft cap governs (the `soft` flag above keeps it from
+        // digging). A player-only trim to price+60 lived here once — it stripped
+        // the closing authority, so every reshuffle at the foot of a climb sent
+        // him uphill already metres down, and the climbing cap finished the job.
       } else {
         // No wheel to sit on: he has lost it, or the one ahead is dying and there is
         // nothing behind it to take. This was a flat 340 W — the one hardcoded wattage
@@ -410,10 +408,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         } else {
           P = chaseRide(S, r, b, lead, grad, rho, hw);
         }
-        // ...and a sitting player does not chase: with the wheel truly lost the
-        // autopilot rides at most threshold toward the group — regaining it is a
-        // choice, made on the slider
-        if (sitting) P = Math.min(P, b.T);
+        // ...and a sitting player who lost the wheel chases it back like any AI
+        // rester would — the empty-the-tank dosing. A threshold cap lived here
+        // once, and it turned every transient loss on a climb into a permanent
+        // one: the climbing cap sheds you near the top, the cap forbade the ride
+        // back over it, and "come back over the summit" never happened.
         if (!r.chasing) P = coast(P, r.speed);
       }
     }
@@ -449,10 +448,9 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // ...and a chase is not tempo. coast() describes a pace-setting effort buying nothing
     // at speed, which is why the sprint is exempt from it too — a man closing a gap into
     // a tailwind at fifty-six an hour is doing neither of those things, he is racing.
+    // (The sitting player, alone, chases like any AI rester — the threshold cap that
+    // lived here made a temporary loss on a climb a permanent one.)
     if (!r.chasing && !racing) P = coast(P, r.speed);
-    // ...and the sitting player, alone, does not race back on his own: at most
-    // threshold — the chase is the slider's to order
-    if (r.isPlayer && S.input.mode === "sit") P = Math.min(P, b.T);
   }
   return { P, brake };
 }
