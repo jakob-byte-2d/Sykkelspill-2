@@ -1,4 +1,4 @@
-import { COOP_SEED, PACE_MARGIN, PEL_FINALE_X, PEL_LEAD, WARMUP_S } from "../content/tuning.js";
+import { COOP_SEED, PACE_MARGIN, PEL_FINALE_X, PEL_LEAD, PULL_OWN_X, WARMUP_S } from "../content/tuning.js";
 import { bodyNow, makeRiders, thresholdFull } from "./body.js";
 import { buildCourse } from "./course.js";
 import { tagGroups } from "./groups.js";
@@ -46,8 +46,10 @@ export function newSim(seed) {
     t: 0, clock0: 3 * 3600 + 48 * 60,
     // what the player asks for, and what his legs actually did with it. The engine
     // only ever reads `input`; everything else here is something it writes.
-    input: { mode: "relay", watts: Math.round(T0 * 0.92) },
-    playerW: Math.round(T0 * 0.92), braking: 0,
+    // the default instruction is a normal pull — just over threshold is the coop
+    // doctrine, and in relay the instruction now IS the player's pull price
+    input: { mode: "relay", watts: Math.round(T0 * 1.04) },
+    playerW: Math.round(T0 * 1.04), braking: 0,
     ended: false, result: null, events: [], comm: [],
     profile: null,   // drawProfile's cached elevation sample
     uiAt: 0,
@@ -82,7 +84,11 @@ export function newSim(seed) {
   S.pel.dist = -startGap; S.pel.prevDist = -startGap;
   S.pel.speed = 11.8; S.pel.vAvg = 0; S.pel.gapS = startGap / 11.8;
   S.t = 0; S.events = []; S.comm = []; S.commSt = null;
-  S.input.watts = S.playerW = Math.round(bodyNow(riders[0]).T * 0.92);
+  S.input.watts = S.playerW = Math.round(bodyNow(riders[0]).T * 1.04);
+  // the bar the slider must clear to OWN the front in relay (step.js), anchored to
+  // the same start-line threshold the default instruction is cut from — the roster's
+  // fresh T0 belongs to a man without 150 km in his legs and would put it out of reach
+  S.ownBar = bodyNow(riders[0]).T * PULL_OWN_X;
   tagGroups(S);
   return S;
 }

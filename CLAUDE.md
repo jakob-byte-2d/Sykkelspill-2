@@ -95,10 +95,18 @@ parameter, otherwise you create a new artifact instead of updating the user's).
 
 - The slider moves ONLY the **instruction bubble** (setpoint, `S.input.watts`) — it
   never switches mode. The flat dark **indicator bubble** shows live watts.
-- Buttons: MANUAL (legs ride the setpoint), RELAY (full autopilot rotation), SIT ON
-  (full autopilot rester — chases capped at threshold, wheel price always payable),
-  HTFU! (2× per race W′ unlock), SPRINT (hold = burstCeil; release → MANUAL at
-  threshold). Tempo column: pause (remembers interrupted speed) + 1/5/10/100×.
+- Buttons: MANUAL (legs ride the setpoint), RELAY (autopilot rotation, but the
+  player's own pulls — front AND roll-through — ride the instruction watts,
+  `min(setpoint, ceil)`, no plan price, no dig lift; ledger still times the turn, so
+  a soft setpoint means a long turn and lost seconds — and the slider overrides
+  UPWARD too: setpoint above `S.ownBar` (PULL_OWN_X × start threshold) with the legs
+  delivering ≥ PULL_OWN_EFF of it means he OWNS the front, no turn-end until he
+  eases the slider or coast/ceiling caps the delivery), SIT ON (full autopilot
+  rester — chases capped at threshold, wheel price always payable; ignores the
+  setpoint), HTFU! (2× per race W′ unlock), SPRINT (hold = burstCeil; release →
+  MANUAL at threshold). Tempo column: pause (remembers interrupted speed) +
+  1/5/10/100×. Default/reset setpoint is 1.04·T — a normal pull, so headless races
+  (golden/balance) rotate at the doctrine's price.
 - Finale (< 1000 m): RELAY/SIT ON disabled, forced MANUAL, flamme rouge event.
 - Player strip under his rider on canvas: role + watts + km/h. Debug bubbles via DBG.
 

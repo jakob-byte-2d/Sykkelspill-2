@@ -84,6 +84,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // front still rides the plan, so the break does not stall and get swallowed.
     const finale = togo < SPRINT_FINALE_M;
     const sitting = r.isPlayer && S.input.mode === "sit";  // the player as a rester: never pays, sinks to the back
+    const playerRelay = r.isPlayer && S.input.mode === "relay";  // his pulls ride the instruction bubble, not the plan's price
     // The attack decision, once a second: does the cooperation still serve me? If yes
     // but the tank is short, he LOADS — skips his turns and sits in to fill it, the
     // gun everyone can see being loaded — and fires the moment the matches are there.
@@ -228,14 +229,21 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // schedule, and terrain and wind flow into the pull through powerFor. When
         // the deadline is threatened, urgency lifts him toward the dig. Banked time
         // is still insurance: ahead of schedule never slows the plan itself
-        const behind = S.t - planTimeAt(S.plan, r.dist);
-        const urgency = clamp(behind / PACE_WINDOW, 0, 1);
-        const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
-          * (1 + PACE_GAIN * urgency);
-        P = Math.min(pWant, r.pullX * b.T, b.ceil);
-        // ...and where the road is his, the plan's tempo is a wasted chance. pullX is
-        // the price of a long turn in the wind and has no say in a dig; the body does
-        if (mine) { r.digging = 1; P = Math.max(P, digP); }
+        if (playerRelay) {
+          // the player's pull is HIS: the instruction bubble is the order, absolute —
+          // no plan price, no dig lift. The ledger still times the turn, so a soft
+          // pull just takes longer to pay off, and the break eats the lost seconds
+          P = Math.min(S.input.watts, b.ceil);
+        } else {
+          const behind = S.t - planTimeAt(S.plan, r.dist);
+          const urgency = clamp(behind / PACE_WINDOW, 0, 1);
+          const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
+            * (1 + PACE_GAIN * urgency);
+          P = Math.min(pWant, r.pullX * b.T, b.ceil);
+          // ...and where the road is his, the plan's tempo is a wasted chance. pullX is
+          // the price of a long turn in the wind and has no say in a dig; the body does
+          if (mine) { r.digging = 1; P = Math.max(P, digP); }
+        }
       }
       if (!r.chasing) P = coast(P, r.speed);
     } else if ((overpaid || sitting) && r.groupPos < grp.length) {
@@ -328,11 +336,17 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // a median 0.76 km/h at every change. A real through-and-off happens at the
         // group's own speed.
         r.hold = false;
-        const behind = S.t - planTimeAt(S.plan, r.dist);
-        const urgency = clamp(behind / PACE_WINDOW, 0, 1);
-        const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
-          * (1 + PACE_GAIN * urgency);
-        P = coast(Math.min(pWant, r.pullX * b.T, b.ceil), r.speed);
+        if (playerRelay) {
+          // rolling through is already the pull: the instruction takes over here, not
+          // at the front line, so the handover doesn't jump between two prices
+          P = coast(Math.min(S.input.watts, b.ceil), r.speed);
+        } else {
+          const behind = S.t - planTimeAt(S.plan, r.dist);
+          const urgency = clamp(behind / PACE_WINDOW, 0, 1);
+          const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
+            * (1 + PACE_GAIN * urgency);
+          P = coast(Math.min(pWant, r.pullX * b.T, b.ceil), r.speed);
+        }
       } else if (usable && (movingUp || r.hold || ((bestGap >= 0 || sitting) && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);
         const need = powerFor(tgt.speed, r.mass, r.cda, grad, rho, hw, shel);
