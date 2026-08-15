@@ -1,4 +1,4 @@
-import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_SAFE, ATT_SF, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
+import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_SAFE, ATT_SF, CHASE_NEAR, CHASE_NEAR_W, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { burstCeil, durPower } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
@@ -377,6 +377,10 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // does here is not a number: he rides what closes the gap. It is the question
         // the man alone off the back already asks, so it gets the same answer.
         r.hold = false;
+        // ...unless he is the PLAYER: the autopilot never chases for him. With no
+        // wheel to hold, the legs ride the instruction bubble — getting back on is
+        // the slider's job, at the number the thumb has already chosen.
+        if (sitting || playerRelay) return { P: coast(Math.min(S.input.watts, b.ceil), r.speed), brake: 0 };
         let lead = tgt || chaseTarget(S, r);
         // ...but a wheel that is racing an attack is not "his" wheel to close to: paying
         // the price of holding an accelerating mover's speed was exactly how the whole
@@ -418,6 +422,10 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     }
   } else {
     r.digTo = null;   // whatever climb he claimed, he is his own group now — clean slate
+    // The PLAYER alone: the autopilot never chases for him, and it never doses a solo
+    // ride for him either — dropped or clear, the legs ride the instruction bubble
+    // and the slider is how he races. (Same rule as losing the wheel inside a group.)
+    if (r.isPlayer && S.input.mode !== "manual") return { P: coast(Math.min(S.input.watts, b.ceil), r.speed), brake: 0 };
     // Alone. Off the front there is nothing to read and nothing to chase, so the old
     // steady tempo stands. Off the back there is a wheel up the road, and the whole
     // question a dropped rider asks is whether he can reach it before the line.
@@ -464,6 +472,16 @@ export function chaseRide(S, r, b, lead, grad, rho, hw) {
   // that noise would land straight in the chaser's watts
   if (r.chaseOf !== lead.i) { r.chaseOf = lead.i; r.chaseU = lead.speed; }
   else r.chaseU += (lead.speed - r.chaseU) / 8;
+  // a regain, not a chase: inside CHASE_NEAR the minimum-time solve below prices a
+  // 15 m gap as a 15-second sprint — measured, ~690 W on a fresh body, snapping on
+  // and off at the 12 m group boundary. What a rider does for fifteen metres is ride
+  // the wheel's price (no shelter out here) plus a bounded surplus that grows with
+  // the gap, meeting the real chase seamlessly at the zone's edge.
+  if (gap < CHASE_NEAR) {
+    r.chasing = 1;
+    const price = powerFor(r.chaseU, r.mass, r.cda, grad, rho, hw, 0);
+    return Math.min(price + CHASE_NEAR_W * (gap / CHASE_NEAR), b.ceil);
+  }
   // ...and the same sentence as a dig up a climb, with a different target: what he
   // can hold all the way to it. Two things cap that and they swap over by themselves
   // — for a short chase it is his curve read at those few seconds, for a long one it

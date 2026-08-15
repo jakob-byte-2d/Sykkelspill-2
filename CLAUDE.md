@@ -46,7 +46,7 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
 - **Balance profile** (must hold after sim changes; measure over 40–80 seeds
   `1000 + s*7919`): break survival ≈ 80 % headwind / ≈ 67 % tailwind; ~2.4–2.8 of 5
   riders home; sprinters (VAN AERT, V.D.POEL) win most; attack rate ~25/40 races with
-  ~2/3 ridden clear. Knobs live in tuning.js (PEL_LEAD is the master lever, −0.045).
+  ~2/3 ridden clear. Knobs live in tuning.js (PEL_LEAD is the master lever, −0.044).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -110,12 +110,17 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   UPWARD too: setpoint above `S.ownBar` (PULL_OWN_X × start threshold) with the legs
   delivering ≥ PULL_OWN_EFF of it means he OWNS the front, no turn-end until he
   eases the slider or coast/ceiling caps the delivery), SIT ON (full autopilot
-  rester on the AI rester's rules — wheelAutopilot's own soft cap holds the wheel,
-  and a lost wheel is chased back with the AI's empty-the-tank dosing; ignores the
-  setpoint, never pays the ledger), HTFU! (2× per race W′ unlock), SPRINT (hold = burstCeil; release →
+  rester on the AI rester's rules — wheelAutopilot's own soft cap holds the wheel;
+  never pays the ledger), HTFU! (2× per race W′ unlock), SPRINT (hold = burstCeil; release →
   MANUAL at threshold). Tempo column: pause (remembers interrupted speed) +
   1/5/10/100×. Default/reset setpoint is 1.04·T — a normal pull, so headless races
   (golden/balance) rotate at the doctrine's price.
+- **The player NEVER enters chase autopilot.** In RELAY and SIT ON, with no usable
+  wheel to hold (dropped, lost the wheel, alone/clear), the legs ride the instruction
+  — `min(setpoint, ceil)` + coast. Getting back on is the slider's job. The AI's
+  chaseRide has a near-zone instead (CHASE_NEAR/CHASE_NEAR_W): inside 30 m a regain
+  costs the wheel's price + ≤150 W, not the minimum-time "empty the tank in 15 s"
+  dose that used to bang-bang 690 W at the 12 m group boundary.
 - Finale (< 1000 m): RELAY/SIT ON disabled, forced MANUAL, flamme rouge event.
 - Player strip under his rider on canvas: role + watts + km/h. Debug bubbles via DBG.
 

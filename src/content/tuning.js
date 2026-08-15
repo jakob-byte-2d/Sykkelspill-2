@@ -56,14 +56,15 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.045;   // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.044;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
-                           // back. At this value, measured over 40 seeds (1000 + s·7919): a
-                           // headwind move survives 79 % and a tailwind 69 %, ~2.5 of five home,
-                           // margin medians 37/31 s — the profile CLAUDE.md holds sim changes to.
-                           // Cheap sitting-in helps most where the watts saved are biggest,
+                           // back. Tightened from -0.045 when chaseRide's near-zone made regains
+                           // cheaper and pushed headwind survival to 86 %: at -0.044, over 80
+                           // seeds (1000 + s·7919), a headwind move survives 82 % and a tailwind
+                           // 69 %, ~2.6 of five home — the profile CLAUDE.md holds sim changes
+                           // to. Cheap sitting-in helps most where the watts saved are biggest,
                            // which is into the wind: headwind breaks outlive tailwind ones.
 export const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 export const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
@@ -101,6 +102,12 @@ export const ATT_FOLLOW_N = 2;    // at most this many cover the move; the rest 
                            // closers, which is the whole game theory of a break
 export const ATT_GIVEUP = 25;     // seconds of gap at which the chase stops bothering — "let him die
                            // out there" — and the group rides for the remaining placings
+export const CHASE_NEAR = 30;     // metres: closer than this is not a chase but a regain — the
+                           // minimum-time dose solved a 15 m gap as a 15-second sprint (measured
+                           // ~690 W on a fresh body, bang-banging at the 12 m group boundary)
+export const CHASE_NEAR_W = 150;  // ...and a regain rides the wheel's price plus at most this many
+                           // watts, ramping up with the gap so the handover to the real chase
+                           // at CHASE_NEAR is seamless. What a rider actually does for 15 metres
 /* ---- the player's attack, read off the physics ---- */
 export const ATT_JUMP_X = 1.5;    // the gesture the group registers: watts above this multiple of the
                            // price of sitting in (the plan's pace at HIS shelter — the offline
