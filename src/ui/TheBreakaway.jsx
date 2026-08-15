@@ -14,6 +14,7 @@ export default function TheBreakaway() {
   const [debugOn, setDebugOn] = useState(DEBUG);
   const [dragging, setDragging] = useState(false);   // finger down on the slider
   const [paused, setPaused] = useState(false);
+  const [wrapH, setWrapH] = useState(0);   // the window's real height — the layout guard reads it
   const speedRef = useRef(5);
   const prevSpeedRef = useRef(5);   // what pause interrupted, so resume lands where you were
   const simRef = useRef(null);
@@ -54,6 +55,7 @@ export default function TheBreakaway() {
       c.height = el.clientHeight * dpr;
       c.style.width = el.clientWidth + "px";
       c.style.height = el.clientHeight + "px";
+      setWrapH(el.clientHeight);
     };
     fit();
     window.addEventListener("resize", fit);
@@ -189,6 +191,14 @@ export default function TheBreakaway() {
       lastT = t;
       ticks.push({ w, t, label });
     }
+    // the bottom guard: the button stack is a fixed 250 px column, and on a window
+    // too short to hold the chyron, a usable slider track AND the buttons, something
+    // has to give. The whole stack scales down from its bottom-right corner and the
+    // slider keeps every pixel the stack gives up. 520 px is the last height where
+    // everything fits at full size — any normal screen sits well above it, so there
+    // k is exactly 1 and nothing moves.
+    const k = wrapH > 0 ? clamp(wrapH / 520, 0.7, 1) : 1;
+    const stackB = Math.round(250 * k);   // where the button column now ends, the slider's new foot
 
     raceUI = (
       <>
@@ -268,7 +278,9 @@ export default function TheBreakaway() {
 
         {/* the right column under the slider, top to bottom: the doing-chip, the
             relay/sit toggle, the motivation one-shot, and the sprint hold. One thumb,
-            one column — grabbing the slider itself is what MANUAL is. */}
+            one column — grabbing the slider itself is what MANUAL is. The whole
+            column lives in one box so the bottom guard can shrink it as one thing. */}
+        <div style={{ position: "absolute", right: 0, bottom: 0, width: 136, height: 250, transform: k < 1 ? `scale(${k})` : "none", transformOrigin: "100% 100%" }}>
         {/* manual: the third intention — the legs answer to the setpoint bubble and
             nothing else. Relay and sit on keep their whole autopilot; this button is
             how the standing order on the slider becomes the ride. */}
@@ -410,6 +422,7 @@ export default function TheBreakaway() {
           })}>
           SPRINT
         </button>
+        </div>
 
         {/* instrument panel */}
         <div style={{ position: "absolute", left: 10, bottom: 56, width: 168, background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "10px 12px 8px" }}>
@@ -432,10 +445,10 @@ export default function TheBreakaway() {
           </div>
         </div>
 
-        {/* watt slider — its foot carries the WATTS label, so the column has to stop
-            clear of the mode chip below it, not just above the chip's own top edge */}
+        {/* watt slider — its foot carries the WATTS label, so the column stops where
+            the button stack begins: at the stack's scaled top, not a hardcoded 250 */}
         <div
-          style={{ position: "absolute", right: 6, top: 84, bottom: 250, width: 104, touchAction: "none", userSelect: "none" }}
+          style={{ position: "absolute", right: 6, top: 84, bottom: stackB, width: 104, touchAction: "none", userSelect: "none" }}
           onPointerDown={(e) => { dragRef.current = true; setDragging(true); e.currentTarget.setPointerCapture(e.pointerId); onSlider(e, e.currentTarget); }}
           onPointerMove={(e) => { if (dragRef.current) onSlider(e, e.currentTarget); }}
           onPointerUp={onSliderUp}
