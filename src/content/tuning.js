@@ -60,13 +60,11 @@ export const PEL_LEAD = -0.045;   // the bunch crosses the line this much earlie
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
-                           // back. Re-swept after the energy overhaul (fat pays below threshold,
-                           // durability an attribute): both made the break stronger and cheaper to
-                           // ride, so the deadline tightened from -0.045. Over 240 races at 2.8 %
-                           // a headwind move survives 68 % and a tailwind 64 %, median margins
-                           // 49/17 s, two-three of five home. The winds have swapped sides since
-                           // the first calibration — cheap sitting-in helps most where the watts
-                           // saved are biggest, which is into the wind.
+                           // back. At this value, measured over 40 seeds (1000 + s·7919): a
+                           // headwind move survives 79 % and a tailwind 69 %, ~2.5 of five home,
+                           // margin medians 37/31 s — the profile CLAUDE.md holds sim changes to.
+                           // Cheap sitting-in helps most where the watts saved are biggest,
+                           // which is into the wind: headwind breaks outlive tailwind ones.
 export const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 export const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 export const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free
