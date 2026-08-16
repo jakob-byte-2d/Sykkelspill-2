@@ -129,6 +129,14 @@ export const TERRAIN_EDGE = 0.10; // you lift when the pace costs the man it sui
                            // more of what he could hold to the top than it costs you. Measured
                            // over the climbs of five races: a tenth is the middle of the range,
                            // so the drags nobody would attack on stay quiet and the real ones do not
+export const WHEEL_WARN_SF = 0.5; // the commentator calls the player's own lost wheel only above
+                           // this much tank: the warning is a call to action — you HAVE the
+                           // matches to close it — and a man losing the wheel empty is not
+                           // being told anything he can use. Sits just under ATT_SF, the
+                           // same "enough to do something about it" neighbourhood
+export const WHEEL_NEAR = 20;     // metres around the player within which ANOTHER man losing his
+                           // wheel is news: ahead of you it is a gap opening in front of the
+                           // whole file, behind you it is the race leaving him
 export const TERRAIN_WHEEL = 0.16; // ...and only where a wheel is worth no more than this. On the flat it
                             // saves them a third of the work and the lift just tows them to the line.
                             // Read over the whole climb rather than at the wheel, what a wheel is worth

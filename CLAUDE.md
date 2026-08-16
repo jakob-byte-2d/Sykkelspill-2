@@ -9,8 +9,8 @@ line, the peloton pacing to catch the best of you by a single second. Vite 5 + R
 ```
 src/content/   tuning.js (ALL constants), riders.js (roster: mass, h, curve, dura)
 src/sim/       DOM-free, Node-importable. newRace → step (1 Hz) → ride/tactics/body/
-               physics/plan/groups/peloton/commentary. Seed in, race out, same result
-               every time.
+               physics/plan/groups/peloton/commentary/events. Seed in, race out, same
+               result every time.
 src/render/    draw.js (canvas frame, roleOf status vocabulary, debug bubbles)
 src/ui/        TheBreakaway.jsx (React shell, controls, chyron, overlays), slider.js
 tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep/race/turns
@@ -94,12 +94,25 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   DROPPED/GOING SOLO > RIDING OWN PACE > PULLING > LOADING > SITTING ON > TURN DONE >
   RELAYING. "What he DOES beats what he wanted."
 - **Commentary (commentary.js):** observation only, never touches watts. Urgent
-  register (attack answered/ignored, gun loading, sprint opening, digs) fires the
-  second it happens, once per INSTANCE — never muted by pacing. Colour register
-  (form, fuel, wear, bunch trend) waits ≥ GAP_MIN and has per-rider AND per-topic
-  cooldowns. Feed is `S.comm`; the news wire `S.events` is mirrored in.
-- **Events/alerts:** `pushEvent(S, txt, big)` — `big` events force the UI to 1× and
-  show the over-screen headline. Player's own actions are never `big`.
+  register (attack answered/ignored, gun loading, sprint opening, digs, a wheel above
+  the player's climbing limit) fires the second it happens, once per INSTANCE — never
+  muted by pacing. Colour register (form, fuel, wear, bunch trend) waits ≥ GAP_MIN and
+  has per-rider AND per-topic cooldowns. Feed is `S.comm`; the news wire `S.events` is
+  mirrored in.
+- **The wheel warning (commentary.js):** fires on the FACT of a lost wheel, not a
+  forecast — edge-triggered the tick the gap to last second's wheel passes DRAFT (the
+  group split line). Choices don't count (offline/reacting/sprinting, either side),
+  nor descents (DH_GRAD) or the finale; LOSS_COOL between calls per man. The player's
+  own loss speaks only with sf ≥ WHEEL_WARN_SF (a call to action — he has the matches)
+  and carries a subdued `big` headline, no numbers. Another man cracking within
+  WHEEL_NEAR of the player: ahead = headline (a gap opening in front of the file),
+  behind = feed line only.
+- **Events/alerts (events.js):** `pushEvent(S, txt, big)` — `big` events force the UI
+  to 1× and show the over-screen headline. Player's own actions are never `big`. Both
+  step.js and commentary.js write the wire, which is why it is its own module: a leaf
+  importing back up into step.js would be the engine's first import cycle. An event
+  pushed from inside `stepComm` is never mirrored into `S.comm` — the mirror has
+  already run for that second — so the wire and the feed carry their own wording.
 
 ## Controls (current semantics — changed 2026-08, don't regress)
 
