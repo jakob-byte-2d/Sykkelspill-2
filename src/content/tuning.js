@@ -137,6 +137,17 @@ export const WHEEL_WARN_SF = 0.5; // the commentator calls the player's own lost
 export const WHEEL_NEAR = 20;     // metres around the player within which ANOTHER man losing his
                            // wheel is news: ahead of you it is a gap opening in front of the
                            // whole file, behind you it is the race leaving him
+export const WHEEL_WARN_M = 3;    // the warning line, wheel to wheel: past this the wheel is GOING
+                           // — shelterAt(3) still pays ~15 %, so it can yet be saved. DRAFT
+                           // (12 m, the group split) is where it is gone; warning there was
+                           // warning at the funeral. Measured: called at 3 m the news leads
+                           // the real split by a median 11 s
+export const WHEEL_WARN_DV = 1.0; // ...and only when it is OPENING: this many metres over the
+                           // last two seconds. The file breathes 3-6 m of elastic that comes
+                           // back on its own — measured over 40 seeds, without a rate test
+                           // barely two in five 3 m departures reached a real split, and the
+                           // rate test cut the false calls hardest (relay banners 2.6 → 1.5
+                           // per race) while keeping every loss that mattered
 export const TERRAIN_WHEEL = 0.16; // ...and only where a wheel is worth no more than this. On the flat it
                             // saves them a third of the work and the lift just tows them to the line.
                             // Read over the whole climb rather than at the wheel, what a wheel is worth
