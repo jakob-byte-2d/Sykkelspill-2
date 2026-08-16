@@ -85,6 +85,18 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     const finale = togo < SPRINT_FINALE_M;
     const sitting = r.isPlayer && S.input.mode === "sit";  // the player as a rester: never pays, sinks to the back
     const playerRelay = r.isPlayer && S.input.mode === "relay";  // his pulls ride the instruction bubble, not the plan's price
+    // ...and behind a wheel, both autopilot modes are GLUE: the player holds the
+    // group's wheel unconditionally, body permitting — the AI's let-go judgements
+    // (summit pacing, the rester's soft cap, the speed-validity test) are ITS
+    // choices, and the player has already made his by picking the mode. What still
+    // lets go: the ceiling (physiology), a wheel racing an attack (going with a
+    // move is never automatic), and the player's own hands. Gated on the same flag
+    // END TURN uses — turn:"manual" means A HUMAN IS STEERING — because the glue is
+    // a promise to the person holding the phone, not a property of the rider:
+    // headless runs keep the AI's judgement, so golden and the balance profile
+    // measure the same rotation they always did (measured unGated, the glue pushed
+    // tailwind survival to ~83 % and no PEL_LEAD value could restore the wind split).
+    const playerGlue = (sitting || playerRelay) && S.input.turn === "manual";
     // The attack decision, once a second: does the cooperation still serve me? If yes
     // but the tank is short, he LOADS — skips his turns and sits in to fill it, the
     // gun everyone can see being loaded — and fires the moment the matches are there.
@@ -221,7 +233,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         }
       }
     }
-    if (r.hold && (shel === 0 || !ahead || (!sitting && !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0)))))) r.hold = false;
+    if (r.hold && (shel === 0 || !ahead || (!playerGlue && !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0)))))) r.hold = false;
     if (inFront) {
       r.hold = false;
       // done paying (or sitting): ease off rather than parachute — hold-your-own-speed
@@ -287,10 +299,14 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       P = Math.min(low + (Math.max(price, low) - low) * k, b.ceil);
       P = coast(P, r.speed);
     } else {
-      // a rester keeps the wheel right in front of him: the man dropping back into
-      // that space IS his new wheel, not someone to look through. And he is happy to
-      // go slower with him — the speed test is the working line's business, not his
-      let tgt = ahead ? (sitting ? ahead : queueWheel(S, r, ahead)) : null;
+      // the wheel is queueWheel's for everyone — it looks THROUGH the dying, the
+      // offline and the racing to the last man still in the group's race. The
+      // sitting player used to keep raw `ahead` instead, and on a climb, where
+      // cracked riders drift back through the group nonstop, the deadWheel veto
+      // then left him with no target at all: measured, most of his losing climb
+      // seconds were spent parked behind a cooked wheel the healthy line was
+      // riding away from. "The wheel in front" means the group's wheel.
+      let tgt = ahead ? queueWheel(S, r, ahead) : null;
       // in the finale he rides to his slot instead of just holding whatever wheel he
       // has. Sitting too far back, he takes the wheel of the man he wants to be behind
       // and comes up the outside to it — with the autopilot's full authority, because
@@ -328,9 +344,10 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // the wave-in — but not with one who is coming off for good. A wheel that is
       // racing an attack — the attacker's own, or a man covering it — is no wheel
       // either: going with the move is a decision each rider makes for himself, and
-      // this rider (the player included) did not make it.
+      // this rider (the player included) did not make it. The GLUE skips only the
+      // speed-validity test: a group that slows is still the player's wheel.
       const usable = tgt && !deadWheel(tgt, r) && !reacting(tgt)
-        && (sitting || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
+        && (playerGlue || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
       // the line hands over to the first man still in it — not literally position 2,
       // or a rester there would leave the break with no engine at all. A rider on an
       // empty tank is no engine either, so he is passed over too; but if nobody has
@@ -377,13 +394,16 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
             * (1 + PACE_GAIN * urgency);
           P = coast(Math.min(pWant, r.pullX * b.T, b.ceil), r.speed);
         }
-      } else if (usable && (movingUp || r.hold || ((bestGap >= 0 || sitting) && shel > 0))) {
+      } else if (usable && (movingUp || r.hold || playerGlue || (bestGap >= 0 && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);
         const need = powerFor(tgt.speed, r.mass, r.cda, grad, rho, hw, shel);
         if (!r.hold) { r.hold = true; r.rampFrom = Math.max(r.power, isFinite(need) ? need : 0); r.rampT = 3; }
         // in the finale you match the jump or you lose the wheel — the soft cap that
-        // keeps a rester from digging is exactly wrong once the sprint is on
-        const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, !movingUp && !finale);
+        // keeps a rester from digging is exactly wrong once the sprint is on. Wrong
+        // for the GLUE too: an AI rester's soft cap encodes his own judgement ("I am
+        // resting, I will not dig for this wheel"); the player's mode is an order to
+        // hold it, so the autopilot gets its full closing authority.
+        const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, !movingUp && !finale && !playerGlue);
         P = out.P; brake = out.brake;
         // ...and up a climb there is a level above which following him is not following
         // at all, it is blowing up in his wake. A rider knows that: he lets the wheel go
@@ -393,12 +413,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // cracking, not one making a choice. Only uphill: on the flat a wheel is worth a
         // third of the work, so hanging on always beats sitting up and the same rule
         // there would be nonsense. Not in the finale either, where you match it or lose.
-        if (!finale && !movingUp && tTop >= CLIMB_MIN_T && P > holdTop) { P = holdTop; brake = 0; }
-        // SITTING ON holds the wheel exactly the way an AI rester does: the
-        // autopilot's own soft cap governs (the `soft` flag above keeps it from
-        // digging). A player-only trim to price+60 lived here once — it stripped
-        // the closing authority, so every reshuffle at the foot of a climb sent
-        // him uphill already metres down, and the climbing cap finished the job.
+        // ...and never for the GLUE: pacing to the summit is the AI's choice, and the
+        // player has already made his by picking the mode. He holds to the ceiling and
+        // may well blow up before the top — that is what the order costs, the wheel
+        // warning (commentary) says so out loud, and the slider is how he takes it back.
+        if (!finale && !movingUp && !playerGlue && tTop >= CLIMB_MIN_T && P > holdTop) { P = holdTop; brake = 0; }
       } else {
         // No wheel to sit on: he has lost it, or the one ahead is dying and there is
         // nothing behind it to take. This was a flat 340 W — the one hardcoded wattage
