@@ -48,16 +48,17 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.044;   // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.040;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
-                           // back. Tightened from -0.045 when chaseRide's near-zone made regains
-                           // cheaper and pushed headwind survival to 86 %: at -0.044, over 80
-                           // seeds (1000 + s·7919), a headwind move survives 82 % and a tailwind
-                           // 69 %, ~2.6 of five home — the profile CLAUDE.md holds sim changes
-                           // to. Cheap sitting-in helps most where the watts saved are biggest,
-                           // which is into the wind: headwind breaks outlive tailwind ones.
+                           // back. Tightened from -0.044 when the hunt and the in-window leash
+                           // taught the break to chase its own escapees: riding a dangler back is
+                           // riding hard, and survival rose ~8 points in both winds. At -0.040,
+                           // over 80 seeds (1000 + s·7919), a headwind move survives 35/44 and a
+                           // tailwind 28/36 — the same profile main measured before the hunt
+                           // (35/44, 27/36), wind split preserved: headwind breaks outlive
+                           // tailwind ones because cheap sitting-in matters most into the wind.
 export const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 export const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 export const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free

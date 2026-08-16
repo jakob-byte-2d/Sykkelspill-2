@@ -3,7 +3,7 @@ import { burstCeil, durPower } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
-import { attackerAhead, chaseTarget, deadWheel, dist0, launchAt, queueWheel, reacting, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
+import { attackerAhead, chaseTarget, deadWheel, dist0, huntTarget, launchAt, queueWheel, reacting, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
 
 /* The decision, once per rider per second: how many watts, and why. */
 
@@ -220,7 +220,12 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // attack is HIS choice, made with the slider, not the autopilot's reflex.
     if (!finale && !r.isPlayer && !r.attChase) {
       const up = attackerAhead(S, r);
-      if (up && up.attAt != null && S.t - up.attAt >= ATT_REACT && r.attSeen !== up.attAt) {
+      // ...but before the window opens, nobody jumps across: the answer to an early
+      // move is collective — the hunt rides him back at the front's full alarm. The
+      // choice is NOT consumed out here: a man still clear when this rider reaches
+      // the window deserves an answer then (ATT_REACT is a floor, not a deadline),
+      // and a man brought back before it has left attackerAhead's sight anyway.
+      if (togo <= ATT_FROM && up && up.attAt != null && S.t - up.attAt >= ATT_REACT && r.attSeen !== up.attAt) {
         r.attSeen = up.attAt;
         const can = !resting && !r.attLoad && b.sf >= ATT_FOLLOW_SF
           && r.sprintX >= up.sprintX - ATT_FOLLOW_EDGE;
@@ -288,13 +293,23 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
           return { P: own, brake: 0 };
         } else {
           const behind = S.t - planTimeAt(S.plan, r.dist);
-          const urgency = clamp(behind / PACE_WINDOW, 0, 1);
+          // a defector up the road is FULL alarm, not a schedule read: the group
+          // rides its own escapee back at the chase's price, and keeps riding it
+          // until the road is whole — a proportional lift would leave him dangling
+          // a handful of seconds ahead all the way to the window.
+          const hunt = huntTarget(S, grp, r);
+          const urgency = hunt ? 1 : clamp(behind / PACE_WINDOW, 0, 1);
           const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
             * (1 + PACE_GAIN * urgency);
           P = Math.min(pWant, r.pullX * b.T, b.ceil);
           // ...and where the road is his, the plan's tempo is a wasted chance. pullX is
           // the price of a long turn in the wind and has no say in a dig; the body does
           if (mine) { r.digging = 1; P = Math.max(P, digP); }
+          // ...and a hunt is a CHASE, not a tempo: coast() describes a pace-setting
+          // effort buying nothing at speed, and it gutted the alarm exactly where
+          // escapes are cheapest — at 52 km/h with the wind behind, the front's
+          // lift tapered to nothing while the man up the road kept pushing.
+          if (hunt) r.chasing = 1;
         }
       }
       if (!r.chasing) P = coast(P, r.speed);
@@ -431,10 +446,15 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
           return { P: Math.min(S.input.watts, b.ceil), brake: 0 };
         } else {
           const behind = S.t - planTimeAt(S.plan, r.dist);
-          const urgency = clamp(behind / PACE_WINDOW, 0, 1);
+          // the roll-through rides the same alarm as the front line: a hunt is on
+          // for the whole rotation, not for whoever happens to hold the front —
+          // and hunting, it is a chase, so coast() keeps its hands off it here too
+          const hunt = huntTarget(S, grp, r);
+          const urgency = hunt ? 1 : clamp(behind / PACE_WINDOW, 0, 1);
           const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
             * (1 + PACE_GAIN * urgency);
-          P = coast(Math.min(pWant, r.pullX * b.T, b.ceil), r.speed);
+          P = Math.min(pWant, r.pullX * b.T, b.ceil);
+          if (hunt) r.chasing = 1; else P = coast(P, r.speed);
         }
       } else if (usable && (movingUp || r.hold || playerGlue || (bestGap >= 0 && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);

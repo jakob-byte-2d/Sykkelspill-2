@@ -1,4 +1,4 @@
-import { ATT_ENGINE_EDGE, ATT_FROM, ATT_SAFE, ATT_SPRINT_EDGE, DH_GRAD, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
+import { ATT_ENGINE_EDGE, ATT_FROM, ATT_GIVEUP, ATT_SAFE, ATT_SPRINT_EDGE, DH_GRAD, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
 import { bodyNow, durPower } from "./body.js";
 import { BIKE, SHEL_MAX, powerFor, rhoAt } from "./physics.js";
 import { planTimeAt } from "./plan.js";
@@ -145,6 +145,37 @@ export function chaseTarget(S, r) {
   for (const o of S.riders) {
     if (o === r || o.caught || o.finished != null) continue;
     if (dist0(o) > dist0(r) && (best == null || dist0(o) < dist0(best))) best = o;
+  }
+  return best;
+}
+
+/* The hunt: before the racing-each-other window opens, a smaller knot of break
+   riders clear off the front of a bigger one is not a move to be covered — it is
+   a defection the cooperation answers TOGETHER. The group behind rides it back at
+   full pace alarm until the road is whole again, and it never gives up before the
+   window: the lift is capped at the doctrine's pull price, so chasing hard is
+   also just staying away from the bunch. Never the other way round — cracked
+   riders chasing back on are the smaller group, and the race does not wait. */
+export function huntTarget(S, grp, r) {
+  if (grp.length < 2) return null;
+  const togo = S.course.total - r.dist;
+  let best = null;
+  for (const o of S.riders) {
+    if (o === r || o.caught || o.finished != null) continue;
+    if ((o.groupSize ?? 1) >= grp.length) continue;
+    if (dist0(o) > dist0(r) && (!best || dist0(o) < dist0(best))) best = o;
+  }
+  if (!best) return null;
+  if (togo <= ATT_FROM) {
+    // inside the window the leash is ATT_GIVEUP, made flesh: "the chase stops
+    // bothering at 25 s" only means something if under 25 s there IS a chase —
+    // the covers are one answer, the front's tempo is the other, and a dangler
+    // the group can still see is ridden back rather than watched. Past the
+    // leash, "let him die out there" stands. It reaches through the finale too:
+    // the man towing the group to its sprint chases the dangler down exactly
+    // like the bunch's own lead-out would — the launches themselves are untouched.
+    const gapS = (dist0(best) - dist0(r)) / Math.max(r.speed, 6);
+    if (gapS >= ATT_GIVEUP) return null;
   }
   return best;
 }
