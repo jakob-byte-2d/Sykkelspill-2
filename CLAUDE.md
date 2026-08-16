@@ -129,12 +129,20 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   headless runs, which is why golden and the balance profile still mean something.
   `endTurn` is a one-shot consumed every second, like `sul`. Refusing to end it while
   soft-pedalling — under the sit-in price − DROP_W — publishes `offline` and the line
-  rolls past, the same watts-derived signal MANUAL has always sent), SIT ON (full
-  autopilot rester on the AI rester's rules — wheelAutopilot's own soft cap holds the
-  wheel; never pays the ledger), HTFU! (2× per race W′ unlock), SPRINT (hold =
-  burstCeil; release → MANUAL at threshold). Tempo column: pause (remembers
+  rolls past, the same watts-derived signal MANUAL has always sent), SIT ON (rester:
+  never pays the ledger, swings off the front), HTFU! (2× per race W′ unlock), SPRINT
+  (hold = burstCeil; release → MANUAL at threshold). Tempo column: pause (remembers
   interrupted speed) + 1/5/10/100×. Default/reset setpoint is 1.04·T — a normal pull,
   so headless races (golden/balance) rotate at the doctrine's price.
+- **Behind a wheel, the player's autopilot is GLUE** (`playerGlue`, ride.js): in SIT ON
+  and RELAY he holds the GROUP's wheel unconditionally, body permitting — queueWheel
+  target (sees through dying/offline wheels), full wheelAutopilot authority (no rester
+  soft cap), no summit-pacing cap, no speed-validity veto. What still lets go: the
+  ceiling, a `reacting()` wheel (never towed into attacks), and the player's own
+  hands. Gated on `S.input.turn === "manual"` — a human at the controls — so headless
+  keeps the AI's judgement (unGated, the glue pushed tailwind survival to ~83 % and no
+  PEL_LEAD value could restore the wind split). The wheel warning (commentary) is the
+  glue's voice: it tells you when holding is about to cost the tank.
 - **The player NEVER enters chase autopilot.** In RELAY and SIT ON, with no usable
   wheel to hold (dropped, lost the wheel, alone/clear), the legs ride the instruction
   — `min(setpoint, ceil)` + coast. Getting back on is the slider's job. The AI's
