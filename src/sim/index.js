@@ -3,7 +3,8 @@
    fifteen — and nothing more. No DOM, no React, no canvas anywhere below this line:
    seed in, race out, the same result every time. */
 export { newSim } from "./newRace.js";
-export { stepSim, finalize, pushEvent } from "./step.js";
+export { stepSim, finalize } from "./step.js";
+export { pushEvent } from "./events.js";
 export { raceGroups, gapRows } from "./groups.js";
 export { bodyNow, usableSurge } from "./body.js";
 export { clamp } from "./rng.js";

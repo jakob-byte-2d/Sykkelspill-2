@@ -7,17 +7,10 @@ import { planSpeedAt } from "./plan.js";
 import { working } from "./tactics.js";
 import { coopRide } from "./ride.js";
 import { stepComm } from "./commentary.js";
+import { pushEvent } from "./events.js";
 import { clamp } from "./rng.js";
 
 /* One second of racing. */
-
-// big marks the events worth reacting to — an attack going, a man riding clear — so
-// the UI can slam the replay speed back to 1× and put the news over the screen, not
-// just in the chyron's small print
-export function pushEvent(S, txt, big = 0) {
-  S.events.unshift({ t: S.t, txt, big });
-  if (S.events.length > 4) S.events.pop();
-}
 
 /* ---------------- One second of racing, one rider ---------------- */
 export function stepRider(S, r, dt) {

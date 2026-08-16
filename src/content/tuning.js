@@ -129,6 +129,14 @@ export const TERRAIN_EDGE = 0.10; // you lift when the pace costs the man it sui
                            // more of what he could hold to the top than it costs you. Measured
                            // over the climbs of five races: a tenth is the middle of the range,
                            // so the drags nobody would attack on stay quiet and the real ones do not
+export const WHEEL_WARN_T = 4;    // seconds the wheel in front must cost more than the player can
+                           // hold to the summit before the commentator calls it. A second over
+                           // the line is a rotation swinging; four is a pace that is going to
+                           // drop him. Measured over 40 seeds, it speaks on 0.6-1.0 climbs a
+                           // race, and on a climb it speaks on the wheel is gone by the summit
+                           // half the time (78 % with the player steering himself) against
+                           // 10-20 % on the climbs it stays quiet on. Eight seconds bought no
+                           // accuracy and cost the player four seconds of his answer
 export const TERRAIN_WHEEL = 0.16; // ...and only where a wheel is worth no more than this. On the flat it
                             // saves them a third of the work and the lift just tows them to the line.
                             // Read over the whole climb rather than at the wheel, what a wheel is worth

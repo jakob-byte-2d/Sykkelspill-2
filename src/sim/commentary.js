@@ -1,6 +1,7 @@
-import { CLIMB_MIN_T } from "../content/tuning.js";
-import { bodyNow } from "./body.js";
-import { rhoAt } from "./physics.js";
+import { CLIMB_MIN_T, SPRINT_FINALE_M, WHEEL_WARN_T } from "../content/tuning.js";
+import { bodyNow, durPower } from "./body.js";
+import { pushEvent } from "./events.js";
+import { BIKE, DRAFT, powerFor, rhoAt } from "./physics.js";
 import { planTimeAt } from "./plan.js";
 import { terrainEdge } from "./tactics.js";
 
@@ -103,6 +104,43 @@ export function stepComm(S) {
       say(S, st, "onto the climb — " + (best ? (best.isPlayer ? "this is your ground" : "this is " + best.name + "'s ground") : "the road starts to bite"));
     }
   }
+
+  // ...and the wheel he cannot afford. This is where a break comes apart, and from the
+  // saddle it is invisible: the man in front rides a few watts more than the player can
+  // hold to the summit, the gap is still nothing at all, and by the top the wheel is
+  // gone. Measured over 40 seeds: on a climb this speaks on he has lost that wheel by
+  // the summit half the time — 78 % of them with his own hands on the slider — against
+  // 10-20 % on the climbs it stays quiet on, and he crests having spent 39 points of
+  // tank instead of 23. Every AI's legs already know the line: ride.js caps a follower
+  // at holdTop and lets the wheel go rather than blow up in its wake. The player, who
+  // has no such governor in manual, is owed the same reading in words while there is
+  // still time to answer it — pay for it, let it go, or press the button. Urgent, and
+  // a headline: it is a decision with a clock on it, and the 1× the big flag forces is
+  // the time to take it.
+  // The reading is the AI's own and in the same terms — what the wheel costs at HIS
+  // shelter, against the hold formula over the time left to the top. Nothing else
+  // earned a place: gating on the shelter's worth, on the gap already opening, or on
+  // his drifting back down the outside each cost warnings and bought no accuracy.
+  const wheel = grp && grp.length > 1 && P.groupPos > 1 ? grp[P.groupPos - 2] : null;
+  if (wheel && tTop >= CLIMB_MIN_T && C.total - P.dist >= SPRINT_FINALE_M
+    && !((P.attT ?? 0) > 0) && !P.sprinting) {
+    const b = bodyNow(P);
+    const holdTop = Math.min(b.T + P.surge / tTop, durPower(P, tTop, b.T), b.ceil);
+    const need = powerFor(wheel.speed, P.mass, P.cda, C.gradAt(here), rhoAt(C.eleAt(here)), C.windAt(here), P.shel);
+    // still ON the wheel: a gap already open is a race he has lost, not one he is losing
+    const on = wheel.dist - BIKE - P.dist < DRAFT;
+    st.wheelT = on && need > holdTop ? (st.wheelT || 0) + 1 : 0;
+    const key = "wheel:" + Math.round(top);
+    if (st.wheelT >= WHEEL_WARN_T && !st.said[key]) {
+      urgent(S, st, key, "you cannot hold " + wheel.name + "'s wheel to the top — "
+        + Math.round(need - holdTop) + " W over your limit, and the shelter only "
+        + Math.round(P.ly * 100) + "%");
+      // the wire carries the alarm, the feed above carries the reading. It cannot be
+      // mirrored into the feed as well: the mirror at the top of this function has
+      // already run for this second, and next second the event is no longer new.
+      pushEvent(S, "the wheel is above your limit", 1);
+    }
+  } else st.wheelT = 0;
 
   /* ---- colour: form, fuel, the day, the bunch — paced and rare ---- */
 
