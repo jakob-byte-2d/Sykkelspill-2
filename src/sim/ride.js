@@ -97,6 +97,13 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // measure the same rotation they always did (measured unGated, the glue pushed
     // tailwind survival to ~83 % and no PEL_LEAD value could restore the wind split).
     const playerGlue = (sitting || playerRelay) && S.input.turn === "manual";
+    // ...and SIT ON, humanly steered, holds the SLOT as well as the wheel: the
+    // nearest man ahead — a dying one included — is the wheel, and the position is
+    // kept until a rider actually comes up on the player's wheel from behind
+    // wanting past. Then he yields exactly one slot: eases aside, lets the man
+    // through, and glues to HIS wheel. Sinking straight to the back is the AI
+    // rester's etiquette, not the player's order.
+    const sitGlue = sitting && S.input.turn === "manual";
     // The attack decision, once a second: does the cooperation still serve me? If yes
     // but the tank is short, he LOADS — skips his turns and sits in to fill it, the
     // gun everyone can see being loaded — and fires the moment the matches are there.
@@ -234,6 +241,21 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       }
     }
     if (r.hold && (shel === 0 || !ahead || (!playerGlue && !validWheel(ahead, r, S.course.gradAt(Math.max(dist0(ahead), 0)))))) r.hold = false;
+    // The door swings both ways: the wave-in (below) lets a drop-back into YOUR
+    // space, and this lets a man OUT of his — a rider behind the sitting player,
+    // close enough to be on his wheel and actually closing, is asking past. A man
+    // drifting back down the outside, racing an attack, or about to die is not
+    // asking, and a queue follower merely holding the player's wheel matches his
+    // speed — only somebody genuinely coming up trips it.
+    let follower = null;
+    if (sitGlue && !finale && !inFront && r.groupPos < grp.length) {
+      for (const o of grp) {
+        if (o === r || o.offline || reacting(o) || deadWheel(o, r)) continue;
+        if (dist0(o) >= dist0(r) || wheelGap0(r, o) >= DOOR_NEAR) continue;
+        if (o.speed <= r.speed + 0.15) continue;   // on the wheel AND closing — not just sitting there
+        if (!follower || dist0(o) > dist0(follower)) follower = o;
+      }
+    }
     if (inFront) {
       r.hold = false;
       // done paying (or sitting): ease off rather than parachute — hold-your-own-speed
@@ -276,15 +298,19 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         }
       }
       if (!r.chasing) P = coast(P, r.speed);
-    } else if ((overpaid || sitting) && r.groupPos < grp.length) {
+    } else if ((sitGlue ? !!follower : (overpaid || sitting)) && r.groupPos < grp.length) {
       r.offline = 1;   // drifting back down the outside — not a wheel anyone should take
       // his pull is done: 10 % of threshold on the way back — blending smoothly up to
       // the wheel price over the last metres, so he lands on the last wheel at its speed
       r.hold = false;
       // wave-in rule: cooked riders sit on the back — the drop-back
-      // slots in ahead of them, on the last wheel still working
+      // slots in ahead of them, on the last wheel still working.
+      // The yielding player lands one slot back, not at the back: the man coming
+      // past IS his landing wheel — the same blend math eases him aside at
+      // price − DROP_W while the man is behind, and hands him the wheel as he clears
       let back = grp[grp.length - 1];
-      for (let k = grp.length - 1; k >= 1; k--) {
+      if (follower) back = follower;
+      else for (let k = grp.length - 1; k >= 1; k--) {
         const o = grp[k];
         if (o === r) continue;
         // a rester must not qualify as a wheel to land on just because resting
@@ -300,13 +326,22 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       P = coast(P, r.speed);
     } else {
       // the wheel is queueWheel's for everyone — it looks THROUGH the dying, the
-      // offline and the racing to the last man still in the group's race. The
-      // sitting player used to keep raw `ahead` instead, and on a climb, where
-      // cracked riders drift back through the group nonstop, the deadWheel veto
-      // then left him with no target at all: measured, most of his losing climb
-      // seconds were spent parked behind a cooked wheel the healthy line was
-      // riding away from. "The wheel in front" means the group's wheel.
-      let tgt = ahead ? queueWheel(S, r, ahead) : null;
+      // offline and the racing to the last man still in the group's race...
+      // except the sitting player, whose wheel is literally the NEAREST man ahead
+      // still riding in the line, a dying one included: he holds it until the
+      // healthy line comes past, and the yield above hands him onto it. Only a
+      // drop-back on the outside (the wave-in decides when HE becomes the wheel)
+      // and a man racing an attack are looked through.
+      let tgt;
+      if (sitGlue) {
+        tgt = null;
+        for (const o of grp) {
+          if (o === r || o.offline || reacting(o)) continue;
+          if (dist0(o) > dist0(r) && (!tgt || dist0(o) < dist0(tgt))) tgt = o;
+        }
+      } else {
+        tgt = ahead ? queueWheel(S, r, ahead) : null;
+      }
       // in the finale he rides to his slot instead of just holding whatever wheel he
       // has. Sitting too far back, he takes the wheel of the man he wants to be behind
       // and comes up the outside to it — with the autopilot's full authority, because
@@ -338,7 +373,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // rider's seconds, 2.3 km/h slower, with a forward wheel right there in
         // four cases out of five. Nearest man ahead wins; the wave-in stands when
         // the drop-back IS that man, because then he is genuinely in the way.
-        if (dropper && dropper === nearest) tgt = dropper;
+        // ...and for the slot-holding player, only when he is LAST: mid-line, the
+        // drop-back is passing on the outside lane toward the tail, not landing in
+        // the player's space — following him down there would tow the player out
+        // of the slot the mode now promises to keep.
+        if (dropper && dropper === nearest && (!sitGlue || r.groupPos === grp.length)) tgt = dropper;
       }
       // a rester may go slower with a man rotating back — that is the whole point of
       // the wave-in — but not with one who is coming off for good. A wheel that is
@@ -346,7 +385,10 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // either: going with the move is a decision each rider makes for himself, and
       // this rider (the player included) did not make it. The GLUE skips only the
       // speed-validity test: a group that slows is still the player's wheel.
-      const usable = tgt && !deadWheel(tgt, r) && !reacting(tgt)
+      // ...and the sitting player's deadWheel veto yields with it: a dying wheel
+      // is now HIS wheel to hold — the line coming past from behind, not the veto,
+      // is what moves him off it.
+      const usable = tgt && !reacting(tgt) && (sitGlue || !deadWheel(tgt, r))
         && (playerGlue || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
       // the line hands over to the first man still in it — not literally position 2,
       // or a rester there would leave the break with no engine at all. A rider on an
