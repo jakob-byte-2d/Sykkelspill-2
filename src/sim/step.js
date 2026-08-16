@@ -1,4 +1,4 @@
-import { ATT_FROM, ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
+import { ATT_FROM, ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, HUNT_DELAY, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, burstCeil, shutUpLegs, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
@@ -202,27 +202,41 @@ export function stepSim(S) {
   }
 
   tagGroups(S);
-  // The hunt's news wire, read from the escapee's side (the mirror of huntTarget,
-  // so the flag lives on the man it is about): a bigger group behind him, still
-  // outside the attack window, is riding him back at full alarm. Announced on the
-  // rising edge; the falling edge with company is the regain — unless the attack
-  // machinery just said "brought back" itself (fresh attCool), in which case the
-  // wire already carries the news and this stays quiet.
+  // The hunt's clock and news wire, kept on the escapee (the mirror of huntTarget,
+  // so the state lives on the man it is about). A bigger group behind him ticks
+  // the clock; the group only ORGANISES — alarm, headline — once he has been clear
+  // HUNT_DELAY seconds: looks are exchanged, somebody shouts, the rotation lays
+  // itself over. Contact is NOT the catch: touching the group's front leaves the
+  // clock standing (the reel — huntTarget rides the group through him), so a man
+  // who kicks again mid-catch is answered at once, with no fresh grace. The clock
+  // resets only when he is properly swallowed — a wheel ahead of him in the line —
+  // and that moment, not first contact, is the "brought back" the wire announces
+  // (unless the attack machinery just said it itself: fresh attCool stays quiet).
   for (const r of S.riders) {
-    if (r.caught || r.finished != null) { r.hunted = 0; continue; }
-    let hunted = 0;
+    if (r.caught || r.finished != null) { r.hunted = 0; r.huntT = 0; continue; }
+    let esc = 0;
     for (const o of S.riders) {
       if (o === r || o.caught || o.finished != null) continue;
       if (o.dist >= r.dist || (o.groupSize ?? 1) <= (r.groupSize ?? 1)) continue;
-      if (C.total - o.dist <= ATT_FROM) continue;
-      hunted = 1; break;
+      esc = 1; break;
     }
+    if (esc) r.huntT = (r.huntT || 0) + 1;
+    else if ((r.groupPos ?? 1) > 1
+      || S.riders.some((o) => o !== r && !o.caught && o.finished == null && o.dist > r.dist)) {
+      // the escape is OVER: swallowed (a wheel ahead of him in the line), or he has
+      // been passed outright — dropped, the race up the road. Only then does the
+      // clock reset. A leader whose chasers have splintered into singles is still
+      // escaping: the clock stands, and any pair that reforms hunts at once.
+      if (r.hunted && (r.groupSize ?? 1) > 1 && !((r.attCool ?? 0) > 0)) {
+        pushEvent(S, r.isPlayer ? "You are brought back — the break rides together again"
+          : r.name + " is brought back by the break");
+      }
+      r.huntT = 0;
+    }
+    const hunted = (r.huntT || 0) >= HUNT_DELAY ? 1 : 0;
     if (hunted && !r.hunted) {
       pushEvent(S, r.isPlayer ? "The break organises the chase behind you"
         : "The break organises to bring back " + r.name, r.isPlayer ? 1 : 0);
-    } else if (!hunted && r.hunted && (r.groupSize ?? 1) > 1 && !((r.attCool ?? 0) > 0)) {
-      pushEvent(S, r.isPlayer ? "You are brought back — the break rides together again"
-        : r.name + " is brought back by the break");
     }
     r.hunted = hunted;
     // ...and inside the window, a man ALONE and clear of a bigger group behind IS

@@ -48,8 +48,11 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
   ~2.0/3.6 of 5 riders home by wind; sprinters (VAN AERT, V.D.POEL) win most. The
   attAt-based attack count now includes drift-marked danglers (~54/40 races, ~3/4
   clear) — kicked attacks alone are the old ~25/40. A flat solo from the gun must
-  NOT win: `npm run solo` (12 seeds × {0.98…1.14}×T manual) → ≤1 win, and never a
-  ridden-clear solo. Knobs live in tuning.js (PEL_LEAD is the master lever, −0.040).
+  NOT win as a solo: `npm run solo` (12 seeds × {0.98…1.14}×T manual) → ≤2 wins
+  total and NO wire-to-wire escape (longest clear-alone streak ≤ 600 s; the
+  pre-hunt exploit measured 1078 s — surviving wins go through being caught and
+  are sprints/late moves). Knobs live in tuning.js (PEL_LEAD is the master lever,
+  −0.040).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -94,19 +97,25 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   3 s sustained, never on a real descent → he gets the same att-state as an AI and the
   same machinery answers. Player cooldown is only a 20 s detector re-arm.
 - **The hunt (huntTarget, tactics.js/ride.js/step.js):** a solo from the gun cannot
-  win — the break brings back its own escapee. Pre-window (togo > ATT_FROM): a
-  SMALLER knot of break riders ahead of a bigger one puts the front at FULL pace
-  alarm (urgency 1 in the pWant formula, still capped pullX·T), no individual covers
-  (the choice is gated on the window, not consumed), and it never gives up before
-  the window. In-window: the leash is ATT_GIVEUP made flesh — a dangler within 25 s
-  is ridden back by the front's tempo (through the finale, like a lead-out), past
-  25 s "let him die" stands. A hunting front is `chasing`: coast() must not gut the
-  alarm at 50+ km/h — that hole alone let a tailwind solo escape. A man ALONE and
-  clear of a bigger group in the window is MARKED attacked (`attSoft`, no kick, news
-  "rides clear") so the response machinery owns him; drifters get the cover choice
-  re-asked every 60 s (a jump's once-only rule is about surprise — a dangler has
-  none). Events: "The break organises the chase behind you" (big) / brought back.
-  PEL_LEAD retuned -0.044 → -0.040 (hunting lifted survival ~8 pts in both winds).
+  win — the break brings back its own escapee, ALL the way in. The organisation
+  takes HUNT_DELAY (50 s of standing clear, the clock `r.huntT` living on the
+  escapee) before the alarm and the headline fire — looks exchanged, somebody
+  shouts, the rotation lays itself over. Then a SMALLER knot of break riders ahead
+  of a bigger one puts the front at FULL pace alarm (urgency 1 in pWant, still
+  capped pullX·T); pre-window it never gives up, in-window the leash is ATT_GIVEUP
+  made flesh (a dangler within 25 s is ridden back, through the finale like a
+  lead-out; past 25 s "let him die" stands). Contact is NOT the catch: the clock
+  holds at first touch and huntTarget's reel form targets the merged escapee at
+  the group's own front, so the group rides THROUGH him (measured 9–15 s from
+  contact to a wheel ahead of him); it resets only when he is swallowed or passed
+  outright — a re-kick mid-catch is answered at once, no fresh grace, and a leader
+  whose chasers splinter keeps his clock. A hunting front is `chasing`: coast()
+  must not gut the alarm at 50+ km/h. A man ALONE and clear of a bigger group in
+  the window is MARKED attacked (`attSoft`, no kick, news "rides clear"); drifters
+  get the cover choice re-asked every 60 s (once-only is about surprise — a
+  dangler has none). Individual covers (the 2 s jump answer) are untouched by the
+  delay. Events: "The break organises the chase behind you" (big) / brought back
+  at ABSORPTION. PEL_LEAD -0.040 (hunting lifted survival ~8 pts in both winds).
 - **Statuses (roleOf, draw.js):** SPRINTING > ATTACKING > COVERING > CHASING >
   DROPPED/GOING SOLO > RIDING OWN PACE > PULLING > LOADING > SITTING ON > TURN DONE >
   RELAYING. "What he DOES beats what he wanted."

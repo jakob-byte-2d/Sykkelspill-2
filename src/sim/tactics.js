@@ -1,4 +1,4 @@
-import { ATT_ENGINE_EDGE, ATT_FROM, ATT_GIVEUP, ATT_SAFE, ATT_SPRINT_EDGE, DH_GRAD, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
+import { ATT_ENGINE_EDGE, ATT_FROM, ATT_GIVEUP, ATT_SAFE, ATT_SPRINT_EDGE, DH_GRAD, HUNT_DELAY, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
 import { bodyNow, durPower } from "./body.js";
 import { BIKE, SHEL_MAX, powerFor, rhoAt } from "./physics.js";
 import { planTimeAt } from "./plan.js";
@@ -159,10 +159,20 @@ export function chaseTarget(S, r) {
 export function huntTarget(S, grp, r) {
   if (grp.length < 2) return null;
   const togo = S.course.total - r.dist;
+  // the reel: contact has been made — the man on the point of MY OWN group still
+  // carries the hunt clock (step.js holds it until he is swallowed), and touching
+  // him is not catching him. The group keeps the alarm and rides THROUGH him,
+  // and only a wheel ahead of him in the line ends it.
+  const front = grp[0];
+  if (front !== r && (front.huntT || 0) >= HUNT_DELAY) return front;
   let best = null;
   for (const o of S.riders) {
     if (o === r || o.caught || o.finished != null) continue;
     if ((o.groupSize ?? 1) >= grp.length) continue;
+    // ...and the group only ORGANISES after the defector has been clear a while:
+    // the clock lives on him, ticks while a bigger group sits behind him, and
+    // does not restart at contact — a re-kick mid-catch is answered at once
+    if ((o.huntT || 0) < HUNT_DELAY) continue;
     if (dist0(o) > dist0(r) && (!best || dist0(o) < dist0(best))) best = o;
   }
   if (!best) return null;
