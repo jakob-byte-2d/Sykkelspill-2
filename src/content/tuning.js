@@ -95,6 +95,13 @@ export const ATT_FOLLOW_N = 2;    // at most this many cover the move; the rest 
                            // closers, which is the whole game theory of a break
 export const ATT_GIVEUP = 25;     // seconds of gap at which the chase stops bothering — "let him die
                            // out there" — and the group rides for the remaining placings
+export const HUNT_DELAY = 50;     // seconds a defector must be clear before the group organises the
+                           // chase: looks are exchanged, somebody shouts, the rotation lays
+                           // itself over — and only then does the hunt (and its headline) begin.
+                           // The clock does NOT reset on contact: touching the group's front is
+                           // not being caught, and a man who kicks again mid-catch is answered at
+                           // once. It resets only when he is properly swallowed — a wheel ahead
+                           // of him in the line — which is also what ends the hunt itself.
 export const CHASE_NEAR = 30;     // metres: closer than this is not a chase but a regain — the
                            // minimum-time dose solved a 15 m gap as a 15-second sprint (measured
                            // ~690 W on a fresh body, bang-banging at the 12 m group boundary)
