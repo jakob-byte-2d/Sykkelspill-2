@@ -44,9 +44,12 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
   - **Sim changes**: check balance first (below), then `npm run golden:write` and
     verify. Never re-record to make a red check green without understanding the delta.
 - **Balance profile** (must hold after sim changes; measure over 40–80 seeds
-  `1000 + s*7919`): break survival ≈ 80 % headwind / ≈ 67 % tailwind; ~2.4–2.8 of 5
-  riders home; sprinters (VAN AERT, V.D.POEL) win most; attack rate ~25/40 races with
-  ~2/3 ridden clear. Knobs live in tuning.js (PEL_LEAD is the master lever, −0.044).
+  `1000 + s*7919`): break survival ≈ 77 % headwind / ≈ 78 % tailwind (34/44, 28/36);
+  ~2.0/3.6 of 5 riders home by wind; sprinters (VAN AERT, V.D.POEL) win most. The
+  attAt-based attack count now includes drift-marked danglers (~54/40 races, ~3/4
+  clear) — kicked attacks alone are the old ~25/40. A flat solo from the gun must
+  NOT win: `npm run solo` (12 seeds × {0.98…1.14}×T manual) → ≤1 win, and never a
+  ridden-clear solo. Knobs live in tuning.js (PEL_LEAD is the master lever, −0.040).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -90,6 +93,20 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   1.5× the sit-in price, actually pulling away (ATT_JUMP_DV vs quickest companion),
   3 s sustained, never on a real descent → he gets the same att-state as an AI and the
   same machinery answers. Player cooldown is only a 20 s detector re-arm.
+- **The hunt (huntTarget, tactics.js/ride.js/step.js):** a solo from the gun cannot
+  win — the break brings back its own escapee. Pre-window (togo > ATT_FROM): a
+  SMALLER knot of break riders ahead of a bigger one puts the front at FULL pace
+  alarm (urgency 1 in the pWant formula, still capped pullX·T), no individual covers
+  (the choice is gated on the window, not consumed), and it never gives up before
+  the window. In-window: the leash is ATT_GIVEUP made flesh — a dangler within 25 s
+  is ridden back by the front's tempo (through the finale, like a lead-out), past
+  25 s "let him die" stands. A hunting front is `chasing`: coast() must not gut the
+  alarm at 50+ km/h — that hole alone let a tailwind solo escape. A man ALONE and
+  clear of a bigger group in the window is MARKED attacked (`attSoft`, no kick, news
+  "rides clear") so the response machinery owns him; drifters get the cover choice
+  re-asked every 60 s (a jump's once-only rule is about surprise — a dangler has
+  none). Events: "The break organises the chase behind you" (big) / brought back.
+  PEL_LEAD retuned -0.044 → -0.040 (hunting lifted survival ~8 pts in both winds).
 - **Statuses (roleOf, draw.js):** SPRINTING > ATTACKING > COVERING > CHASING >
   DROPPED/GOING SOLO > RIDING OWN PACE > PULLING > LOADING > SITTING ON > TURN DONE >
   RELAYING. "What he DOES beats what he wanted."

@@ -12,6 +12,7 @@
     "golden": "node tools/golden.mjs",
     "golden:write": "node tools/golden.mjs --write",
     "sweep": "node tools/sweep.mjs",
+    "solo": "node tools/solo.mjs",
     "race": "node tools/race.mjs",
     "turns": "node tools/turns.mjs"
   },

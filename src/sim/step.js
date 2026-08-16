@@ -1,4 +1,4 @@
-import { ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
+import { ATT_FROM, ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, burstCeil, shutUpLegs, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
@@ -202,6 +202,57 @@ export function stepSim(S) {
   }
 
   tagGroups(S);
+  // The hunt's news wire, read from the escapee's side (the mirror of huntTarget,
+  // so the flag lives on the man it is about): a bigger group behind him, still
+  // outside the attack window, is riding him back at full alarm. Announced on the
+  // rising edge; the falling edge with company is the regain — unless the attack
+  // machinery just said "brought back" itself (fresh attCool), in which case the
+  // wire already carries the news and this stays quiet.
+  for (const r of S.riders) {
+    if (r.caught || r.finished != null) { r.hunted = 0; continue; }
+    let hunted = 0;
+    for (const o of S.riders) {
+      if (o === r || o.caught || o.finished != null) continue;
+      if (o.dist >= r.dist || (o.groupSize ?? 1) <= (r.groupSize ?? 1)) continue;
+      if (C.total - o.dist <= ATT_FROM) continue;
+      hunted = 1; break;
+    }
+    if (hunted && !r.hunted) {
+      pushEvent(S, r.isPlayer ? "The break organises the chase behind you"
+        : "The break organises to bring back " + r.name, r.isPlayer ? 1 : 0);
+    } else if (!hunted && r.hunted && (r.groupSize ?? 1) > 1 && !((r.attCool ?? 0) > 0)) {
+      pushEvent(S, r.isPlayer ? "You are brought back — the break rides together again"
+        : r.name + " is brought back by the break");
+    }
+    r.hunted = hunted;
+    // ...and inside the window, a man ALONE and clear of a bigger group behind IS
+    // attacking, however smoothly he rode away — what he does beats what he wanted.
+    // Without this, a gradual drift off the front (no jump for the detector to see)
+    // sailed into the endgame with nobody entitled to answer it: marked, the whole
+    // response machinery takes him on — the once-only cover choice, the free-riders,
+    // ATT_GIVEUP, and the bunch's arithmetic. A rider already racing a move, or on
+    // cooldown from one, is not re-marked.
+    const togo = C.total - r.dist;
+    if ((r.groupSize ?? 1) === 1 && togo <= ATT_FROM && togo >= SPRINT_FINALE_M
+      && !((r.attT ?? 0) > 0) && !r.attChase) {
+      let biggerBehind = false;
+      for (const o of S.riders) {
+        if (o === r || o.caught || o.finished != null) continue;
+        if (o.dist < r.dist && (o.groupSize ?? 1) > 1) { biggerBehind = true; break; }
+      }
+      if (biggerBehind && !r.attacked && (r.attCool ?? 0) <= 0) {
+        // a drifter, not a jump: marked so the machinery owns him, flagged soft
+        r.attacked = 1; r.attSoft = 1; r.attAt = S.t; r.attNews = 3;
+      } else if (biggerBehind && r.attacked && r.attSoft && S.t - r.attAt >= 60) {
+        // ...and a drifter still dangling gets LOOKED AT AGAIN: a jump is answered
+        // at once or not at all because surprise is its weapon, but this man has
+        // none — as tanks refill behind him, the cover choice is re-asked. Real
+        // kicked attacks keep the once-only doctrine untouched.
+        r.attAt = S.t;
+      }
+    }
+    if (!r.attacked) r.attSoft = 0;
+  }
   // pay the front for the gift, not the clock: what he spends over what the same
   // second would have cost him sitting in. No terrain rule — the physics decides,
   // and gravity is a co-payer: the gift is weighted by the legs' share of the
