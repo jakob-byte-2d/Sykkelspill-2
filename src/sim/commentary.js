@@ -1,7 +1,7 @@
-import { CLIMB_MIN_T, DH_GRAD, SPRINT_FINALE_M, WHEEL_NEAR, WHEEL_WARN_SF } from "../content/tuning.js";
+import { CLIMB_MIN_T, DH_GRAD, SPRINT_FINALE_M, WHEEL_NEAR, WHEEL_WARN_DV, WHEEL_WARN_M, WHEEL_WARN_SF } from "../content/tuning.js";
 import { bodyNow } from "./body.js";
 import { pushEvent } from "./events.js";
-import { BIKE, DRAFT, rhoAt } from "./physics.js";
+import { BIKE, rhoAt } from "./physics.js";
 import { planTimeAt } from "./plan.js";
 import { reacting, terrainEdge } from "./tactics.js";
 
@@ -17,9 +17,11 @@ import { reacting, terrainEdge } from "./tactics.js";
 
 const GAP_MIN = 18;      // quiet seconds between colour remarks — a commentator breathes
 const LINE_KEEP = 6;     // lines the feed holds; the UI shows fewer
-const LOSS_COOL = 45;    // seconds between lost-wheel calls about the same man — the twelve-
-                         // metre line can be regained and lost again in a handful of seconds,
-                         // and a stutter at the boundary is one piece of news, not three
+const LOSS_COOL = 45;    // seconds between lost-wheel calls about the same man — a gap sawing
+                         // at the warning line is one piece of news, not three
+const WARN_GRACE = 8;    // ...and a departure only counts this many seconds after real contact:
+                         // a man who has sat four metres off the wheel all along is not losing
+                         // it now, whatever the elastic does
 
 const say = (S, st, txt) => {
   S.comm.unshift({ t: S.t, txt });
@@ -48,7 +50,7 @@ const him = (r) => (r.isPlayer ? "you" : r.name);
 const His = (r, player, other) => (r.isPlayer ? player : other);
 
 export function stepComm(S) {
-  const st = S.commSt || (S.commSt = { last: -999, cool: {}, said: {}, gapS0: null, gapT0: 0, lastTop: null, wheels: {}, lossAt: {} });
+  const st = S.commSt || (S.commSt = { last: -999, cool: {}, said: {}, gapS0: null, gapT0: 0, lastTop: null, contact: {}, w1: {}, w2: {}, lossAt: {} });
   const P = S.riders[0];
   const live = S.riders.filter((r) => !r.caught && r.finished == null);
   if (!live.length || S.ended) return;
@@ -108,17 +110,20 @@ export function stepComm(S) {
     }
   }
 
-  // The moment a wheel is LOST — the fact, not the forecast. A predictive version
-  // lived here first, pricing the wheel against the hold formula to the summit; the
-  // designer's verdict after riding with it was that the commentator should speak
-  // when the thing actually happens. Contact is the group split line itself —
-  // raceGroups joins on wheelGap ≤ DRAFT — so "he had this wheel last second and the
-  // gap is past DRAFT now" is exactly the tick the file breaks. Nobody who chose to
-  // go is a loser: drop-backs (offline), men racing an attack (reacting), the sprint
-  // gesture — and a wheel that left by choice was not lost either, same words in the
-  // mirror. Not on a real descent, where wheels don't die (validWheel's own line),
-  // and not in the finale, where losing wheels is the game itself. Edge-triggered
-  // with a per-man breather, so the twelve-metre boundary cannot stutter the news.
+  // The moment a wheel GOES — the fact, caught early. A predictive version lived here
+  // first (the wheel priced against the hold formula to the summit), then one that
+  // waited for the group split at DRAFT; the designer's verdict after riding both was
+  // that DRAFT is the funeral — the news must come at WHEEL_WARN_M, while the wheel
+  // can yet be saved. Out there the file breathes metres of elastic that come back on
+  // its own, so leaving the line only counts when the gap is genuinely OPENING:
+  // WHEEL_WARN_DV over the last two seconds, within a few seconds of real contact.
+  // Measured over 40 seeds the rate test cut the false calls hardest (relay banners
+  // 2.6 → 1.5 a race) and the call still leads the real split by a median 11 s.
+  // Nobody who chose to go is a loser: drop-backs (offline), men racing an attack
+  // (reacting), the sprint gesture — and a wheel that left by choice was not lost
+  // either, same words in the mirror. Not on a real descent, where wheels don't die
+  // (validWheel's own line), and not in the finale, where losing wheels is the game
+  // itself. LOSS_COOL per man keeps a gap sawing at the line to one piece of news.
   //
   // Three voices, by whose wheel went. The PLAYER's own loss speaks only while he
   // holds real surge — the warning is a call to action, you HAVE the matches to
@@ -130,9 +135,12 @@ export function stepComm(S) {
   // the mirror has already run this second — hence feed line and wire separately.)
   const pAlive = !P.caught && P.finished == null;
   for (const r of live) {
-    const w = st.wheels[r.i] != null ? S.riders[st.wheels[r.i]] : null;
-    if (!w || w.caught || w.finished != null) continue;
-    if (w.dist - BIKE - r.dist <= DRAFT) continue;   // still on it — or come past it
+    const c = st.contact[r.i];
+    const w = c != null ? S.riders[c.w] : null;
+    if (!w || w.caught || w.finished != null || S.t - c.t > WARN_GRACE) continue;
+    const gap = w.dist - BIKE - r.dist;
+    const g2 = st.w2[r.i];   // the gap two seconds ago, against the same wheel
+    if (gap <= WHEEL_WARN_M || g2 == null || g2.w !== c.w || gap - g2.gap < WHEEL_WARN_DV) continue;
     if (w.offline || reacting(w) || r.offline || reacting(r) || r.sprinting) continue;
     if (C.gradAt(Math.max(r.dist, 0)) <= DH_GRAD) continue;
     if (C.total - r.dist < SPRINT_FINALE_M) continue;
@@ -152,8 +160,17 @@ export function stepComm(S) {
       }
     }
   }
-  st.wheels = {};
-  for (const r of live) if (r.groupPos > 1) st.wheels[r.i] = S.groups[r.groupNo - 1][r.groupPos - 2].i;
+  // the detector's memory: contact whenever he sits inside the warning line on the
+  // man ahead of him in the file, and a two-tick gap history for the opening rate
+  st.w2 = st.w1 || {};
+  st.w1 = {};
+  for (const r of live) {
+    if (r.groupPos <= 1) continue;
+    const w = S.groups[r.groupNo - 1][r.groupPos - 2];
+    const gap = w.dist - BIKE - r.dist;
+    st.w1[r.i] = { w: w.i, gap };
+    if (gap <= WHEEL_WARN_M) st.contact[r.i] = { w: w.i, t: S.t };
+  }
 
   /* ---- colour: form, fuel, the day, the bunch — paced and rare ---- */
 

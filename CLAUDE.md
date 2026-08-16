@@ -99,14 +99,15 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   muted by pacing. Colour register (form, fuel, wear, bunch trend) waits ≥ GAP_MIN and
   has per-rider AND per-topic cooldowns. Feed is `S.comm`; the news wire `S.events` is
   mirrored in.
-- **The wheel warning (commentary.js):** fires on the FACT of a lost wheel, not a
-  forecast — edge-triggered the tick the gap to last second's wheel passes DRAFT (the
-  group split line). Choices don't count (offline/reacting/sprinting, either side),
-  nor descents (DH_GRAD) or the finale; LOSS_COOL between calls per man. The player's
-  own loss speaks only with sf ≥ WHEEL_WARN_SF (a call to action — he has the matches)
-  and carries a subdued `big` headline, no numbers. Another man cracking within
-  WHEEL_NEAR of the player: ahead = headline (a gap opening in front of the file),
-  behind = feed line only.
+- **The wheel warning (commentary.js):** fires on the FACT of a wheel going, caught
+  early — past WHEEL_WARN_M (3 m) AND opening ≥ WHEEL_WARN_DV over the last 2 s,
+  within WARN_GRACE of real contact (the file breathes elastic; DRAFT is the funeral).
+  Leads the real split by a median 11 s. Choices don't count (offline/reacting/
+  sprinting, either side), nor descents (DH_GRAD) or the finale; LOSS_COOL between
+  calls per man. The player's own loss speaks only with sf ≥ WHEEL_WARN_SF (a call to
+  action — he has the matches) and carries a subdued `big` headline, no numbers.
+  Another man cracking within WHEEL_NEAR of the player: ahead = headline (a gap
+  opening in front of the file), behind = feed line only.
 - **Events/alerts (events.js):** `pushEvent(S, txt, big)` — `big` events force the UI
   to 1× and show the over-screen headline. Player's own actions are never `big`. Both
   step.js and commentary.js write the wire, which is why it is its own module: a leaf
