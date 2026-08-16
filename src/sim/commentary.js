@@ -1,9 +1,9 @@
-import { CLIMB_MIN_T, SPRINT_FINALE_M, WHEEL_WARN_T } from "../content/tuning.js";
-import { bodyNow, durPower } from "./body.js";
+import { CLIMB_MIN_T, DH_GRAD, SPRINT_FINALE_M, WHEEL_NEAR, WHEEL_WARN_SF } from "../content/tuning.js";
+import { bodyNow } from "./body.js";
 import { pushEvent } from "./events.js";
-import { BIKE, DRAFT, powerFor, rhoAt } from "./physics.js";
+import { BIKE, DRAFT, rhoAt } from "./physics.js";
 import { planTimeAt } from "./plan.js";
-import { terrainEdge } from "./tactics.js";
+import { reacting, terrainEdge } from "./tactics.js";
 
 /* The commentary box. One voice, reading the same state the AI reads — tanks, wear,
    intentions, the bunch — and telling it as a race. Everything here is observation:
@@ -17,6 +17,9 @@ import { terrainEdge } from "./tactics.js";
 
 const GAP_MIN = 18;      // quiet seconds between colour remarks — a commentator breathes
 const LINE_KEEP = 6;     // lines the feed holds; the UI shows fewer
+const LOSS_COOL = 45;    // seconds between lost-wheel calls about the same man — the twelve-
+                         // metre line can be regained and lost again in a handful of seconds,
+                         // and a stutter at the boundary is one piece of news, not three
 
 const say = (S, st, txt) => {
   S.comm.unshift({ t: S.t, txt });
@@ -45,7 +48,7 @@ const him = (r) => (r.isPlayer ? "you" : r.name);
 const His = (r, player, other) => (r.isPlayer ? player : other);
 
 export function stepComm(S) {
-  const st = S.commSt || (S.commSt = { last: -999, cool: {}, said: {}, gapS0: null, gapT0: 0, lastTop: null });
+  const st = S.commSt || (S.commSt = { last: -999, cool: {}, said: {}, gapS0: null, gapT0: 0, lastTop: null, wheels: {}, lossAt: {} });
   const P = S.riders[0];
   const live = S.riders.filter((r) => !r.caught && r.finished == null);
   if (!live.length || S.ended) return;
@@ -105,42 +108,52 @@ export function stepComm(S) {
     }
   }
 
-  // ...and the wheel he cannot afford. This is where a break comes apart, and from the
-  // saddle it is invisible: the man in front rides a few watts more than the player can
-  // hold to the summit, the gap is still nothing at all, and by the top the wheel is
-  // gone. Measured over 40 seeds: on a climb this speaks on he has lost that wheel by
-  // the summit half the time — 78 % of them with his own hands on the slider — against
-  // 10-20 % on the climbs it stays quiet on, and he crests having spent 39 points of
-  // tank instead of 23. Every AI's legs already know the line: ride.js caps a follower
-  // at holdTop and lets the wheel go rather than blow up in its wake. The player, who
-  // has no such governor in manual, is owed the same reading in words while there is
-  // still time to answer it — pay for it, let it go, or press the button. Urgent, and
-  // a headline: it is a decision with a clock on it, and the 1× the big flag forces is
-  // the time to take it.
-  // The reading is the AI's own and in the same terms — what the wheel costs at HIS
-  // shelter, against the hold formula over the time left to the top. Nothing else
-  // earned a place: gating on the shelter's worth, on the gap already opening, or on
-  // his drifting back down the outside each cost warnings and bought no accuracy.
-  const wheel = grp && grp.length > 1 && P.groupPos > 1 ? grp[P.groupPos - 2] : null;
-  if (wheel && tTop >= CLIMB_MIN_T && C.total - P.dist >= SPRINT_FINALE_M
-    && !((P.attT ?? 0) > 0) && !P.sprinting) {
-    const b = bodyNow(P);
-    const holdTop = Math.min(b.T + P.surge / tTop, durPower(P, tTop, b.T), b.ceil);
-    const need = powerFor(wheel.speed, P.mass, P.cda, C.gradAt(here), rhoAt(C.eleAt(here)), C.windAt(here), P.shel);
-    // still ON the wheel: a gap already open is a race he has lost, not one he is losing
-    const on = wheel.dist - BIKE - P.dist < DRAFT;
-    st.wheelT = on && need > holdTop ? (st.wheelT || 0) + 1 : 0;
-    const key = "wheel:" + Math.round(top);
-    if (st.wheelT >= WHEEL_WARN_T && !st.said[key]) {
-      urgent(S, st, key, "you cannot hold " + wheel.name + "'s wheel to the top — "
-        + Math.round(need - holdTop) + " W over your limit, and the shelter only "
-        + Math.round(P.ly * 100) + "%");
-      // the wire carries the alarm, the feed above carries the reading. It cannot be
-      // mirrored into the feed as well: the mirror at the top of this function has
-      // already run for this second, and next second the event is no longer new.
-      pushEvent(S, "the wheel is above your limit", 1);
+  // The moment a wheel is LOST — the fact, not the forecast. A predictive version
+  // lived here first, pricing the wheel against the hold formula to the summit; the
+  // designer's verdict after riding with it was that the commentator should speak
+  // when the thing actually happens. Contact is the group split line itself —
+  // raceGroups joins on wheelGap ≤ DRAFT — so "he had this wheel last second and the
+  // gap is past DRAFT now" is exactly the tick the file breaks. Nobody who chose to
+  // go is a loser: drop-backs (offline), men racing an attack (reacting), the sprint
+  // gesture — and a wheel that left by choice was not lost either, same words in the
+  // mirror. Not on a real descent, where wheels don't die (validWheel's own line),
+  // and not in the finale, where losing wheels is the game itself. Edge-triggered
+  // with a per-man breather, so the twelve-metre boundary cannot stutter the news.
+  //
+  // Three voices, by whose wheel went. The PLAYER's own loss speaks only while he
+  // holds real surge — the warning is a call to action, you HAVE the matches to
+  // close it, and a man losing the wheel empty is not being told anything he can
+  // use. A man cracking within WHEEL_NEAR ahead of the player is a gap opening in
+  // front of the whole file — the one loss you must answer before it is yours too,
+  // so it carries the headline. The same crack behind him asks nothing, so it is a
+  // feed line and no more. (Events pushed here are never mirrored into the feed —
+  // the mirror has already run this second — hence feed line and wire separately.)
+  const pAlive = !P.caught && P.finished == null;
+  for (const r of live) {
+    const w = st.wheels[r.i] != null ? S.riders[st.wheels[r.i]] : null;
+    if (!w || w.caught || w.finished != null) continue;
+    if (w.dist - BIKE - r.dist <= DRAFT) continue;   // still on it — or come past it
+    if (w.offline || reacting(w) || r.offline || reacting(r) || r.sprinting) continue;
+    if (C.gradAt(Math.max(r.dist, 0)) <= DH_GRAD) continue;
+    if (C.total - r.dist < SPRINT_FINALE_M) continue;
+    if (st.lossAt[r.i] != null && S.t - st.lossAt[r.i] < LOSS_COOL) continue;
+    if (r.isPlayer) {
+      if (bodyNow(r).sf < WHEEL_WARN_SF) continue;
+      st.lossAt[r.i] = S.t;
+      say(S, st, "the wheel is going — you still have the matches to close it");
+      pushEvent(S, "You are losing the wheel", 1);
+    } else if (pAlive && Math.abs(r.dist - P.dist) <= WHEEL_NEAR) {
+      st.lossAt[r.i] = S.t;
+      if (r.dist > P.dist) {
+        say(S, st, r.name + " is coming off the wheel ahead — don't get caught behind him");
+        pushEvent(S, r.name + " cracks just ahead of you", 1);
+      } else {
+        say(S, st, r.name + " has lost the wheel behind you");
+      }
     }
-  } else st.wheelT = 0;
+  }
+  st.wheels = {};
+  for (const r of live) if (r.groupPos > 1) st.wheels[r.i] = S.groups[r.groupNo - 1][r.groupPos - 2].i;
 
   /* ---- colour: form, fuel, the day, the bunch — paced and rare ---- */
 

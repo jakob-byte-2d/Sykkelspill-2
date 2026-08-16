@@ -99,11 +99,14 @@ parameter, otherwise you create a new artifact instead of updating the user's).
   muted by pacing. Colour register (form, fuel, wear, bunch trend) waits ≥ GAP_MIN and
   has per-rider AND per-topic cooldowns. Feed is `S.comm`; the news wire `S.events` is
   mirrored in.
-- **The wheel warning (commentary.js):** on a climb (tTop ≥ CLIMB_MIN_T), the man
-  immediately ahead priced at the player's own shelter against the hold formula to the
-  summit — the same line ride.js caps an AI follower at. WHEEL_WARN_T seconds over it
-  and the commentator says so, once per summit, feed line + `big` headline. Manual has
-  no such governor, which is exactly who the warning is for.
+- **The wheel warning (commentary.js):** fires on the FACT of a lost wheel, not a
+  forecast — edge-triggered the tick the gap to last second's wheel passes DRAFT (the
+  group split line). Choices don't count (offline/reacting/sprinting, either side),
+  nor descents (DH_GRAD) or the finale; LOSS_COOL between calls per man. The player's
+  own loss speaks only with sf ≥ WHEEL_WARN_SF (a call to action — he has the matches)
+  and carries a subdued `big` headline, no numbers. Another man cracking within
+  WHEEL_NEAR of the player: ahead = headline (a gap opening in front of the file),
+  behind = feed line only.
 - **Events/alerts (events.js):** `pushEvent(S, txt, big)` — `big` events force the UI
   to 1× and show the over-screen headline. Player's own actions are never `big`. Both
   step.js and commentary.js write the wire, which is why it is its own module: a leaf
