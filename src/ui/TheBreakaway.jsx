@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { DEBUG, draw, setDebug } from "../render/draw.js";
 import { fmtGap, fmtTime } from "../render/format.js";
 import { SPRINT_FINALE_M } from "../content/tuning.js";
-import { bodyNow, clamp, finalize, gapRows, newSim, pushEvent, setInput, stepSim } from "../sim/index.js";
+import { bodyNow, clamp, finalize, gapRows, newSim, previewRace, pushEvent, setInput, stepSim } from "../sim/index.js";
+import { ATTRS, BUILD_PTS, buildSpec, budgetLeft } from "../content/builder.js";
+import { drawProfile } from "../render/profile.js";
 import { sliderPts, tFromW, wFromT } from "./slider.js";
 import { ResultRow, btn, card, markerTop, overlay, place } from "./widgets.jsx";
 
@@ -21,12 +23,25 @@ export default function TheBreakaway() {
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
   const seedRef = useRef((Math.random() * 1e9) | 0);
+  const [build, setBuild] = useState({ spurt: 6, punch: 6, motor: 6, vekt: 6, seighet: 6 });
+  const previewRef = useRef(null);   // the day the builder is choosing for: course + the drawn four
+  const specRef = useRef(null);      // the body the player confirmed — SAME RACE reuses it
+  const buildCvs = useRef(null);
   const dragRef = useRef(false);
   const alertRef = useRef(null);   // the last big event already reacted to
 
+  // the builder's door: draw the day (course + opponents) for this seed and show it.
+  // previewRace replays newSim's own opening calls on the same stream, so what the
+  // screen shows is exactly what the gun will fire.
+  const toBuild = (seed) => {
+    seedRef.current = seed;
+    previewRef.current = previewRace(seed);
+    setPhase("build");
+  };
+
   const start = (seed) => {
     seedRef.current = seed;
-    simRef.current = newSim(seed);
+    simRef.current = newSim(seed, specRef.current || undefined);
     // there is a human on the controls now, so his turn on the front is his to end:
     // the END TURN button, not the ledger. A headless run never comes through here
     // and keeps the rotation's automatic rules, which is what golden measures.
@@ -64,6 +79,18 @@ export default function TheBreakaway() {
     fit();
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "build" || !buildCvs.current || !previewRef.current) return;
+    const c = buildCvs.current;
+    const dpr = window.devicePixelRatio || 1;
+    const w = c.clientWidth, h = c.clientHeight;
+    c.width = w * dpr; c.height = h * dpr;
+    const ctx = c.getContext("2d");
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = "#0e1c30"; ctx.fillRect(0, 0, w, h);
+    drawProfile({ course: previewRef.current.course, profile: null, groups: [], riders: [], pel: { dist: -1 } }, ctx, w, h, 0);
   }, [phase]);
 
   useEffect(() => {
@@ -238,7 +265,7 @@ export default function TheBreakaway() {
                   color: debugOn ? "#0d3568" : "#eaf3fb" }}>
                 DBG
               </button>
-              <button onClick={() => start((Math.random() * 1e9) | 0)}
+              <button onClick={() => toBuild((Math.random() * 1e9) | 0)}
                 title="Start et nytt løp"
                 style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, border: "1px solid #5c1010", cursor: "pointer", fontStyle: "normal",
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,0.55)",
@@ -664,7 +691,7 @@ export default function TheBreakaway() {
               })()}
               <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
                 <button onClick={() => start(seedRef.current)} style={btn("#3a76bd", "#fff", 1)}>SAME RACE AGAIN</button>
-                <button onClick={() => start((Math.random() * 1e9) | 0)} style={btn("#2e7d46", "#fff", 1)}>NEW RACE</button>
+                <button onClick={() => toBuild((Math.random() * 1e9) | 0)} style={btn("#2e7d46", "#fff", 1)}>NEW RACE</button>
               </div>
               <div style={{ marginTop: 8, fontSize: 10, color: "#3c5a7a", fontFamily: font, letterSpacing: 1 }}>SAME RACE = same wind, same legs. A fair rematch.</div>
             </div>
@@ -680,6 +707,64 @@ export default function TheBreakaway() {
       <div ref={wrapRef} style={{ position: "relative", flex: 1, overflow: "hidden", borderRadius: 14, border: "2px solid #6f8cab", boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.55), 0 4px 14px rgba(15,35,60,0.35)" }}>
         <canvas ref={canvasRef} style={{ position: "absolute", inset: 0 }} />
         {raceUI}
+        {phase === "build" && previewRef.current && (() => {
+          const pv = previewRef.current;
+          const C = pv.course;
+          const kindTxt = C.kind === "climb" ? "SUMMIT FINISH" : C.kind === "sprint" ? "SPRINT FINISH" : "PUNCHY FINISH";
+          let climbM = 0, prev = C.eleAt(0);
+          for (let d = 10; d <= C.total; d += 10) { const e = C.eleAt(d); if (e > prev) climbM += e - prev; prev = e; }
+          const hw = C.windAt(0);
+          const wdir = hw > 0.4 ? "HEADWIND" : hw < -0.4 ? "TAILWIND" : "CROSSWIND";
+          const left = budgetLeft(build);
+          const clsTxt = { sprinter: "SPRINTER", breaker: "BREAKAWAY", climber: "CLIMBER" };
+          const bump = (key, d) => setBuild((b) => {
+            const v = clamp(b[key] + d, 1, 10);
+            if (d > 0 && budgetLeft({ ...b, [key]: v }) < 0) return b;
+            return { ...b, [key]: v };
+          });
+          const stepBtn = (dis) => ({ ...btn("#3a76bd", "#fff"), padding: "2px 12px", fontSize: 15, opacity: dis ? 0.35 : 1 });
+          return (
+            <div style={overlay}>
+              <div style={{ ...card, maxWidth: 380, padding: "14px 16px" }}>
+                <div style={{ fontFamily: font, fontSize: 11, letterSpacing: 3, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic" }}>THE DAY AHEAD</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span style={{ fontFamily: font, fontWeight: 800, fontSize: 22, fontStyle: "italic", color: "#0d3568", letterSpacing: 1 }}>{kindTxt}</span>
+                  <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: "#22456b" }}>{(C.total / 1000).toFixed(1)} km · {Math.round(climbM)} m ↑ · {wdir} {C.wv.toFixed(1)}</span>
+                </div>
+                <canvas ref={buildCvs} style={{ width: "100%", height: 54, borderRadius: 6, border: "1.5px solid #6f8cab", margin: "6px 0 8px" }} />
+                {/* the four who went with you */}
+                {pv.opponents.map((o) => (
+                  <div key={o.name} style={{ display: "flex", alignItems: "center", gap: 7, padding: "2px 2px" }}>
+                    <span style={{ width: 11, height: 11, borderRadius: 3, background: o.color, border: "1.5px solid #123a6b", flexShrink: 0 }} />
+                    <span style={{ fontFamily: font, fontWeight: 800, fontStyle: "italic", fontSize: 12.5, color: "#0d3568", letterSpacing: 0.5 }}>{o.name}</span>
+                    <span style={{ fontFamily: font, fontSize: 8, fontWeight: 700, letterSpacing: 1, color: "#3c5a7a", flex: 1, overflow: "hidden", whiteSpace: "nowrap" }}>{o.team}</span>
+                    <span style={{ fontFamily: font, fontSize: 8, fontWeight: 800, letterSpacing: 1, color: "#fff", background: "#3a76bd", borderRadius: 999, padding: "1px 7px" }}>{clsTxt[o.class] || ""}</span>
+                  </div>
+                ))}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "8px 0 2px" }}>
+                  <span style={{ fontFamily: font, fontSize: 11, letterSpacing: 3, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic" }}>BUILD YOUR RIDER</span>
+                  <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: left > 0 ? "#1d7a34" : "#c22a1e" }}>POINTS LEFT: {left}</span>
+                </div>
+                {ATTRS.map((at) => (
+                  <div key={at.key} style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
+                    <span style={{ fontFamily: font, fontSize: 11.5, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", width: 62 }}>{at.label}</span>
+                    <button onClick={() => bump(at.key, -1)} disabled={build[at.key] <= 1} style={stepBtn(build[at.key] <= 1)}>−</button>
+                    <div style={{ flex: 1, display: "flex", gap: 2 }}>
+                      {Array.from({ length: 10 }, (_, i) => (
+                        <span key={i} style={{ flex: 1, height: 10, borderRadius: 2, background: i < build[at.key] ? "#3a76bd" : "rgba(60,90,125,0.25)", boxShadow: i < build[at.key] ? "inset 0 1px 0 rgba(255,255,255,0.5)" : "none" }} />
+                      ))}
+                    </div>
+                    <button onClick={() => bump(at.key, 1)} disabled={build[at.key] >= 10 || left <= 0} style={stepBtn(build[at.key] >= 10 || left <= 0)}>+</button>
+                  </div>
+                ))}
+                <button onClick={() => { specRef.current = buildSpec(build); start(seedRef.current); }}
+                  style={{ ...btn("#2e7d46", "#fff", 1), marginTop: 10, fontSize: 15, width: "100%", padding: "12px 0" }}>
+                  START RACE
+                </button>
+              </div>
+            </div>
+          );
+        })()}
         {phase === "menu" && (
           <div style={overlay}>
             <div style={{ ...card, textAlign: "center", maxWidth: 340 }}>
@@ -693,7 +778,7 @@ export default function TheBreakaway() {
                 <br />• <span style={{ color: "#1d7a34", fontWeight: 700 }}>Green line</span> = your threshold
                 <br />• <span style={{ color: "#c22a1e", fontWeight: 700 }}>Red line</span> = all you've got right now — burn your matches and it sinks
               </div>
-              <button onClick={() => start(seedRef.current)} style={{ ...btn("#2e7d46", "#fff", 1), marginTop: 18, fontSize: 16, width: "100%", padding: "14px 0" }}>ROLL OUT</button>
+              <button onClick={() => toBuild(seedRef.current)} style={{ ...btn("#2e7d46", "#fff", 1), marginTop: 18, fontSize: 16, width: "100%", padding: "14px 0" }}>ROLL OUT</button>
             </div>
           </div>
         )}

@@ -76,6 +76,27 @@ Publish `dist/breakaway.html` to the EXISTING artifact — same URL every time:
 (favicon 🚴; from a new conversation pass that URL as the Artifact tool's `url`
 parameter, otherwise you create a new artifact instead of updating the user's).
 
+## The builder (src/content/builder.js, the "build" UI phase)
+
+Menu → ROLL OUT opens the builder: the day's finale type, profile strip (drawProfile
+on a throwaway S), the four drawn opponents with team colors and class tags, then
+five attributes 1-10 under a BUILD_PTS=30 budget (all sixes = a balanced pro).
+Attributes map to W/kg AT THEIR OWN DURATION × chosen mass (builder.js buildSpec),
+so the weight trade-off falls out of physics; monotonicity guards forbid impossible
+curves; ENGINE is capped in W/kg AND absolute watts (480/512) so no build out-legends
+the pool. previewRace(seed) replays newSim's own opening calls on a fresh stream —
+preview and race can never disagree. newSim(seed, playerSpec?) — no spec = PLAYER
+row, which is what golden and every tool measures.
+
+**The deadline's clock (refBody, newRace.js):** benchT/finaleP ride a FIXED reference
+spec (the PLAYER row), NOT the built rider — keyed to the live player, a weak build
+slowed the bunch and a strong one sped it up, cancelling the builder out. But the
+reference borrows the day's drawn form/wear-noise from riders[0]: measured with the
+day decoupled, a hot-form manual TT beat the fixed clock wire-to-wire and `npm run
+solo` went red. Spec fixed, day shared. Headless note: specialist builds measure
+poorly under the relay bot (it rotates dutifully — the worst strategy for a
+sprinter); their case is human play (SIT ON, saved matches).
+
 ## The draw (newRace.drawOpponents)
 
 Four of POOL's fifteen, without replacement, each pick weighted by what the finale

@@ -2,7 +2,7 @@
    drawing it at sixty frames a second, or a script running four hundred of them in
    fifteen — and nothing more. No DOM, no React, no canvas anywhere below this line:
    seed in, race out, the same result every time. */
-export { newSim } from "./newRace.js";
+export { newSim, previewRace } from "./newRace.js";
 export { stepSim, finalize } from "./step.js";
 export { pushEvent } from "./events.js";
 export { raceGroups, gapRows } from "./groups.js";
