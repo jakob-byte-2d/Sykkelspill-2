@@ -3,7 +3,7 @@ import { DEBUG, draw, setDebug } from "../render/draw.js";
 import { fmtGap, fmtTime } from "../render/format.js";
 import { SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, clamp, finalize, gapRows, newSim, previewRace, pushEvent, setInput, stepSim } from "../sim/index.js";
-import { ATTRS, BUILD_PTS, buildSpec, budgetLeft } from "../content/builder.js";
+import { ATTRS, BUILD_PTS, MASSES, buildSpec, budgetLeft } from "../content/builder.js";
 import { drawProfile } from "../render/profile.js";
 import { sliderPts, tFromW, wFromT } from "./slider.js";
 import { ResultRow, btn, card, markerTop, overlay, place } from "./widgets.jsx";
@@ -23,7 +23,7 @@ export default function TheBreakaway() {
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
   const seedRef = useRef((Math.random() * 1e9) | 0);
-  const [build, setBuild] = useState({ spurt: 6, punch: 6, motor: 6, vekt: 6, seighet: 6 });
+  const [build, setBuild] = useState({ spurt: 6, punch: 6, motor: 6, seighet: 6, kg: 70 });
   const previewRef = useRef(null);   // the day the builder is choosing for: course + the drawn four
   const specRef = useRef(null);      // the body the player confirmed — SAME RACE reuses it
   const buildCvs = useRef(null);
@@ -744,6 +744,12 @@ export default function TheBreakaway() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "8px 0 2px" }}>
                   <span style={{ fontFamily: font, fontSize: 11, letterSpacing: 3, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic" }}>BUILD YOUR RIDER</span>
                   <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: left > 0 ? "#1d7a34" : "#c22a1e" }}>POINTS LEFT: {left}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
+                  <span style={{ fontFamily: font, fontSize: 11.5, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", width: 62 }}>WEIGHT</span>
+                  <button onClick={() => setBuild((b) => ({ ...b, kg: Math.max(b.kg - 4, MASSES[0]) }))} disabled={build.kg <= MASSES[0]} style={stepBtn(build.kg <= MASSES[0])}>−</button>
+                  <span style={{ flex: 1, textAlign: "center", fontFamily: mono, fontSize: 13, fontWeight: 700, color: "#0d3568" }}>{build.kg} KG</span>
+                  <button onClick={() => setBuild((b) => ({ ...b, kg: Math.min(b.kg + 4, MASSES[MASSES.length - 1]) }))} disabled={build.kg >= MASSES[MASSES.length - 1]} style={stepBtn(build.kg >= MASSES[MASSES.length - 1])}>+</button>
                 </div>
                 {ATTRS.map((at) => (
                   <div key={at.key} style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>

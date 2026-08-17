@@ -80,11 +80,15 @@ parameter, otherwise you create a new artifact instead of updating the user's).
 
 Menu → ROLL OUT opens the builder: the day's finale type, profile strip (drawProfile
 on a throwaway S), the four drawn opponents with team colors and class tags, then
-five attributes 1-10 under a BUILD_PTS=30 budget (all sixes = a balanced pro).
-Attributes map to W/kg AT THEIR OWN DURATION × chosen mass (builder.js buildSpec),
-so the weight trade-off falls out of physics; monotonicity guards forbid impossible
-curves; ENGINE is capped in W/kg AND absolute watts (480/512) so no build out-legends
-the pool. previewRace(seed) replays newSim's own opening calls on a fresh stream —
+WEIGHT in real kilograms (MASSES, ten 4 kg steps 50-86, costs no points) and four
+attributes 1-10 under a BUILD_PTS=24 budget (all sixes = a balanced pro). Weight
+prices itself through allometry (endurance power ∝ kg^0.75 — the pool's own hour
+powers cluster at 16.6-18.9 on that scale): heavy buys absolute watts for the flat,
+light buys W/kg for the wall, measured as a clean crossover (50 kg best on climb
+days, 86 kg best on sprint days, no weight dominant everywhere). SPRINT stays linear
+in mass (a sprint is muscle); monotonicity guards forbid impossible curves; ENGINE
+is capped in W/kg AND absolute watts (6.9×kg / 480 / 512) so no build out-legends
+the pool at either end of the scale. previewRace(seed) replays newSim's own opening calls on a fresh stream —
 preview and race can never disagree. newSim(seed, playerSpec?) — no spec = PLAYER
 row, which is what golden and every tool measures.
 
