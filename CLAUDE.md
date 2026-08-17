@@ -1,4 +1,4 @@
-# The Breakaway — Legends 0.3
+# The Breakaway — Legends 0.4
 
 A one-thumb road-cycling simulation: you are in a five-man breakaway ~23 km from the
 line, the peloton pacing to catch the best of you by a single second. Vite 5 + React
