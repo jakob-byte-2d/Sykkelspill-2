@@ -593,13 +593,13 @@ export default function TheBreakaway() {
                 const winT = order[0].finished;
                 // eight stat columns need the card's whole width, so the name rides its
                 // own line above them — a broadcast lower-third, not a spreadsheet
-                const cols = "repeat(8, 1fr)";
+                const cols = "repeat(7, 1fr)";
                 const num = { fontFamily: mono, fontSize: 9, fontWeight: 700, color: "#0d3568", textAlign: "right" };
                 return (
                   <div style={{ margin: "0 0 8px" }}>
                     <div style={{ display: "grid", gridTemplateColumns: cols, gap: 2, padding: "0 4px 2px", borderBottom: "1.5px solid rgba(60,90,125,0.45)" }}>
-                      {["AVG W", "W/KG", "MAX", "KJ", "WHEEL", "FRONT", "OVER", "KM/H"].map((h) => (
-                        <span key={h} style={{ fontFamily: font, fontSize: 7.5, letterSpacing: 0.5, fontWeight: 800, color: "#3c5a7a", textAlign: "right" }}>{h}</span>
+                      {["AVG WATTS", "AVG W/KG", "MAX WATTS", "TIME ON WHEEL", "TIME ON FRONT", "OVER THRESHOLD", "AVG KM/H"].map((h) => (
+                        <span key={h} style={{ fontFamily: font, fontSize: 7, letterSpacing: 0.4, fontWeight: 800, color: "#3c5a7a", textAlign: "right", lineHeight: 1.15, alignSelf: "end" }}>{h}</span>
                       ))}
                     </div>
                     {order.map((r, k) => {
@@ -619,7 +619,6 @@ export default function TheBreakaway() {
                             <span style={num}>{Math.round(avg)}</span>
                             <span style={num}>{(avg / r.mass).toFixed(1)}</span>
                             <span style={num}>{Math.round(r.st.max)}</span>
-                            <span style={num}>{Math.round(r.st.work / 1000)}</span>
                             <span style={num}>{fmtTime(r.st.drft)}</span>
                             <span style={num}>{fmtTime(r.st.front)}</span>
                             <span style={num}>{fmtTime(r.st.above)}</span>
@@ -647,10 +646,15 @@ export default function TheBreakaway() {
                 }
                 const hw = C.windAt(0);
                 const wdir = hw > 0.4 ? "HEADWIND" : hw < -0.4 ? "TAILWIND" : "CROSSWIND";
+                const lead = [...S.riders].sort((a, b) =>
+                  (a.finished != null ? a.finished : 1e12) - (b.finished != null ? b.finished : 1e12)
+                  || b.dist - a.dist)[0];
+                const vAvg = Math.min(lead.dist, C.total) / Math.max(lead.st.t, 1) * 3.6;
                 return (
                   <>
                     <div style={{ fontFamily: font, fontSize: 10, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", margin: "4px 0 0" }}>THE COURSE</div>
                     <ResultRow k="Distance" v={`${(C.total / 1000).toFixed(1)} km`} />
+                    <ResultRow k="Average speed" v={`${vAvg.toFixed(1)} km/h`} />
                     <ResultRow k="Wind" v={`${wdir} · ${C.wv.toFixed(1)} m/s`} />
                     <ResultRow k="Total climbing" v={`${Math.round(climb)} m`} />
                     <ResultRow k="Highest point" v={`${Math.round(hi)} m`} />
