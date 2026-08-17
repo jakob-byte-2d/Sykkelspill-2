@@ -29,10 +29,11 @@ export function thresholdFrom(c) {
    anywhere can be written for a particular man. */
 export function makeRider(spec, i, rng) {
   const { name, mass, h, curve } = spec;
+  const team = spec.team || "";
   const dura = spec.dura || 1;
   const T0 = thresholdFrom(curve);
   const r = {
-    i, name, color: COLORS[i % COLORS.length], isPlayer: i === 0, mass, h,
+    i, name, team, color: COLORS[i % COLORS.length], isPlayer: i === 0, mass, h,
     cda: 0.30 * Math.pow(mass / 70, 0.32) * Math.sqrt(h / 1.8),
     curve, T0,
     form: clamp(1 + gaussOf(rng) * 0.045, 0.9, 1.1),
@@ -56,7 +57,7 @@ export function makeRider(spec, i, rng) {
     dura, wear: clamp(0.42 / dura + gaussOf(rng) * 0.05, 0.25, 0.60), recov: 0.9 + rng() * 0.2,
     dist: 0, prevDist: 0, speed: 11.5, power: 0, ped: rng() * 6,
     shel: 0,
-    st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0 },
+    st: { work: 0, wind: 0, above: 0, minFuel: FUEL_START, t: 0, max: 0, drft: 0, front: 0 },
     // the governor's override: charges left, seconds running, and the joules it lent
     sulLeft: SUL_N, sulT: 0, sulGave: 0,
     // the attack: seconds of commitment left, cooldown after being brought back,
