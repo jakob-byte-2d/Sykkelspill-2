@@ -16,6 +16,27 @@
    ============================================================ */
 
 import { clamp } from "../sim/rng.js";
+import { POOL } from "./riders.js";
+
+/* The jerseys on offer: the great teams of road cycling, one hex each — the same
+   dressing rule as the roster (the engine never reads team or color). The pool's
+   fifteen kits are borrowed straight from POOL so the two lists cannot drift; the
+   nine above them are legends whose captains didn't make the draw pool. The build
+   screen strikes out whatever the four drawn opponents are wearing — you cannot
+   ride in a kit that is already in the break — which is also why the extras lead
+   the list: the default choice can never be the one that just got struck. */
+export const TEAMS = [
+  { team: "BIANCHI", color: "#8fd8cf" },       // Coppi's celeste
+  { team: "FAEMA", color: "#efe3c9" },         // Merckx's first great kit
+  { team: "PEUGEOT", color: "#dde3f0" },       // the checkerboard
+  { team: "RENAULT-ELF", color: "#f6d431" },   // Hinault and Fignon in yellow-black
+  { team: "LA VIE CLAIRE", color: "#2f4de0" }, // the Mondrian jersey
+  { team: "MAPEI", color: "#6b46d8" },         // the cubes
+  { team: "BANESTO", color: "#7fa8e6" },       // Indurain's five Julys
+  { team: "US POSTAL", color: "#33508f" },     // the blue train
+  { team: "TEAM SKY", color: "#1c2735" },      // the black line
+  ...POOL.map((p) => ({ team: p.team, color: p.color })),
+];
 
 export const BUILD_PTS = 24;    // points across the four attributes, 1-10 each — all
                                 // sixes spends the budget exactly: a balanced pro.

@@ -3,7 +3,7 @@ import { DEBUG, draw, setDebug } from "../render/draw.js";
 import { fmtGap, fmtTime } from "../render/format.js";
 import { SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, clamp, finalize, gapRows, newSim, previewRace, pushEvent, setInput, stepSim } from "../sim/index.js";
-import { ATTRS, BUILD_PTS, MASSES, MASS_INFO, buildSpec, budgetLeft } from "../content/builder.js";
+import { ATTRS, BUILD_PTS, MASSES, MASS_INFO, TEAMS, buildSpec, budgetLeft } from "../content/builder.js";
 import { drawProfile } from "../render/profile.js";
 import { sliderPts, tFromW, wFromT } from "./slider.js";
 import { ResultRow, btn, card, markerTop, overlay, place } from "./widgets.jsx";
@@ -24,6 +24,8 @@ export default function TheBreakaway() {
   const wrapRef = useRef(null);
   const seedRef = useRef((Math.random() * 1e9) | 0);
   const [build, setBuild] = useState({ spurt: 6, punch: 6, motor: 6, seighet: 6, kg: 70 });
+  const [pname, setPname] = useState("");           // the name on the frame — empty rides as YOU
+  const [teamI, setTeamI] = useState(0);            // index into the day's AVAILABLE kits
   const [attrInfo, setAttrInfo] = useState(null);   // which builder row is explaining itself
   const previewRef = useRef(null);   // the day the builder is choosing for: course + the drawn four
   const specRef = useRef(null);      // the body the player confirmed — SAME RACE reuses it
@@ -724,6 +726,12 @@ export default function TheBreakaway() {
             return { ...b, [key]: v };
           });
           const stepBtn = (dis) => ({ ...btn("#3a76bd", "#fff"), padding: "2px 12px", fontSize: 15, opacity: dis ? 0.35 : 1 });
+          // every kit except the four already in the break — you cannot ride in an
+          // opponent's colours. The modulo keeps a re-rolled day from stranding the
+          // index when the struck teams change under it.
+          const kits = TEAMS.filter((t) => !pv.opponents.some((o) => o.team === t.team));
+          const kit = kits[((teamI % kits.length) + kits.length) % kits.length];
+          const rowLabel = { fontFamily: font, fontSize: 11.5, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", width: 76, flexShrink: 0 };
           // the label is the button: tap the name (or its little marker) and the row
           // explains itself in one line; tap again — or another row — and it yields
           const infoLabel = (key, label) => (
@@ -759,6 +767,21 @@ export default function TheBreakaway() {
                   <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: left > 0 ? "#1d7a34" : "#c22a1e" }}>POINTS LEFT: {left}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
+                  <span style={rowLabel}>NAME</span>
+                  <input value={pname} maxLength={12} placeholder="YOUR NAME" spellCheck={false}
+                    onChange={(e) => setPname(e.target.value.toUpperCase())}
+                    style={{ flex: 1, minWidth: 0, fontFamily: mono, fontSize: 13, fontWeight: 700, letterSpacing: 1, color: "#0d3568", background: "rgba(255,255,255,0.55)", border: "1.5px solid #6f8cab", borderRadius: 6, padding: "3px 8px", outline: "none" }} />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
+                  <span style={rowLabel}>TEAM</span>
+                  <button onClick={() => setTeamI((i) => i - 1)} style={stepBtn(false)}>◀</button>
+                  <span style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, minWidth: 0 }}>
+                    <span style={{ width: 11, height: 11, borderRadius: 3, background: kit.color, border: "1.5px solid #123a6b", flexShrink: 0 }} />
+                    <span style={{ fontFamily: font, fontSize: 12, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", overflow: "hidden", whiteSpace: "nowrap" }}>{kit.team}</span>
+                  </span>
+                  <button onClick={() => setTeamI((i) => i + 1)} style={stepBtn(false)}>▶</button>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
                   {infoLabel("kg", "WEIGHT")}
                   <button onClick={() => setBuild((b) => ({ ...b, kg: Math.max(b.kg - 4, MASSES[0]) }))} disabled={build.kg <= MASSES[0]} style={stepBtn(build.kg <= MASSES[0])}>−</button>
                   <span style={{ flex: 1, textAlign: "center", fontFamily: mono, fontSize: 13, fontWeight: 700, color: "#0d3568" }}>{build.kg} KG</span>
@@ -780,7 +803,7 @@ export default function TheBreakaway() {
                     {attrInfo === at.key && infoLine(at.info)}
                   </React.Fragment>
                 ))}
-                <button onClick={() => { specRef.current = buildSpec(build); start(seedRef.current); }}
+                <button onClick={() => { specRef.current = { ...buildSpec(build), name: pname.trim() || "YOU", team: kit.team, color: kit.color }; start(seedRef.current); }}
                   style={{ ...btn("#2e7d46", "#fff", 1), marginTop: 10, fontSize: 15, width: "100%", padding: "12px 0" }}>
                   START RACE
                 </button>
