@@ -55,7 +55,7 @@ const safeJs = appJs
   // a closing script tag inside any string literal would end the block early
   .replace(/<\/script/gi, "<\\/script");
 
-const page = `<title>The Breakaway — Legends 0.2</title>
+const page = `<title>The Breakaway — Legends 0.3</title>
 <style>
 ${faces}${appCss}
 /* The game paints its own world on canvas; this only gives it a full-bleed ground.
