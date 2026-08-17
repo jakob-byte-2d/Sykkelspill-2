@@ -591,13 +591,14 @@ export default function TheBreakaway() {
                   (a.finished != null ? a.finished : 1e12) - (b.finished != null ? b.finished : 1e12)
                   || b.dist - a.dist);
                 const winT = order[0].finished;
-                const cols = "minmax(0,1fr) 33px 28px 33px 31px 37px 37px";
-                const num = { fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: "#0d3568", textAlign: "right" };
+                // eight stat columns need the card's whole width, so the name rides its
+                // own line above them — a broadcast lower-third, not a spreadsheet
+                const cols = "repeat(8, 1fr)";
+                const num = { fontFamily: mono, fontSize: 9, fontWeight: 700, color: "#0d3568", textAlign: "right" };
                 return (
                   <div style={{ margin: "0 0 8px" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: cols, gap: 3, padding: "0 4px 2px", borderBottom: "1.5px solid rgba(60,90,125,0.45)" }}>
-                      <span />
-                      {["AVG W", "W/KG", "MAX", "KJ", "WHEEL", "FRONT"].map((h) => (
+                    <div style={{ display: "grid", gridTemplateColumns: cols, gap: 2, padding: "0 4px 2px", borderBottom: "1.5px solid rgba(60,90,125,0.45)" }}>
+                      {["AVG W", "W/KG", "MAX", "KJ", "WHEEL", "FRONT", "OVER", "KM/H"].map((h) => (
                         <span key={h} style={{ fontFamily: font, fontSize: 7.5, letterSpacing: 0.5, fontWeight: 800, color: "#3c5a7a", textAlign: "right" }}>{h}</span>
                       ))}
                     </div>
@@ -608,29 +609,55 @@ export default function TheBreakaway() {
                       const gap = r.caught ? "CAUGHT" : r.finished == null ? "—"
                         : winT != null && r.finished > winT ? "+" + fmtTime(r.finished - winT) : "";
                       return (
-                        <div key={r.i} style={{ display: "grid", gridTemplateColumns: cols, gap: 3, alignItems: "center", padding: "3px 4px", borderBottom: "1px solid rgba(60,90,125,0.22)", background: r.isPlayer ? "rgba(255,210,63,0.5)" : "transparent" }}>
-                          <span style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
+                        <div key={r.i} style={{ padding: "3px 4px 2px", borderBottom: "1px solid rgba(60,90,125,0.22)", background: r.isPlayer ? "rgba(255,210,63,0.5)" : "transparent" }}>
+                          <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
                             <span style={{ fontFamily: font, fontSize: 11, fontWeight: 800, fontStyle: "italic", color: "#0d3568" }}>{k + 1}. {r.name}</span>
-                            <span style={{ fontFamily: mono, fontSize: 8, fontWeight: 700, color: r.caught ? "#c22a1e" : "#547294" }}>{" " + gap}</span>
-                            <br />
-                            <span style={{ fontFamily: font, fontSize: 7.5, fontWeight: 700, letterSpacing: 1, color: "#3c5a7a" }}>{r.team}</span>
-                          </span>
-                          <span style={num}>{Math.round(avg)}</span>
-                          <span style={num}>{(avg / r.mass).toFixed(1)}</span>
-                          <span style={num}>{Math.round(r.st.max)}</span>
-                          <span style={num}>{Math.round(r.st.work / 1000)}</span>
-                          <span style={num}>{fmtTime(r.st.drft)}</span>
-                          <span style={num}>{fmtTime(r.st.front)}</span>
+                            <span style={{ fontFamily: font, fontSize: 7.5, fontWeight: 700, letterSpacing: 1, color: "#3c5a7a" }}>{"  " + r.team}</span>
+                            <span style={{ fontFamily: mono, fontSize: 8, fontWeight: 700, color: r.caught ? "#c22a1e" : "#547294" }}>{"  " + gap}</span>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: cols, gap: 2 }}>
+                            <span style={num}>{Math.round(avg)}</span>
+                            <span style={num}>{(avg / r.mass).toFixed(1)}</span>
+                            <span style={num}>{Math.round(r.st.max)}</span>
+                            <span style={num}>{Math.round(r.st.work / 1000)}</span>
+                            <span style={num}>{fmtTime(r.st.drft)}</span>
+                            <span style={num}>{fmtTime(r.st.front)}</span>
+                            <span style={num}>{fmtTime(r.st.above)}</span>
+                            <span style={num}>{(Math.min(r.dist, S.course.total) / Math.max(r.st.t, 1) * 3.6).toFixed(1)}</span>
+                          </div>
                         </div>
                       );
                     })}
                   </div>
                 );
               })()}
-              <ResultRow k="Time in the wind" v={fmtTime(player.st.wind)} />
-              <ResultRow k="Time above threshold" v={fmtTime(player.st.above)} />
-              <ResultRow k="Deepest the tank went" v={`${Math.round(player.st.minFuel * 100)} % fuel`} />
-              <ResultRow k="Wind on the day" v={`${S.course.wv.toFixed(1)} m/s`} />
+              {/* the road itself, under the men who rode it — walked once off eleAt/
+                  windAt at render time, no state anywhere. Wind speaks the pill's
+                  language (HEAD/TAIL/CROSS reads the sign the same way draw.js does). */}
+              {(() => {
+                const C = S.course;
+                let climb = 0, hi = -1e9, steep = 0, prev = C.eleAt(0);
+                for (let d = 10; d <= C.total; d += 10) {
+                  const e = C.eleAt(d);
+                  if (e > prev) climb += e - prev;
+                  if (e > hi) hi = e;
+                  const g = (e - prev) / 10;
+                  if (g > steep) steep = g;
+                  prev = e;
+                }
+                const hw = C.windAt(0);
+                const wdir = hw > 0.4 ? "HEADWIND" : hw < -0.4 ? "TAILWIND" : "CROSSWIND";
+                return (
+                  <>
+                    <div style={{ fontFamily: font, fontSize: 10, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", margin: "4px 0 0" }}>THE COURSE</div>
+                    <ResultRow k="Distance" v={`${(C.total / 1000).toFixed(1)} km`} />
+                    <ResultRow k="Wind" v={`${wdir} · ${C.wv.toFixed(1)} m/s`} />
+                    <ResultRow k="Total climbing" v={`${Math.round(climb)} m`} />
+                    <ResultRow k="Highest point" v={`${Math.round(hi)} m`} />
+                    <ResultRow k="Steepest pitch" v={`${(steep * 100).toFixed(1)} %`} />
+                  </>
+                );
+              })()}
               <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
                 <button onClick={() => start(seedRef.current)} style={btn("#3a76bd", "#fff", 1)}>SAME RACE AGAIN</button>
                 <button onClick={() => start((Math.random() * 1e9) | 0)} style={btn("#2e7d46", "#fff", 1)}>NEW RACE</button>
