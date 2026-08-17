@@ -687,7 +687,7 @@ export default function TheBreakaway() {
               <div style={{ fontWeight: 800, fontSize: 46, letterSpacing: 2, color: "#0d3568", fontStyle: "italic", lineHeight: 1, margin: "6px 0 14px", textShadow: "0 1px 0 rgba(255,255,255,0.8)" }}>THE<br />BREAKAWAY</div>
               <div style={{ fontSize: 12, letterSpacing: 4, color: "#3a76bd", fontWeight: 800, fontStyle: "italic", marginTop: -8, marginBottom: 12 }}>LEGENDS 0.4</div>
               <div style={{ fontSize: 14, color: "#22456b", lineHeight: 1.5, textAlign: "left" }}>
-                You're away with Van der Poel, Van Aert, Küng and Pantani, ~23 km from the line, the peloton about a minute back — pacing to catch the best of you by a single second.
+                You're away with four legends — drawn from fifteen, weighted by the day's finale — ~23 km from the line, the peloton about a minute back, pacing to catch the best of you by a single second.
                 <br /><br />
                 <b style={{ color: "#0d3568" }}>One thumb, one control:</b> drag the watt slider. It stays where you leave it.
                 <br />• <span style={{ color: "#1d7a34", fontWeight: 700 }}>Green line</span> = your threshold

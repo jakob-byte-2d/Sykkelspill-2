@@ -7,9 +7,10 @@ line, the peloton pacing to catch the best of you by a single second. Vite 5 + R
 ## Architecture (dependency order — never import upward)
 
 ```
-src/content/   tuning.js (ALL constants), riders.js (roster), stage.js (three finale
-               archetypes: sprint/rouleur/climb, drawn by the seed's first roll;
-               course.kind rides on the course object)
+src/content/   tuning.js (ALL constants), riders.js (PLAYER + POOL of 15 legends,
+               5 per class: sprinter/breaker/climber, team+color+curve per man),
+               stage.js (three finale archetypes: sprint/rouleur/climb, drawn by
+               the seed's first roll; course.kind rides on the course object)
 src/sim/       DOM-free, Node-importable. newRace → step (1 Hz) → ride/tactics/body/
                physics/plan/groups/peloton/commentary/events. Seed in, race out, same
                result every time.
@@ -46,15 +47,18 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
   - **Sim changes**: check balance first (below), then `npm run golden:write` and
     verify. Never re-record to make a red check green without understanding the delta.
 - **Balance profile** (must hold after sim changes; measure over ~120 seeds
-  `1000 + s*7919`, bucketed by `S.course.kind`): break survival 72–76 % in every
-  archetype (sprint 72, rouleur 76, climb 73), headwind ≥ tailwind on sprint/rouleur,
-  reversed on climb; riders home per surviving race ≈ 3.4 sprint / 3.3 rouleur /
-  2.8 climb (the wall sheds people); sprinters (VAN AERT, V.D.POEL) win most until
-  the legend pool lands. A flat solo from the gun must NOT win as a solo:
-  `npm run solo` (12 seeds × {0.98…1.14}×T manual) → ≤2 wins total and NO
-  wire-to-wire escape. Knobs live in tuning.js: PEL_LEAD is the master lever
-  (−0.040) and PEL_LEAD_KIND the per-archetype trim ({sprint +0.003, rouleur 0,
-  climb −0.024} — the climb lever is weak, ~0.9 pt per 0.001).
+  `1000 + s*7919`, bucketed by `S.course.kind` — the legend pool is drawn, so
+  measure by class, not by name): break survival 73–76 % in every archetype
+  (climb 73, sprint 74, rouleur 76); climb days are won by CLIMBERS (13 v 10
+  breakers over 24 surviving races, five different climbers on the list), rouleur
+  days by BREAKERS (20/26); ~2.6 climb / 3.5 sprint / 2.9 rouleur riders home per
+  surviving race. KNOWN ISSUE (sim/AI work, not content): sprint-day wins lean
+  breaker (25 v 7) — the whole break arrives near-empty (sf ≈ 0.05 at 1500 m to
+  go), so the gallop is attrition, not a kick; the missing behavior is sprinters
+  saving matches late (shirking pulls inside ~5 km). A flat solo from the gun must
+  NOT win: `npm run solo` → ≤2 wins total and NO wire-to-wire escape. Knobs:
+  PEL_LEAD master (−0.049 — re-based when the drawn legend field replaced five
+  fixed big engines) and PEL_LEAD_KIND trim ({sprint 0, rouleur 0, climb −0.016}).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -71,6 +75,15 @@ Publish `dist/breakaway.html` to the EXISTING artifact — same URL every time:
 `https://claude.ai/code/artifact/b6435f17-8ba5-4a83-89fc-11e8e2fca4d0`
 (favicon 🚴; from a new conversation pass that URL as the Artifact tool's `url`
 parameter, otherwise you create a new artifact instead of updating the user's).
+
+## The draw (newRace.drawOpponents)
+
+Four of POOL's fifteen, without replacement, each pick weighted by what the finale
+pays his class (DRAW_W in tuning.js: sprint days lean sprinters, summit finishes lean
+climbers). Drawn BETWEEN buildCourse and makeRiders on the same rng stream — so the
+course is untouched by the draw (golden's total/wind fields prove placement) and the
+draw can read course.kind. Player is always index 0 (PLAYER row until the builder
+ships). `spec.color` is the jersey; the engine never reads team/color/class.
 
 ## The simulation in one page
 

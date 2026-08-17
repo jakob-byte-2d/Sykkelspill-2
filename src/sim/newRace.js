@@ -1,4 +1,5 @@
-import { CLIMB_GRAD, COOP_SEED, PACE_MARGIN, PEL_FINALE_M, PEL_FINALE_X, PEL_LEAD, PEL_LEAD_KIND, WARMUP_S } from "../content/tuning.js";
+import { CLIMB_GRAD, COOP_SEED, DRAW_W, PACE_MARGIN, PEL_FINALE_M, PEL_FINALE_X, PEL_LEAD, PEL_LEAD_KIND, WARMUP_S } from "../content/tuning.js";
+import { PLAYER, POOL } from "../content/riders.js";
 import { bodyNow, makeRiders, thresholdFull } from "./body.js";
 import { buildCourse } from "./course.js";
 import { tagGroups } from "./groups.js";
@@ -10,10 +11,29 @@ import { stepSim } from "./step.js";
 /* A new race: build the stage and the bodies, solve the deadline, then ride the move
    for a minute before the clock is allowed to start. */
 
+/* The day's field: four of the fifteen, drawn without replacement, each pick weighted
+   by what the finale pays his class (DRAW_W) — the men who go in the move are the men
+   the finish suits. On the same rng stream as everything else: same seed, same field.
+   Sits BETWEEN buildCourse and makeRiders so the course itself (totals, wind) is
+   untouched by the draw — and so the draw can read course.kind. */
+export function drawOpponents(rng, kind) {
+  const w = DRAW_W[kind] || DRAW_W.rouleur;
+  const pool = [...POOL];
+  const picks = [];
+  for (let k = 0; k < 4; k++) {
+    let tot = 0;
+    for (const o of pool) tot += w[o.class] || 0.1;
+    let x = rng() * tot, j = 0;
+    while (j < pool.length - 1 && (x -= w[pool[j].class] || 0.1) > 0) j++;
+    picks.push(pool.splice(j, 1)[0]);
+  }
+  return picks;
+}
+
 export function newSim(seed) {
   const rng = mulberry32(seed);
   const course = buildCourse(rng);
-  const riders = makeRiders(rng);
+  const riders = makeRiders(rng, [PLAYER, ...drawOpponents(rng, course.kind)]);
   // the player starts at the back of the line, the AIs rotate ahead of him. The ledger
   // used to slope with that line — the front man seeded a third under fair, the back a
   // third over — which handed a whole extra turn to whoever the roster happened to put

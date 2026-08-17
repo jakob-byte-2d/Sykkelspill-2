@@ -1,5 +1,5 @@
 import { CARB_BASE, COOP_PULL_SEC, COOP_SEED, EFF, FUEL_START, JUMP_TAU, SUL_N, SUL_T, SUL_WEAR } from "../content/tuning.js";
-import { COLORS, ROSTER } from "../content/riders.js";
+import { COLORS } from "../content/riders.js";
 import { clamp, gaussOf } from "./rng.js";
 
 /* The body: a power-duration curve and three tanks. Everything a rider can do today
@@ -33,7 +33,7 @@ export function makeRider(spec, i, rng) {
   const dura = spec.dura || 1;
   const T0 = thresholdFrom(curve);
   const r = {
-    i, name, team, color: COLORS[i % COLORS.length], isPlayer: i === 0, mass, h,
+    i, name, team, color: spec.color || COLORS[i % COLORS.length], klass: spec.class || "", isPlayer: i === 0, mass, h,
     cda: 0.30 * Math.pow(mass / 70, 0.32) * Math.sqrt(h / 1.8),
     curve, T0,
     form: clamp(1 + gaussOf(rng) * 0.045, 0.9, 1.1),
@@ -77,7 +77,7 @@ export function makeRider(spec, i, rng) {
   return r;
 }
 
-export const makeRiders = (rng, roster = ROSTER) => roster.map((spec, i) => makeRider(spec, i, rng));
+export const makeRiders = (rng, roster) => roster.map((spec, i) => makeRider(spec, i, rng));
 
 // What a man can hold for an effort of this length, tired as he is right now: his own
 // curve read at that duration, carrying the same fatigue discount his threshold does.
