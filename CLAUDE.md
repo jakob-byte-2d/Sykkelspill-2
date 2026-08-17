@@ -7,7 +7,9 @@ line, the peloton pacing to catch the best of you by a single second. Vite 5 + R
 ## Architecture (dependency order — never import upward)
 
 ```
-src/content/   tuning.js (ALL constants), riders.js (roster: mass, h, curve, dura)
+src/content/   tuning.js (ALL constants), riders.js (roster), stage.js (three finale
+               archetypes: sprint/rouleur/climb, drawn by the seed's first roll;
+               course.kind rides on the course object)
 src/sim/       DOM-free, Node-importable. newRace → step (1 Hz) → ride/tactics/body/
                physics/plan/groups/peloton/commentary/events. Seed in, race out, same
                result every time.
@@ -43,16 +45,16 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
     you changed the sim by accident.
   - **Sim changes**: check balance first (below), then `npm run golden:write` and
     verify. Never re-record to make a red check green without understanding the delta.
-- **Balance profile** (must hold after sim changes; measure over 40–80 seeds
-  `1000 + s*7919`): break survival ≈ 77 % headwind / ≈ 78 % tailwind (34/44, 28/36);
-  ~2.0/3.6 of 5 riders home by wind; sprinters (VAN AERT, V.D.POEL) win most. The
-  attAt-based attack count now includes drift-marked danglers (~54/40 races, ~3/4
-  clear) — kicked attacks alone are the old ~25/40. A flat solo from the gun must
-  NOT win as a solo: `npm run solo` (12 seeds × {0.98…1.14}×T manual) → ≤2 wins
-  total and NO wire-to-wire escape (longest clear-alone streak ≤ 600 s; the
-  pre-hunt exploit measured 1078 s — surviving wins go through being caught and
-  are sprints/late moves). Knobs live in tuning.js (PEL_LEAD is the master lever,
-  −0.040).
+- **Balance profile** (must hold after sim changes; measure over ~120 seeds
+  `1000 + s*7919`, bucketed by `S.course.kind`): break survival 72–76 % in every
+  archetype (sprint 72, rouleur 76, climb 73), headwind ≥ tailwind on sprint/rouleur,
+  reversed on climb; riders home per surviving race ≈ 3.4 sprint / 3.3 rouleur /
+  2.8 climb (the wall sheds people); sprinters (VAN AERT, V.D.POEL) win most until
+  the legend pool lands. A flat solo from the gun must NOT win as a solo:
+  `npm run solo` (12 seeds × {0.98…1.14}×T manual) → ≤2 wins total and NO
+  wire-to-wire escape. Knobs live in tuning.js: PEL_LEAD is the master lever
+  (−0.040) and PEL_LEAD_KIND the per-archetype trim ({sprint +0.003, rouleur 0,
+  climb −0.024} — the climb lever is weak, ~0.9 pt per 0.001).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle

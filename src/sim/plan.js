@@ -26,7 +26,10 @@ export function breakTime(course, base, v0 = 11.5) {
 }
 
 export function calibrateBreak(course, targetT, v0) {
-  let lo = 200, hi = 520;
+  // wide enough that the search never sits on its own ceiling — the same treatment
+  // calibratePel got: clamped, the plan would quietly ask for less than the deadline
+  // does. A summit finish prices the last kilometres far above the old 520 W lid.
+  let lo = 150, hi = 900;
   for (let k = 0; k < 18; k++) {
     const mid = (lo + hi) / 2;
     if (breakTime(course, mid, v0) > targetT) lo = mid; else hi = mid;

@@ -8,7 +8,11 @@ import { clamp, lerp } from "./rng.js";
 export const STEP = 10; // metres between samples
 
 export function buildCourse(rng, stage = DEFAULT_STAGE) {
-  const segs = stage(rng);
+  // a stage is { kind, segs }; a bare segment array (older stage functions, custom
+  // tools) still works and reads as the rouleur archetype it always was
+  const st = stage(rng);
+  const segs = st.segs || st;
+  const kind = st.kind || "rouleur";
   let total = 0; for (const s of segs) total += s.len;
   const n = Math.ceil(total / STEP) + 2;
   const rawG = new Float32Array(n);
@@ -54,7 +58,7 @@ export function buildCourse(rng, stage = DEFAULT_STAGE) {
     else { easy++; top[i] = easy <= flatRun ? top[i + 1] : i * STEP; }
   }
   return {
-    total, n, ele, wv,
+    total, n, ele, wv, kind,
     gradAt: (d) => at(grad, d),
     eleAt: (d) => at(ele, d),
     windAt: (d) => at(wHead, d),
