@@ -73,6 +73,9 @@ export const DRAW_W = {          // the day's finale weights which classes get d
   rouleur: { sprinter: 0.30, breaker: 0.40, climber: 0.30 },   // the men who go in the move
   climb:   { sprinter: 0.20, breaker: 0.30, climber: 0.50 },   // are the men the finish suits
 };
+export const EVENT_NEAR = 25;     // a red headline (and the 1x slam it forces) is only owed for
+                           // things happening this close ahead of or behind the player —
+                           // an attack fired 200 m up the road is chyron news, not an alarm
 export const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 export const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 export const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free

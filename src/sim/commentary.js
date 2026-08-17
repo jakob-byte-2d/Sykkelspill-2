@@ -149,12 +149,12 @@ export function stepComm(S) {
       if (bodyNow(r).sf < WHEEL_WARN_SF) continue;
       st.lossAt[r.i] = S.t;
       say(S, st, "the wheel is going — you still have the matches to close it");
-      pushEvent(S, "You are losing the wheel", 1);
+      pushEvent(S, "You are losing the wheel", 1, w.dist);
     } else if (pAlive && Math.abs(r.dist - P.dist) <= WHEEL_NEAR) {
       st.lossAt[r.i] = S.t;
       if (r.dist > P.dist) {
         say(S, st, r.name + " is coming off the wheel ahead — don't get caught behind him");
-        pushEvent(S, r.name + " cracks just ahead of you", 1);
+        pushEvent(S, r.name + " cracks just ahead of you", 1, r.dist);
       } else {
         say(S, st, r.name + " has lost the wheel behind you");
       }
