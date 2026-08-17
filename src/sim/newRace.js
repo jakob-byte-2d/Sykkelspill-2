@@ -1,4 +1,4 @@
-import { COOP_SEED, PACE_MARGIN, PEL_FINALE_X, PEL_LEAD, WARMUP_S } from "../content/tuning.js";
+import { CLIMB_GRAD, COOP_SEED, PACE_MARGIN, PEL_FINALE_M, PEL_FINALE_X, PEL_LEAD, PEL_LEAD_KIND, WARMUP_S } from "../content/tuning.js";
 import { bodyNow, makeRiders, thresholdFull } from "./body.js";
 import { buildCourse } from "./course.js";
 import { tagGroups } from "./groups.js";
@@ -25,9 +25,14 @@ export function newSim(seed) {
   // from the gun with the fuel question set aside — and the bunch beats it by PEL_LEAD.
   // One reference instead of three, and it does not move with who else is in the break.
   const benchT = soloBenchmark(course, riders[0], 0, true);
-  const targetT = benchT * (1 - PEL_LEAD);
-  // ...and in the last kilometre the bunch rides a lead-out off that same threshold
-  const finaleP = PEL_FINALE_X * thresholdFull(riders[0]);
+  const pelLead = PEL_LEAD + (PEL_LEAD_KIND[course.kind] || 0);
+  const targetT = benchT * (1 - pelLead);
+  // ...and in the last kilometre the bunch rides a lead-out off that same threshold —
+  // where a lead-out exists. A finale that climbs is a summit finish, and no train on
+  // earth rides 1.5x threshold up it: the gate reads the last kilometre's average
+  // gradient, and past CLIMB_GRAD the bunch just rides its solved base to the line.
+  const gFin = (course.eleAt(course.total) - course.eleAt(course.total - PEL_FINALE_M)) / PEL_FINALE_M;
+  const finaleP = gFin < CLIMB_GRAD ? PEL_FINALE_X * thresholdFull(riders[0]) : null;
   const pelBase = calibratePel(course, startGap, targetT + 1, finaleP);
   // The schedule is built twice: once from a standing start to learn the pace it settles
   // at, then again from that speed. A race that begins mid-stage has no standing start,

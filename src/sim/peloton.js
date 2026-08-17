@@ -12,8 +12,12 @@ export function pelSpeed(course, dist, v, base, finaleP) {
   const d = Math.max(dist, 0);
   const grad = course.gradAt(d), rho = rhoAt(course.eleAt(d)), hw = course.windAt(d);
   // inside the last kilometre it stops riding tempo and rides the sprint: an absolute
-  // number off the benchmark threshold, not a multiple of whatever base it was given
-  const P = (course.total - dist) < PEL_FINALE_M ? finaleP : base;
+  // number off the benchmark threshold, not a multiple of whatever base it was given.
+  // On a summit finish there is no lead-out — newRace passes finaleP = null when the
+  // last kilometre climbs, and the bunch simply rides its base up the wall. Without
+  // the gate, 1.5x threshold through six per cent made the finale so slow that
+  // calibratePel inflated the base for the whole rest of the day to compensate.
+  const P = finaleP != null && (course.total - dist) < PEL_FINALE_M ? finaleP : base;
   return speedFor(P, PEL_MASS, PEL_CDA, grad, rho, hw, 0, v);
 }
 
