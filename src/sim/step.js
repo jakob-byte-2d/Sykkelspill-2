@@ -200,9 +200,9 @@ export function stepSim(S) {
     // ...told in the second person for the player, and never as a headline: the big
     // flag slams the replay to 1× for news you must REACT to, and your own hands are
     // not news to you
-    if (r.attNews === 1) pushEvent(S, r.isPlayer ? "You attack!" : r.name + " attacks!", r.isPlayer ? 0 : 1);
+    if (r.attNews === 1) pushEvent(S, r.isPlayer ? "You attack!" : r.name + " attacks!", r.isPlayer ? 0 : 1, r.dist);
     else if (r.attNews === 2) pushEvent(S, r.isPlayer ? "You are brought back" : r.name + " is brought back");
-    else if (r.attNews === 3) pushEvent(S, r.isPlayer ? "You ride clear!" : r.name + " rides clear!", r.isPlayer ? 0 : 1);
+    else if (r.attNews === 3) pushEvent(S, r.isPlayer ? "You ride clear!" : r.name + " rides clear!", r.isPlayer ? 0 : 1, r.dist);
     r.attNews = 0;
   }
 
@@ -240,8 +240,16 @@ export function stepSim(S) {
     }
     const hunted = (r.huntT || 0) >= HUNT_DELAY ? 1 : 0;
     if (hunted && !r.hunted) {
+      // the chase forming is the escapee's alarm — but only a chase within earshot:
+      // its position is the nearest man behind him, and past EVENT_NEAR it is a
+      // chyron line, not a red screen
+      let chaser = null;
+      for (const o of S.riders) {
+        if (o === r || o.caught || o.finished != null || o.dist >= r.dist) continue;
+        if (chaser == null || o.dist > chaser) chaser = o.dist;
+      }
       pushEvent(S, r.isPlayer ? "The break organises the chase behind you"
-        : "The break organises to bring back " + r.name, r.isPlayer ? 1 : 0);
+        : "The break organises to bring back " + r.name, r.isPlayer ? 1 : 0, chaser != null ? chaser : undefined);
     }
     r.hunted = hunted;
     // ...and inside the window, a man ALONE and clear of a bigger group behind IS
