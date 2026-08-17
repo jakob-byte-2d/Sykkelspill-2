@@ -1,9 +1,9 @@
 {
   "name": "sykkelspill-2",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
-  "description": "The Breakaway \u2014 Legends 0.2, a one-thumb road cycling simulation",
+  "description": "The Breakaway \u2014 Legends 0.3, a one-thumb road cycling simulation",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
