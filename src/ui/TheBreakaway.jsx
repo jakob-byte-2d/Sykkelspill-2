@@ -575,15 +575,58 @@ export default function TheBreakaway() {
           <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, textAlign: "center", fontSize: 9, letterSpacing: 2, color: "#0d3568", fontWeight: 800, fontStyle: "italic", fontFamily: font }}>WATTS</div>
         </div>
 
-        {/* result card */}
+        {/* result card: the headline, then the broadcast graphic — every man's day in
+            numbers. Finish order decides the rows (the road's own sorting: finishers by
+            the clock, everyone else by where the race left him); the stats are the
+            sim's st ledger read straight, nothing computed twice. */}
         {S.ended && S.result && (
           <div style={overlay}>
-            <div style={card}>
+            <div style={{ ...card, maxWidth: 400 }}>
               <div style={{ fontFamily: font, fontSize: 12, letterSpacing: 3, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic" }}>RESULT</div>
-              <div style={{ fontFamily: font, fontWeight: 800, fontSize: 34, letterSpacing: 1, color: S.result.caught ? "#c22a1e" : "#0d3568", fontStyle: "italic", margin: "2px 0 10px" }}>
+              <div style={{ fontFamily: font, fontWeight: 800, fontSize: 30, letterSpacing: 1, color: S.result.caught ? "#c22a1e" : "#0d3568", fontStyle: "italic", margin: "2px 0 8px" }}>
                 {S.result.caught ? `CAUGHT · ${S.result.atKm.toFixed(1)} KM TO GO` : place(S.result.place)}
               </div>
-              <ResultRow k="Average power" v={`${Math.round(player.st.work / Math.max(player.st.t, 1))} W  ·  ${(player.st.work / Math.max(player.st.t, 1) / player.mass).toFixed(1)} W/kg`} />
+              {(() => {
+                const order = [...S.riders].sort((a, b) =>
+                  (a.finished != null ? a.finished : 1e12) - (b.finished != null ? b.finished : 1e12)
+                  || b.dist - a.dist);
+                const winT = order[0].finished;
+                const cols = "minmax(0,1fr) 33px 28px 33px 31px 37px 37px";
+                const num = { fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: "#0d3568", textAlign: "right" };
+                return (
+                  <div style={{ margin: "0 0 8px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: cols, gap: 3, padding: "0 4px 2px", borderBottom: "1.5px solid rgba(60,90,125,0.45)" }}>
+                      <span />
+                      {["AVG W", "W/KG", "MAX", "KJ", "WHEEL", "FRONT"].map((h) => (
+                        <span key={h} style={{ fontFamily: font, fontSize: 7.5, letterSpacing: 0.5, fontWeight: 800, color: "#3c5a7a", textAlign: "right" }}>{h}</span>
+                      ))}
+                    </div>
+                    {order.map((r, k) => {
+                      const avg = r.st.work / Math.max(r.st.t, 1);
+                      // the winner's row needs no label — "1." says it; everyone else
+                      // carries his gap, the caught their fate, the still-riding a dash
+                      const gap = r.caught ? "CAUGHT" : r.finished == null ? "—"
+                        : winT != null && r.finished > winT ? "+" + fmtTime(r.finished - winT) : "";
+                      return (
+                        <div key={r.i} style={{ display: "grid", gridTemplateColumns: cols, gap: 3, alignItems: "center", padding: "3px 4px", borderBottom: "1px solid rgba(60,90,125,0.22)", background: r.isPlayer ? "rgba(255,210,63,0.5)" : "transparent" }}>
+                          <span style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
+                            <span style={{ fontFamily: font, fontSize: 11, fontWeight: 800, fontStyle: "italic", color: "#0d3568" }}>{k + 1}. {r.name}</span>
+                            <span style={{ fontFamily: mono, fontSize: 8, fontWeight: 700, color: r.caught ? "#c22a1e" : "#547294" }}>{" " + gap}</span>
+                            <br />
+                            <span style={{ fontFamily: font, fontSize: 7.5, fontWeight: 700, letterSpacing: 1, color: "#3c5a7a" }}>{r.team}</span>
+                          </span>
+                          <span style={num}>{Math.round(avg)}</span>
+                          <span style={num}>{(avg / r.mass).toFixed(1)}</span>
+                          <span style={num}>{Math.round(r.st.max)}</span>
+                          <span style={num}>{Math.round(r.st.work / 1000)}</span>
+                          <span style={num}>{fmtTime(r.st.drft)}</span>
+                          <span style={num}>{fmtTime(r.st.front)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               <ResultRow k="Time in the wind" v={fmtTime(player.st.wind)} />
               <ResultRow k="Time above threshold" v={fmtTime(player.st.above)} />
               <ResultRow k="Deepest the tank went" v={`${Math.round(player.st.minFuel * 100)} % fuel`} />

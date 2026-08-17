@@ -156,6 +156,11 @@ export function stepRider(S, r, dt) {
   r.speed = v;
   r.dist += v * dt;
   spend(r, P, dt, b, shel < 0.10);
+  // the day's record, for the results board and for scripts — read by nobody in the
+  // race itself: the highest watts he asked for, and the seconds he spent sheltered
+  // (the same 10 % line st.wind reads from the other side)
+  r.st.max = Math.max(r.st.max, P);
+  if (shel >= 0.10) r.st.drft += dt;
 }
 
 /* ---------------- The whole field, one second ---------------- */
@@ -274,6 +279,7 @@ export function stepSim(S) {
   for (const g of S.groups) {
     if (g.length < 2) continue;
     const r = g[0];
+    r.st.front += 1;   // the board's ledger, not the rotation's: seconds spent leading company
     const d = Math.max(r.dist, 0);
     const sit = powerFor(r.speed, r.mass, r.cda, S.course.gradAt(d), rhoAt(S.course.eleAt(d)), S.course.windAt(d), SHEL_MAX);
     const pGrav = Math.max(-r.mass * G * S.course.gradAt(d), 0) * r.speed;

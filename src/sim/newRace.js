@@ -83,7 +83,7 @@ export function newSim(seed) {
     r.dist -= lead; r.prevDist = r.dist; r.d0 = r.dist;
     r.surge = rest[i].surge; r.fuel = rest[i].fuel; r.wear = rest[i].wear;
     r.paid = COOP_SEED;
-    r.st = { work: 0, wind: 0, above: 0, minFuel: r.fuel / r.fuelMax, t: 0 };
+    r.st = { work: 0, wind: 0, above: 0, minFuel: r.fuel / r.fuelMax, t: 0, max: 0, drft: 0, front: 0 };
   });
   S.pel.dist = -startGap; S.pel.prevDist = -startGap;
   S.pel.speed = 11.8; S.pel.vAvg = 0; S.pel.gapS = startGap / 11.8;
