@@ -48,7 +48,7 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.040;   // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.049;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
@@ -59,7 +59,7 @@ export const PEL_LEAD = -0.040;   // the bunch crosses the line this much earlie
                            // tailwind 28/36 — the same profile main measured before the hunt
                            // (35/44, 27/36), wind split preserved: headwind breaks outlive
                            // tailwind ones because cheap sitting-in matters most into the wind.
-export const PEL_LEAD_KIND = { sprint: 0.003, rouleur: 0, climb: -0.024 };
+export const PEL_LEAD_KIND = { sprint: 0, rouleur: 0, climb: -0.016 };
                            // ...per finale archetype, added to PEL_LEAD. One deadline knob
                            // cannot serve three terrains: the benchmark (the player's
                            // threshold ride) is cheapest to beat on flat roads and dearest
@@ -68,6 +68,11 @@ export const PEL_LEAD_KIND = { sprint: 0.003, rouleur: 0, climb: -0.024 };
                            // three land 72-76 % (climb is a weak lever, ~0.9 pt per 0.001
                            // - the wall itself does the selecting, and fewer of the five
                            // survive it: 2.8 home per surviving race against 3.3-3.4).
+export const DRAW_W = {          // the day's finale weights which classes get drawn as the
+  sprint:  { sprinter: 0.50, breaker: 0.30, climber: 0.20 },   // player's four companions —
+  rouleur: { sprinter: 0.30, breaker: 0.40, climber: 0.30 },   // the men who go in the move
+  climb:   { sprinter: 0.20, breaker: 0.30, climber: 0.50 },   // are the men the finish suits
+};
 export const PACE_WINDOW = 20;    // seconds behind schedule that count as full alarm
 export const PACE_GAIN = 0.5;     // at full alarm the front digs this much over the plan's base watts
 export const DH_GRAD = -0.018;    // steeper than this is a descent — wheels don't die where speed is free
