@@ -3,7 +3,7 @@ import { DEBUG, draw, setDebug } from "../render/draw.js";
 import { fmtGap, fmtTime } from "../render/format.js";
 import { SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, clamp, finalize, gapRows, newSim, previewRace, pushEvent, setInput, stepSim } from "../sim/index.js";
-import { ATTRS, BUILD_PTS, MASSES, buildSpec, budgetLeft } from "../content/builder.js";
+import { ATTRS, BUILD_PTS, MASSES, MASS_INFO, buildSpec, budgetLeft } from "../content/builder.js";
 import { drawProfile } from "../render/profile.js";
 import { sliderPts, tFromW, wFromT } from "./slider.js";
 import { ResultRow, btn, card, markerTop, overlay, place } from "./widgets.jsx";
@@ -24,6 +24,7 @@ export default function TheBreakaway() {
   const wrapRef = useRef(null);
   const seedRef = useRef((Math.random() * 1e9) | 0);
   const [build, setBuild] = useState({ spurt: 6, punch: 6, motor: 6, seighet: 6, kg: 70 });
+  const [attrInfo, setAttrInfo] = useState(null);   // which builder row is explaining itself
   const previewRef = useRef(null);   // the day the builder is choosing for: course + the drawn four
   const specRef = useRef(null);      // the body the player confirmed — SAME RACE reuses it
   const buildCvs = useRef(null);
@@ -723,6 +724,18 @@ export default function TheBreakaway() {
             return { ...b, [key]: v };
           });
           const stepBtn = (dis) => ({ ...btn("#3a76bd", "#fff"), padding: "2px 12px", fontSize: 15, opacity: dis ? 0.35 : 1 });
+          // the label is the button: tap the name (or its little marker) and the row
+          // explains itself in one line; tap again — or another row — and it yields
+          const infoLabel = (key, label) => (
+            <span onClick={() => setAttrInfo(attrInfo === key ? null : key)}
+              style={{ fontFamily: font, fontSize: 11.5, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", width: 76, cursor: "pointer", userSelect: "none" }}>
+              {label}
+              <span style={{ display: "inline-block", marginLeft: 4, width: 12, height: 12, lineHeight: "12px", textAlign: "center", borderRadius: 999, background: attrInfo === key ? "#3a76bd" : "rgba(60,90,125,0.25)", color: attrInfo === key ? "#fff" : "#3c5a7a", fontSize: 8.5, fontStyle: "normal", fontWeight: 700, verticalAlign: "1px" }}>i</span>
+            </span>
+          );
+          const infoLine = (txt) => (
+            <div style={{ fontFamily: font, fontSize: 10, lineHeight: 1.35, color: "#22456b", background: "rgba(58,118,189,0.12)", border: "1px solid rgba(58,118,189,0.35)", borderRadius: 6, padding: "4px 8px", margin: "1px 0 3px" }}>{txt}</div>
+          );
           return (
             <div style={overlay}>
               <div style={{ ...card, maxWidth: 380, padding: "14px 16px" }}>
@@ -746,22 +759,26 @@ export default function TheBreakaway() {
                   <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: left > 0 ? "#1d7a34" : "#c22a1e" }}>POINTS LEFT: {left}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
-                  <span style={{ fontFamily: font, fontSize: 11.5, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", width: 62 }}>WEIGHT</span>
+                  {infoLabel("kg", "WEIGHT")}
                   <button onClick={() => setBuild((b) => ({ ...b, kg: Math.max(b.kg - 4, MASSES[0]) }))} disabled={build.kg <= MASSES[0]} style={stepBtn(build.kg <= MASSES[0])}>−</button>
                   <span style={{ flex: 1, textAlign: "center", fontFamily: mono, fontSize: 13, fontWeight: 700, color: "#0d3568" }}>{build.kg} KG</span>
                   <button onClick={() => setBuild((b) => ({ ...b, kg: Math.min(b.kg + 4, MASSES[MASSES.length - 1]) }))} disabled={build.kg >= MASSES[MASSES.length - 1]} style={stepBtn(build.kg >= MASSES[MASSES.length - 1])}>+</button>
                 </div>
+                {attrInfo === "kg" && infoLine(MASS_INFO)}
                 {ATTRS.map((at) => (
-                  <div key={at.key} style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
-                    <span style={{ fontFamily: font, fontSize: 11.5, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", width: 62 }}>{at.label}</span>
-                    <button onClick={() => bump(at.key, -1)} disabled={build[at.key] <= 1} style={stepBtn(build[at.key] <= 1)}>−</button>
-                    <div style={{ flex: 1, display: "flex", gap: 2 }}>
-                      {Array.from({ length: 10 }, (_, i) => (
-                        <span key={i} style={{ flex: 1, height: 10, borderRadius: 2, background: i < build[at.key] ? "#3a76bd" : "rgba(60,90,125,0.25)", boxShadow: i < build[at.key] ? "inset 0 1px 0 rgba(255,255,255,0.5)" : "none" }} />
-                      ))}
+                  <React.Fragment key={at.key}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
+                      {infoLabel(at.key, at.label)}
+                      <button onClick={() => bump(at.key, -1)} disabled={build[at.key] <= 1} style={stepBtn(build[at.key] <= 1)}>−</button>
+                      <div style={{ flex: 1, display: "flex", gap: 2 }}>
+                        {Array.from({ length: 10 }, (_, i) => (
+                          <span key={i} style={{ flex: 1, height: 10, borderRadius: 2, background: i < build[at.key] ? "#3a76bd" : "rgba(60,90,125,0.25)", boxShadow: i < build[at.key] ? "inset 0 1px 0 rgba(255,255,255,0.5)" : "none" }} />
+                        ))}
+                      </div>
+                      <button onClick={() => bump(at.key, 1)} disabled={build[at.key] >= 10 || left <= 0} style={stepBtn(build[at.key] >= 10 || left <= 0)}>+</button>
                     </div>
-                    <button onClick={() => bump(at.key, 1)} disabled={build[at.key] >= 10 || left <= 0} style={stepBtn(build[at.key] >= 10 || left <= 0)}>+</button>
-                  </div>
+                    {attrInfo === at.key && infoLine(at.info)}
+                  </React.Fragment>
                 ))}
                 <button onClick={() => { specRef.current = buildSpec(build); start(seedRef.current); }}
                   style={{ ...btn("#2e7d46", "#fff", 1), marginTop: 10, fontSize: 15, width: "100%", padding: "12px 0" }}>

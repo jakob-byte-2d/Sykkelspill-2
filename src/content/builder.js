@@ -24,12 +24,21 @@ export const BUILD_PTS = 24;    // points across the four attributes, 1-10 each 
 
 export const MASSES = [50, 54, 58, 62, 66, 70, 74, 78, 82, 86];
 
+/* info is the builder screen's one-line explainer, shown when the row is tapped —
+   it lives here with the mapping so the words and the numbers cannot drift apart. */
 export const ATTRS = [
-  { key: "spurt", label: "SPRINT" },      // the 5-second kick, and the alactic tank behind it
-  { key: "punch", label: "PUNCH" },       // 1-5 minutes: the attack, the cover, the kicker
-  { key: "motor", label: "ENGINE" },      // 20-60 minutes: threshold, the day's cruise
-  { key: "seighet", label: "GRIT" },      // durability: how slowly the day eats you
+  { key: "spurt", label: "SPRINT",
+    info: "The 5-second kick and the deep battery behind it — the last 200 m, and the jump that opens an attack." },
+  { key: "punch", label: "PUNCH",
+    info: "1-5 minute power: attacks, covering moves, short steep climbs. The matches you strike above threshold." },
+  { key: "motor", label: "ENGINE",
+    info: "Threshold and hour power — the day's cruise, your pulls in the rotation, everything long." },
+  { key: "seighet", label: "GRIT",
+    info: "Durability: how slowly the day wears you down — and how little the 150 km already ridden has cost you." },
 ];
+
+export const MASS_INFO = "Real kilograms, and it costs no points: heavy = more raw watts for flat roads "
+  + "and big pulls, light = more watts per kilo where the road climbs.";
 
 const lerp = (k, lo, hi) => lo + ((clamp(k, 1, 10) - 1) / 9) * (hi - lo);
 // the allometric body: watts from a coefficient anchored at 70 kg, scaled by kg^0.75
