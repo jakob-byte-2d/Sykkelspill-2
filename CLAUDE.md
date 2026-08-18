@@ -55,8 +55,10 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
     verify. Never re-record to make a red check green without understanding the delta.
 - **Balance profile** (must hold after sim changes; measure over ~120 seeds
   `1000 + s*7919`, bucketed by `S.course.kind` — the legend pool is drawn, so
-  measure by class, not by name): break survival 73–76 % in every archetype
-  (climb 73, sprint 74, rouleur 76); climb days are won by CLIMBERS (13 v 10
+  measure by class, not by name): break survival 70–76 % in every archetype
+  (measured after the steadiness pass: sprint 70, rouleur 76, climb 70 — main
+  before it read 74/76/73 on the same seeds; the chase's summit lid sheds a
+  couple of riders honestly); climb days are won by CLIMBERS (13 v 10
   breakers over 24 surviving races, five different climbers on the list), rouleur
   days by BREAKERS (20/26); ~2.6 climb / 3.5 sprint / 2.9 rouleur riders home per
   surviving race. KNOWN ISSUE (sim/AI work, not content): sprint-day wins lean
@@ -158,11 +160,24 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   outright — a re-kick mid-catch is answered at once, no fresh grace, and a leader
   whose chasers splinter keeps his clock. A hunting front is `chasing`: coast()
   must not gut the alarm at 50+ km/h. A man ALONE and clear of a bigger group in
-  the window is MARKED attacked (`attSoft`, no kick, news "rides clear"); drifters
-  get the cover choice re-asked every 60 s (once-only is about surprise — a
-  dangler has none). Individual covers (the 2 s jump answer) are untouched by the
-  delay. Events: "The break organises the chase behind you" (big) / brought back
-  at ABSORPTION. PEL_LEAD -0.040 (hunting lifted survival ~8 pts in both winds).
+  the window is MARKED attacked (`attSoft`, no kick, news "rides clear") — but only
+  on flattish road (CLIMB_GRAD > grad > DH_GRAD): on a climb the WALL does the
+  selecting, and marking the strongest man edging away had every cooked pair behind
+  burning 1200 W cover-jumps into the gradient, on repeat. Drifters get the cover
+  choice re-asked every 60 s (once-only is about surprise — a dangler has none).
+  Individual covers (the 2 s jump answer) are untouched by the delay. Events: "The
+  break organises the chase behind you" (big) / brought back at ABSORPTION.
+- **Steadiness (the jevnhet doctrine):** three rules keep the file calm. (1) Group
+  membership has hysteresis (GRP_SPLIT 16 / GRP_JOIN 12, groups.js): you leave a
+  group at 16 m and join at the 12 m draft line — one stateless line flipped
+  hoverers every other second and everything reading sizes repeated the flutter
+  (measured: 605→335 "drops"/45 races, transient <30 s 426→118). Do NOT tighten
+  the join below the draft line: at 10 m scattered chasers could not reform into
+  a hunting group and `npm run solo` went red. (2) chaseRide carries the summit-
+  pacing lid: a man the climb shed rides HIS pace (holdTop, floored 0.9·T) back —
+  no mid-climb sprint-and-shed cycles; the lid lifts inside the last minute of
+  the climb and in the finale, so "back over the crest" still happens. (3) The
+  drift-marking gradient gate above.
 - **Statuses (roleOf, draw.js):** SPRINTING > ATTACKING > COVERING > CHASING >
   DROPPED/GOING SOLO > RIDING OWN PACE > PULLING > LOADING > SITTING ON > TURN DONE >
   RELAYING. "What he DOES beats what he wanted."

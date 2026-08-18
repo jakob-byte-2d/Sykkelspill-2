@@ -1,4 +1,4 @@
-import { ATT_FROM, ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, HUNT_DELAY, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
+import { ATT_FROM, ATT_JUMP_DV, ATT_JUMP_T, ATT_JUMP_X, ATT_REARM, CLIMB_GRAD, DH_GRAD, COOP_MARGIN, COOP_PULL_MAX, COOP_PULL_MAX_UP, COOP_PULL_MIN, COOP_PULL_SPEND, COOP_REF, DROP_W, HUNT_DELAY, PULL_MIN_SF, SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, burstCeil, shutUpLegs, spend, usableSurge } from "./body.js";
 import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
@@ -260,7 +260,17 @@ export function stepSim(S) {
     // ATT_GIVEUP, and the bunch's arithmetic. A rider already racing a move, or on
     // cooldown from one, is not re-marked.
     const togo = C.total - r.dist;
+    // ...and only on road where riding clear is an ACT: on a climb the wall does
+    // the selecting — the strongest man edging away up seven per cent has not
+    // attacked anybody, and marking him had every cooked pair behind him burning
+    // 1200 W cover-jumps into the gradient, over and over (the 60 s re-ask made
+    // it a cycle; measured, half the transient drops on climbs traced to it).
+    // Descents select by gravity the same way — the jump detector has always
+    // drawn both lines, and the drift-marking draws them here. A gap kept on the
+    // flat past the crest is marked there, which is where it becomes racing.
+    const gHere = C.gradAt(Math.max(r.dist, 0));
     if ((r.groupSize ?? 1) === 1 && togo <= ATT_FROM && togo >= SPRINT_FINALE_M
+      && gHere < CLIMB_GRAD && gHere > DH_GRAD
       && !((r.attT ?? 0) > 0) && !r.attChase) {
       let biggerBehind = false;
       for (const o of S.riders) {

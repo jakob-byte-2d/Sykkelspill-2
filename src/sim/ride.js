@@ -583,6 +583,25 @@ export function chaseRide(S, r, b, lead, grad, rho, hw) {
   // that noise would land straight in the chaser's watts
   if (r.chaseOf !== lead.i) { r.chaseOf = lead.i; r.chaseU = lead.speed; }
   else r.chaseU += (lead.speed - r.chaseU) / 8;
+  // The summit-pacing answer, the same one the wheel branch already gives: a man the
+  // climb shed because its price sat above what he can hold to the top does not
+  // sprint back up to the wheel mid-climb — the chase re-shed him within seconds
+  // (measured: half of all transient drops were climb + summit pacing, median 11 s
+  // out, then hauled back, then shed again, the whole climb long). He rides HIS
+  // pace and comes back over the crest, where the horizon closes and speed is
+  // free — the lid lifts inside the last minute of the climb and in the finale,
+  // so "come back over the summit" still happens; it is the mid-climb yo-yo that
+  // dies. The lid floors at 0.9·T: the pacing question is about the surge, and a
+  // man whose tank is gone still grinds a chase gap at nearly his threshold.
+  let lid = Infinity;
+  const togo = S.course.total - r.dist;
+  if (togo >= SPRINT_FINALE_M) {
+    const top = S.course.climbTopAt(r.dist);
+    const tTop = Math.max(planTimeAt(S.plan, top) - planTimeAt(S.plan, r.dist), 0);
+    if (tTop >= CLIMB_MIN_T) {
+      lid = Math.max(Math.min(b.T + r.surge / tTop, durPower(r, tTop, b.T), b.ceil), 0.9 * b.T);
+    }
+  }
   // a regain, not a chase: inside CHASE_NEAR the minimum-time solve below prices a
   // 15 m gap as a 15-second sprint — measured, ~690 W on a fresh body, snapping on
   // and off at the 12 m group boundary. What a rider does for fifteen metres is ride
@@ -591,13 +610,13 @@ export function chaseRide(S, r, b, lead, grad, rho, hw) {
   if (gap < CHASE_NEAR) {
     r.chasing = 1;
     const price = powerFor(r.chaseU, r.mass, r.cda, grad, rho, hw, 0);
-    return Math.min(price + CHASE_NEAR_W * (gap / CHASE_NEAR), b.ceil);
+    return Math.min(price + CHASE_NEAR_W * (gap / CHASE_NEAR), b.ceil, lid);
   }
   // ...and the same sentence as a dig up a climb, with a different target: what he
   // can hold all the way to it. Two things cap that and they swap over by themselves
   // — for a short chase it is his curve read at those few seconds, for a long one it
   // is the tank divided by them.
-  const hold = (t) => Math.min(b.T + r.surge / t, durPower(r, t, b.T), b.ceil);
+  const hold = (t) => Math.min(b.T + r.surge / t, durPower(r, t, b.T), b.ceil, lid);
   // speed follows from power and the time from speed, so it is solved by going round
   // three times: speed goes roughly as the cube root of watts, so it settles fast
   let t = clamp(gap, 15, 600);
