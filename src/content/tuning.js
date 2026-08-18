@@ -34,6 +34,11 @@ export const WHEEL_DEAD_EDGE = 0.15; // ...but you only look through it if you h
                               // free watts, and grinding on in a slow file is what a cooked
                               // break actually does
 export const DOOR_NEAR = 10;      // this close ahead of a resting rider, a man dropping back becomes his wheel
+export const SPRINT_SAVE_M = 5000; // from here the group's best sprinter stops taking turns and
+                           // protects the gallop — while the break can afford him (bunch
+                           // further back than the plan's own margin). Real sprinters shirk
+                           // the last kilometres; without this every sprint finale was an
+                           // attrition grind between equally empty men
 export const SPRINT_FINALE_M = 1000; // inside this the ledger stops deciding: everyone holds a wheel
 export const SPRINT_M = 200;      // the fastest man in the group can afford to wait until here...
 export const SPRINT_LONG = 300;   // ...and the slowest opens from here, to try to blunt him

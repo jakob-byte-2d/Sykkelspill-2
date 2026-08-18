@@ -61,10 +61,16 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
   couple of riders honestly); climb days are won by CLIMBERS (13 v 10
   breakers over 24 surviving races, five different climbers on the list), rouleur
   days by BREAKERS (20/26); ~2.6 climb / 3.5 sprint / 2.9 rouleur riders home per
-  surviving race. KNOWN ISSUE (sim/AI work, not content): sprint-day wins lean
-  breaker (25 v 7) — the whole break arrives near-empty (sf ≈ 0.05 at 1500 m to
-  go), so the gallop is attrition, not a kick; the missing behavior is sprinters
-  saving matches late (shirking pulls inside ~5 km). A flat solo from the gun must
+  surviving race. The sprinter SHIRKS late (savingSprint, tactics.js/step.js):
+  inside SPRINT_SAVE_M (5 km) the group's genuinely-best sprinter (clear of
+  everyone by ATT_FOLLOW_EDGE) ends his pulls at the COOP_PULL_MIN floor —
+  token turns, not a sit-out (a binary rest sank survival 6-11 pts whenever
+  the alarm needed every engine), never on a summit approach (last-km read),
+  never with the bunch inside PACE_MARGIN. Measured: sprinter peak sprint
+  1435→1545 W, sprint-day sprinter wins 2→5, survival unchanged. STILL LEANS
+  BREAKER (22 v 5): the deep cause is the whole break arriving near-empty —
+  attrition favors big engines; the next lever is finale-approach pacing
+  (everyone easing when safe), a separate change. A flat solo from the gun must
   NOT win: `npm run solo` → ≤2 wins total and NO wire-to-wire escape. Knobs:
   PEL_LEAD master (−0.049 — re-based when the drawn legend field replaced five
   fixed big engines) and PEL_LEAD_KIND trim ({sprint 0, rouleur 0, climb −0.016}).
