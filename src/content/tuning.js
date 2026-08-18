@@ -112,6 +112,17 @@ export const ATT_FOLLOW_N = 2;    // at most this many cover the move; the rest 
                            // closers, which is the whole game theory of a break
 export const ATT_GIVEUP = 25;     // seconds of gap at which the chase stops bothering — "let him die
                            // out there" — and the group rides for the remaining placings
+export const GRP_SPLIT = 16;      // metres of wheel gap before a rider has LEFT the group...
+export const GRP_JOIN = 12;       // ...and metres before a rider outside it has JOINED (the draft
+                           // line, exactly where joining always happened). The old single line
+                           // made membership stateless, and a man hovering at it flipped group
+                           // every other second — measured, most "drops" lived six seconds,
+                           // pure bookkeeping flutter that the gap rows, the statuses and every
+                           // size-reading tactic (hunt, covers, launch) repeated out loud. Only
+                           // the STAY side widened: tightening the join to 10 m kept scattered
+                           // chasers from reforming into a hunting group and npm run solo went
+                           // red — a wire-to-wire escape through a field that could not regroup.
+                           // Physics never read the line — shelter has its own.
 export const HUNT_DELAY = 50;     // seconds a defector must be clear before the group organises the
                            // chase: looks are exchanged, somebody shouts, the rotation lays
                            // itself over — and only then does the hunt (and its headline) begin.

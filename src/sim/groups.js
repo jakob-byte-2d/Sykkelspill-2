@@ -1,4 +1,5 @@
-import { DRAFT, ORDER_EPS } from "./physics.js";
+import { GRP_JOIN, GRP_SPLIT } from "../content/tuning.js";
+import { ORDER_EPS } from "./physics.js";
 import { wheelGap } from "./tactics.js";
 
 /* Who is riding with whom, and how far apart in seconds. */
@@ -23,8 +24,16 @@ export function raceGroups(S) {
   const out = [];
   for (const r of live) {
     const last = out[out.length - 1];
-    if (last && wheelGap(last[last.length - 1], r) <= DRAFT) last.push(r);
-    else out.push([r]);
+    if (last) {
+      const tail = last[last.length - 1];
+      // membership has hysteresis: a man IN the group stays in it until the gap
+      // is decisively open (GRP_SPLIT), a man OUTSIDE joins only once he is
+      // decisively on (GRP_JOIN). One stateless line flipped the hoverers every
+      // other second, and everything that reads sizes repeated the flutter.
+      const together = tail.groupNo != null && r.groupNo != null && tail.groupNo === r.groupNo;
+      if (wheelGap(tail, r) <= (together ? GRP_SPLIT : GRP_JOIN)) { last.push(r); continue; }
+    }
+    out.push([r]);
   }
   return out;
 }
