@@ -92,6 +92,23 @@ export function buildSpec(a) {
     mass: kg, h,
     curve: { p5s: r(p5s), p1: r(p1), p5: r(p5), p20: r(p20), p60: r(p60), wp: r(wp) },
     dura,
+    merits: "", look: { skin: "#e8c9a0", style: "cap" },  // the cap paints itself kit-colored
+  };
+}
+
+/* The rider card's 1-10 pips, for legends and built men alike: the INVERSE of
+   buildSpec's own anchors, so the two can never drift — a drawn Merckx and a
+   10-ENGINE build read the same scale. Reads only mass/curve/dura; values past
+   the anchors (the pool's freaks) simply pin at 10. */
+const unlerp = (v, lo, hi) => Math.round(clamp(1 + (9 * (v - lo)) / (hi - lo), 1, 10));
+export function ratingsOf(spec) {
+  const kg = spec.mass, c = spec.curve;
+  const aw = 70 * Math.pow(kg / 70, 0.75);   // allometric divisor, allo()'s mirror
+  return {
+    spurt: unlerp(c.p5s / kg, 13.5, 24.5),
+    punch: unlerp(c.p5 / aw, 5.6, 8.2),
+    motor: unlerp(c.p60 / aw, 5.0, 6.4),
+    seighet: unlerp(spec.dura || 1, 0.85, 1.17),
   };
 }
 

@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { DEBUG, draw, setDebug } from "../render/draw.js";
+import { DEBUG, draw, roleOf, setDebug } from "../render/draw.js";
 import { fmtGap, fmtTime } from "../render/format.js";
 import { SPRINT_FINALE_M } from "../content/tuning.js";
 import { bodyNow, clamp, finalize, gapRows, newSim, previewRace, pushEvent, setInput, stepSim } from "../sim/index.js";
-import { ATTRS, BUILD_PTS, MASSES, MASS_INFO, TEAMS, buildSpec, budgetLeft } from "../content/builder.js";
+import { ATTRS, BUILD_PTS, MASSES, MASS_INFO, TEAMS, buildSpec, budgetLeft, ratingsOf } from "../content/builder.js";
+import { Portrait } from "./Portrait.jsx";
 import { drawProfile } from "../render/profile.js";
 import { sliderPts, tFromW, wFromT } from "./slider.js";
 import { ResultRow, btn, card, markerTop, overlay, place } from "./widgets.jsx";
@@ -32,6 +33,9 @@ export default function TheBreakaway() {
   const buildCvs = useRef(null);
   const dragRef = useRef(false);
   const alertRef = useRef(null);   // the last big event already reacted to
+  const marksRef = useRef([]);     // last frame's rider screen spots, from draw()
+  const [riderCard, setRiderCard] = useState(null);  // the man whose card is open
+  const cardResume = useRef(0);    // the speed the card interrupted; 0 = was paused
 
   // the builder's door: draw the day (course + opponents) for this seed and show it.
   // previewRace replays newSim's own opening calls on the same stream, so what the
@@ -112,7 +116,7 @@ export default function TheBreakaway() {
         if (p.caught && !S.ended) { S.ended = true; S.result = { caught: true, atKm: (S.course.total - p.dist) / 1000 }; }
         if (p.finished != null && !S.ended) finalize(S);
       }
-      if (S && canvasRef.current) draw(S, canvasRef.current, clamp(acc, 0, 1));
+      if (S && canvasRef.current) marksRef.current = draw(S, canvasRef.current, clamp(acc, 0, 1)) || [];
       if (S && now - S.uiAt > 140) { S.uiAt = now; setTick((t) => t + 1); }
       raf = requestAnimationFrame(loop);
     };
@@ -124,6 +128,32 @@ export default function TheBreakaway() {
   const player = S ? S.riders[0] : null;
   const body = player ? bodyNow(player) : null;
   const pts = player ? sliderPts(player.T0 * player.form, player.curve.p5s) : null;
+
+  // a tap on the road: the nearest rider drawn last frame, with thumb-sized slack —
+  // the sprite is ~11 px wide, so the target is the man, not the pixels. Opening the
+  // card pauses the race (reading mid-finale must not cost); closing hands back the
+  // interrupted speed, and leaves a deliberate pause alone.
+  const onCanvasTap = (e) => {
+    if (phase !== "race" || !S || S.ended) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = e.clientX - rect.left, py = e.clientY - rect.top;
+    let hit = null, best = 27;
+    for (const m of marksRef.current) {
+      const dx = Math.abs(m.x - px);
+      if (dx < best && Math.abs(m.y - 8 - py) < 48) { best = dx; hit = m.r; }
+    }
+    if (!hit) return;
+    cardResume.current = paused ? 0 : speedRef.current || 1;
+    speedRef.current = 0; setPaused(true);
+    setRiderCard(hit);
+  };
+  const closeCard = () => {
+    setRiderCard(null);
+    if (phase === "race" && cardResume.current > 0 && S && !S.ended) {
+      speedRef.current = cardResume.current; setPaused(false);
+    }
+    cardResume.current = 0;
+  };
 
   const onSlider = (e, elem) => {
     if (!S || S.ended) return;
@@ -708,7 +738,7 @@ export default function TheBreakaway() {
     <div style={{ height: "100dvh", width: "100%", background: "linear-gradient(180deg, #e6edf4, #9fb2c5)", display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: font, padding: 6, boxSizing: "border-box" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,700;0,800;1,700;1,800&display=swap'); button:active{transform:scale(0.97)} button{cursor:pointer}`}</style>
       <div ref={wrapRef} style={{ position: "relative", flex: 1, overflow: "hidden", borderRadius: 14, border: "2px solid #6f8cab", boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.55), 0 4px 14px rgba(15,35,60,0.35)" }}>
-        <canvas ref={canvasRef} style={{ position: "absolute", inset: 0 }} />
+        <canvas ref={canvasRef} onPointerDown={onCanvasTap} style={{ position: "absolute", inset: 0 }} />
         {raceUI}
         {phase === "build" && previewRef.current && (() => {
           const pv = previewRef.current;
@@ -755,7 +785,7 @@ export default function TheBreakaway() {
                 <canvas ref={buildCvs} style={{ width: "100%", height: 54, borderRadius: 6, border: "1.5px solid #6f8cab", margin: "6px 0 8px" }} />
                 {/* the four who went with you */}
                 {pv.opponents.map((o) => (
-                  <div key={o.name} style={{ display: "flex", alignItems: "center", gap: 7, padding: "2px 2px" }}>
+                  <div key={o.name} onClick={() => setRiderCard(o)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "2px 2px", cursor: "pointer" }}>
                     <span style={{ width: 11, height: 11, borderRadius: 3, background: o.color, border: "1.5px solid #123a6b", flexShrink: 0 }} />
                     <span style={{ fontFamily: font, fontWeight: 800, fontStyle: "italic", fontSize: 12.5, color: "#0d3568", letterSpacing: 0.5 }}>{o.name}</span>
                     <span style={{ fontFamily: font, fontSize: 8, fontWeight: 700, letterSpacing: 1, color: "#3c5a7a", flex: 1, overflow: "hidden", whiteSpace: "nowrap" }}>{o.team}</span>
@@ -807,6 +837,56 @@ export default function TheBreakaway() {
                   style={{ ...btn("#2e7d46", "#fff", 1), marginTop: 10, fontSize: 15, width: "100%", padding: "12px 0" }}>
                   START RACE
                 </button>
+              </div>
+            </div>
+          );
+        })()}
+        {riderCard && (() => {
+          // one card for both doors: a raw POOL spec from the build screen, or the
+          // live rider object off the road — same fields, same 1-10 scale as the
+          // builder's own pips (ratingsOf is buildSpec's anchors inverted)
+          const r = riderCard;
+          const cls = { sprinter: "SPRINTER", breaker: "BREAKAWAY", climber: "CLIMBER" }[r.klass || r.class] || "";
+          const rat = ratingsOf(r);
+          const live = phase === "race" && S && !S.ended && r.isPlayer !== undefined;
+          const pipRow = (label, v) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
+              <span style={{ fontFamily: font, fontSize: 10.5, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", width: 56, flexShrink: 0 }}>{label}</span>
+              <div style={{ flex: 1, display: "flex", gap: 2 }}>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <span key={i} style={{ flex: 1, height: 8, borderRadius: 2, background: i < v ? "#3a76bd" : "rgba(60,90,125,0.25)", boxShadow: i < v ? "inset 0 1px 0 rgba(255,255,255,0.5)" : "none" }} />
+                ))}
+              </div>
+              <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: "#22456b", width: 14, textAlign: "right" }}>{v}</span>
+            </div>
+          );
+          return (
+            <div style={{ ...overlay, zIndex: 8 }} onClick={closeCard}>
+              <div style={{ ...card, maxWidth: 330, padding: "14px 16px" }} onClick={(e) => e.stopPropagation()}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <Portrait look={r.look} color={r.color} size={68} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: font, fontWeight: 800, fontStyle: "italic", fontSize: 21, color: "#0d3568", letterSpacing: 1, lineHeight: 1.05 }}>{r.name}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: 3, background: r.color, border: "1.5px solid #123a6b", flexShrink: 0 }} />
+                      <span style={{ fontFamily: font, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: "#3c5a7a", overflow: "hidden", whiteSpace: "nowrap" }}>{r.team}</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+                      {cls && <span style={{ fontFamily: font, fontSize: 8, fontWeight: 800, letterSpacing: 1, color: "#fff", background: "#3a76bd", borderRadius: 999, padding: "1px 7px" }}>{cls}</span>}
+                      <span style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: "#22456b" }}>{r.mass} KG · {r.h.toFixed(2)} M</span>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontFamily: font, fontSize: 11.5, lineHeight: 1.4, color: r.merits ? "#22456b" : "#5a7086", fontStyle: r.merits ? "normal" : "italic", background: "rgba(58,118,189,0.10)", border: "1px solid rgba(58,118,189,0.3)", borderRadius: 6, padding: "5px 9px", margin: "10px 0 8px" }}>
+                  {r.merits || "The palmarès is still blank."}
+                </div>
+                {ATTRS.map((at) => pipRow(at.label, rat[at.key]))}
+                {live && (
+                  <div style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: "#b8791a", marginTop: 6 }}>
+                    NOW: {roleOf(S, r)} · {Math.round(r.power)} W · {(r.speed * 3.6).toFixed(0)} KM/H
+                  </div>
+                )}
+                <button onClick={closeCard} style={{ ...btn("#3a76bd", "#fff", 1), marginTop: 10, width: "100%", padding: "9px 0", fontSize: 13 }}>CLOSE</button>
               </div>
             </div>
           );
