@@ -281,6 +281,8 @@ export function draw(S, canvas, alpha) {
   };
   const sorted = [...S.riders].sort((a, b) => a.dist - b.dist);
   const bubbles = [];
+  const spots = [];   // every rider drawn this frame, at his screen spot — returned
+                      // to the UI so a tap on the road can find the man under it
   for (const r of sorted) {
     if (r.caught) continue;
     const d = lerp(r.prevDist, r.dist, alpha);
@@ -292,6 +294,7 @@ export function draw(S, canvas, alpha) {
     const mode = r.power > 1.22 * b.T && g > 0.015 ? "stand" : "ride";
     r.ped = (r.ped || 0) + r.speed * 0.045;
     drawCyclist(ctx, x, y, riderK(pxm), r.color, r.ped, mode, -Math.atan(g * 1.6));
+    spots.push({ r, x, y });
     // the arrow sits between his head and his bubble — still "this one is you"
     if (r.isPlayer) {
       ctx.fillStyle = "#ffd23f";
@@ -365,6 +368,38 @@ export function draw(S, canvas, alpha) {
     }
   }
 
+  // small name tags over every head but the player's (the arrow and the strip are
+  // his), so you always know WHO you are riding against. Same chip-on-a-stalk as
+  // the debug bubbles — and the same two staggered rows plus nudge pass, because a
+  // paceline packs riders tighter than their names are wide. Debug hides them: the
+  // bubbles up there already lead with the name.
+  if (!DEBUG) {
+    ctx.font = "800 7.5px ui-monospace, monospace";
+    const tags = spots.filter((m) => !m.r.isPlayer).map((m) => ({
+      ...m,
+      txt: m.r.name.split(".").pop().slice(0, 9),
+      row: (m.r.groupPos || 1) % 2,
+      tipY: m.y - 20,
+    }));
+    tags.forEach((t) => { t.w = ctx.measureText(t.txt).width + 10; });
+    const TH = 12;
+    for (const row of [0, 1]) {
+      const mine = tags.filter((t) => t.row === row).sort((a, b) => b.x - a.x);
+      mine.forEach((t) => { t.bx = t.x; });
+      for (let i = 1; i < mine.length; i++) {
+        const need = (mine[i - 1].w + mine[i].w) / 2 + 3;
+        if (mine[i - 1].bx - mine[i].bx < need) mine[i].bx = mine[i - 1].bx - need;
+      }
+    }
+    ctx.textAlign = "center";
+    for (const t of tags) {
+      const top = t.tipY - 6 - TH - (t.row ? TH + 3 : 0);
+      drawBubble(ctx, t.bx, top, t.w, TH, t.r.color, t.x, t.tipY);
+      ctx.fillStyle = "#f2f6fa";
+      ctx.fillText(t.txt, t.bx, top + 9);
+    }
+  }
+
   // the player's own strip, under his wheels: what he is DOING, and the watts and
   // speed he is doing it at — the live numbers travel with the man they describe,
   // where the eye already is, instead of sitting in a corner panel
@@ -419,4 +454,5 @@ export function draw(S, canvas, alpha) {
   ctx.fillText(wtxt, cxr + cw - 9, cyr + 14);
 
   drawProfile(S, ctx, w, h, cx);
+  return spots;
 }

@@ -34,6 +34,8 @@ export function makeRider(spec, i, rng) {
   const T0 = thresholdFrom(curve);
   const r = {
     i, name, team, color: spec.color || COLORS[i % COLORS.length], klass: spec.class || "", isPlayer: i === 0, mass, h,
+    // card dressing carried through like team/color — nothing in sim reads these
+    merits: spec.merits || "", look: spec.look || null,
     cda: 0.30 * Math.pow(mass / 70, 0.32) * Math.sqrt(h / 1.8),
     curve, T0,
     form: clamp(1 + gaussOf(rng) * 0.045, 0.9, 1.1),
