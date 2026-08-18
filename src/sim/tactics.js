@@ -1,4 +1,4 @@
-import { ATT_ENGINE_EDGE, ATT_FROM, ATT_GIVEUP, ATT_SAFE, ATT_SPRINT_EDGE, DH_GRAD, HUNT_DELAY, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
+import { ATT_ENGINE_EDGE, ATT_FOLLOW_EDGE, ATT_FROM, ATT_GIVEUP, ATT_SAFE, ATT_SPRINT_EDGE, CLIMB_GRAD, DH_GRAD, HUNT_DELAY, PACE_MARGIN, PEL_FINALE_M, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, SPRINT_SAVE_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
 import { bodyNow, durPower } from "./body.js";
 import { BIKE, SHEL_MAX, powerFor, rhoAt } from "./physics.js";
 import { planTimeAt } from "./plan.js";
@@ -40,6 +40,37 @@ export const working = (S, o) => !o.offline && (o.isPlayer ? S.input.mode !== "s
 // commitment or clear, and any man who chose to cover the move. One word, because the
 // same rule hangs on it everywhere — his wheel is nobody's to follow by reflex.
 export const reacting = (o) => (o.attT ?? 0) > 0 || !!o.attacked || !!o.attChase;
+
+// The man the gallop belongs to protects it: inside the last SPRINT_SAVE_M the
+// group's best sprinter stops taking turns — arriving with the matches IS his job,
+// and it is what a real break's sprinter does while the others curse him. Only
+// while the break can afford him, though: with the bunch inside the plan's own
+// margin everybody works, because a caught break has no gallop to win. Class-free:
+// whoever holds the group's best sprint is "the sprinter" here, whatever the
+// roster calls him. (The old behavior — everyone pulling to the line — made every
+// sprint-day finale an attrition grind: the whole break at sf ≈ 0.05 at 1500 m,
+// the gallop won by whoever was least empty, sprinters beaten 21 to 5.)
+export function savingSprint(S, grp, r) {
+  if (r.isPlayer || grp.length < 2) return false;
+  const togo = S.course.total - r.dist;
+  if (togo >= SPRINT_SAVE_M || togo < SPRINT_FINALE_M) return false;
+  // no gallop, no saving: when the last kilometre climbs there is nothing to
+  // protect the matches FOR — resting on the approach to a summit finish is
+  // just getting dropped early (measured: climb-day survival fell 6 points).
+  // The same last-kilometre read newRace uses to cancel the bunch's lead-out.
+  const total = S.course.total;
+  if ((S.course.eleAt(total) - S.course.eleAt(total - PEL_FINALE_M)) / PEL_FINALE_M >= CLIMB_GRAD) return false;
+  // ...and only while the break can afford him: with the bunch inside the
+  // plan's own margin everybody works — a caught break has no gallop to win
+  if ((S.pel.gapS ?? 0) <= PACE_MARGIN) return false;
+  // the gallop must be genuinely HIS: clear of every companion by the same edge
+  // the cover choice uses — a man ahead by a hair keeps working, because a
+  // sprint decided by a hair is decided by freshness, which is everyone's card.
+  // (Judged on best-by-anything, a strong breaker holding the group's best
+  // sprint by a whisker sat up on rouleur days and sank the whole move.)
+  for (const o of grp) if (o !== r && r.sprintX <= o.sprintX + ATT_FOLLOW_EDGE) return false;
+  return true;
+}
 
 // where he opens up, read off his sprint against the rest of his group. The fastest man
 // can afford to wait on a wheel; the slowest has to go long and try to blunt him, which

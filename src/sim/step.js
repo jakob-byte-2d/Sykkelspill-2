@@ -4,7 +4,7 @@ import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
 import { BIKE, G, LY_FLOOR, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
 import { planSpeedAt } from "./plan.js";
-import { working } from "./tactics.js";
+import { savingSprint, working } from "./tactics.js";
 import { coopRide } from "./ride.js";
 import { stepComm } from "./commentary.js";
 import { pushEvent } from "./events.js";
@@ -357,9 +357,15 @@ export function stepSim(S) {
     // this on at the gun. The ledger still credits his gift either way, so a long
     // turn is still paid back in a long rest.
     const mineToEnd = r.isPlayer && S.input.mode === "relay" && S.input.turn === "manual";
+    // ...and the man the gallop belongs to shirks: his turns end at the twelve-
+    // second floor inside the save window — token pulls, the wheel-sucking the
+    // others curse him for. He still rotates (a binary sit-out sank the break:
+    // survival fell 6-11 points whenever the alarm needed every engine), he
+    // just never buries himself again before the sprint.
     const over = r.digging ? (empty && b.sf < 0.10)
       : mineToEnd ? !!S.input.endTurn
-      : (paidUp || spent || empty || r.pullT >= maxPull);
+      : (paidUp || spent || empty || r.pullT >= maxPull
+        || (savingSprint(S, g, r) && r.pullT >= COOP_PULL_MIN));
     // the minimum-turn floor is the rotation's own manners and has no say over a man
     // who has just announced he is done: pressed at second three, he swings off then
     if (over && (mineToEnd || r.pullT >= COOP_PULL_MIN)) r.done = true;
