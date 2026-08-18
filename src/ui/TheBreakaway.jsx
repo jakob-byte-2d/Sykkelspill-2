@@ -651,14 +651,14 @@ export default function TheBreakaway() {
                   (a.finished != null ? a.finished : 1e12) - (b.finished != null ? b.finished : 1e12)
                   || b.dist - a.dist);
                 const winT = order[0].finished;
-                // eight stat columns need the card's whole width, so the name rides its
+                // six stat columns need the card's whole width, so the name rides its
                 // own line above them — a broadcast lower-third, not a spreadsheet
-                const cols = "repeat(7, 1fr)";
+                const cols = "repeat(6, 1fr)";
                 const num = { fontFamily: mono, fontSize: 9, fontWeight: 700, color: "#0d3568", textAlign: "right" };
                 return (
                   <div style={{ margin: "0 0 8px" }}>
                     <div style={{ display: "grid", gridTemplateColumns: cols, gap: 2, padding: "0 4px 2px", borderBottom: "1.5px solid rgba(60,90,125,0.45)" }}>
-                      {["AVG WATTS", "AVG W/KG", "MAX WATTS", "TIME ON WHEEL", "TIME ON FRONT", "OVER THRESHOLD", "AVG KM/H"].map((h) => (
+                      {["AVG WATTS", "AVG W/KG", "MAX WATTS", "TIME ON WHEEL", "TIME ON FRONT", "OVER THRESHOLD"].map((h) => (
                         <span key={h} style={{ fontFamily: font, fontSize: 7, letterSpacing: 0.4, fontWeight: 800, color: "#3c5a7a", textAlign: "right", lineHeight: 1.15, alignSelf: "end" }}>{h}</span>
                       ))}
                     </div>
@@ -682,7 +682,6 @@ export default function TheBreakaway() {
                             <span style={num}>{fmtTime(r.st.drft)}</span>
                             <span style={num}>{fmtTime(r.st.front)}</span>
                             <span style={num}>{fmtTime(r.st.above)}</span>
-                            <span style={num}>{(Math.min(r.dist, S.course.total) / Math.max(r.st.t, 1) * 3.6).toFixed(1)}</span>
                           </div>
                         </div>
                       );
