@@ -14,8 +14,15 @@ src/content/   tuning.js (ALL constants), riders.js (PLAYER + POOL of 15 legends
 src/sim/       DOM-free, Node-importable. newRace → step (1 Hz) → ride/tactics/body/
                physics/plan/groups/peloton/commentary/events. Seed in, race out, same
                result every time.
-src/render/    draw.js (canvas frame, roleOf status vocabulary, debug bubbles)
-src/ui/        TheBreakaway.jsx (React shell, controls, chyron, overlays), slider.js
+src/render/    draw.js (canvas frame, roleOf status vocabulary, debug bubbles, name
+               tags over every head but the player's; draw() RETURNS the riders'
+               screen spots [{r,x,y}] — the UI's tap-a-rider hit-testing reads them)
+src/ui/        TheBreakaway.jsx (React shell, controls, chyron, overlays; tapping a
+               rider — canvas or build-screen row — opens the rider card: Portrait.jsx
+               SVG head from the roster's look field, merits line, ratingsOf pips
+               (builder.js — buildSpec's anchors inverted, one 1-10 scale for legends
+               and builds alike); open pauses, close resumes), slider.js. merits/look
+               are roster dressing like team/color — sim never reads them.
 tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep/race/turns
 ```
 
