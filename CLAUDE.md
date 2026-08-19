@@ -56,18 +56,20 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
 - **Balance profile** (must hold after sim changes; measure over ~120 seeds
   `1000 + s*7919`, bucketed by `S.course.kind` — the legend pool is drawn, so
   measure by class, not by name): break survival 70–76 % in every archetype
-  (measured after the steadiness pass: sprint 70, rouleur 76, climb 70 — main
-  before it read 74/76/73 on the same seeds; the chase's summit lid sheds a
-  couple of riders honestly); climb days are won by CLIMBERS (13 v 10
-  breakers over 24 surviving races, five different climbers on the list), rouleur
-  days by BREAKERS (20/26); ~2.6 climb / 3.5 sprint / 2.9 rouleur riders home per
-  surviving race. KNOWN ISSUE (sim/AI work, not content): sprint-day wins lean
-  breaker (25 v 7) — the whole break arrives near-empty (sf ≈ 0.05 at 1500 m to
-  go), so the gallop is attrition, not a kick; the missing behavior is sprinters
-  saving matches late (shirking pulls inside ~5 km). A flat solo from the gun must
-  NOT win: `npm run solo` → ≤2 wins total and NO wire-to-wire escape. Knobs:
-  PEL_LEAD master (−0.049 — re-based when the drawn legend field replaced five
-  fixed big engines) and PEL_LEAD_KIND trim ({sprint 0, rouleur 0, climb −0.016}).
+  (measured after the 15 km window: sprint 70, rouleur 71, climb 76 over 120
+  seeds); attacks spread across the whole window (150 first-attacks at 15-12 km,
+  90 at 12-8, 64 inside 8) instead of all firing in the old 8-5 km slot; sprint
+  days now see real sprinter wins (8, was 5) because early attackers who are not
+  sprinters get reeled. KNOWN LEANS (follow-up material): climb-day wins run
+  breaker 11 v climber 9 (the long-range engine move pre-wall is viable now —
+  arguably real racing, watch it), and the headless relay-bot player wins more
+  than before (11/9/2 across kinds — a perfectly paced legal escape is close to
+  optimal play). A flat solo from the GUN must NOT win: `npm run solo` → 0
+  wire-to-wire (streak beginning before the window) and ≤8 wins total — wins via
+  legal in-window escapes with capital are the feature, not the exploit. Knobs:
+  PEL_LEAD master (−0.058 — re-based for the 15 km window: a racing break is
+  slower than a cooperating one) and PEL_LEAD_KIND trim
+  ({sprint 0, rouleur −0.011, climb −0.020}).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -134,8 +136,14 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   declared for AI, watts-derived for the manual player. A rester takes a drop-back as
   his wheel only when that man is the NEAREST ahead (wave-in); with anyone in between,
   the nearer wheel wins — a wheel choice never moves you backwards.
-- **Attacks:** wantsAttack (sprint-loser or strongest-engine motives, window 8 km→1 km,
-  bunch ≥ ATT_SAFE back), loading (skip turns to refill, visible gun), kick =
+- **Attacks:** wantsAttack (sprint-loser or strongest-engine motives, window 15 km→1 km,
+  bunch ≥ attCapital back — ATT_SAFE scaled by road left, 42 s at 8 km / ~79 s at
+  15: an attack must outlive every kilometre it buys. The sprint-loser motive only
+  exists where a GALLOP does — last km climbing voids it, or every outsprinted
+  breaker attacked early on summit days and the field wrecked itself. "Let him
+  die" scales the same way: giveUp = ATT_GIVEUP · road left / 8 km, and the two
+  scales agree — a legal attack is beyond the leash the moment it fires),
+  loading (skip turns to refill, visible gun), kick =
   ATT_KICK_T seconds at burstCeil then dosing for ATT_COMMIT. Response = a CHOICE per
   rider, once, ATT_REACT after the jump: can I (sf), is it worth it (I beat him in a
   sprint), am I needed (≤ ATT_FOLLOW_N covers, rest free-ride). Non-followers refuse
@@ -163,7 +171,13 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   the window is MARKED attacked (`attSoft`, no kick, news "rides clear") — but only
   on flattish road (CLIMB_GRAD > grad > DH_GRAD): on a climb the WALL does the
   selecting, and marking the strongest man edging away had every cooked pair behind
-  burning 1200 W cover-jumps into the gradient, on repeat. Drifters get the cover
+  burning 1200 W cover-jumps into the gradient, on repeat. And only WITH the
+  attack's own capital (attCapital): the window opens the RIGHT to race, racing
+  still costs the capital — an unmarked escapee is not racing, he is riding off,
+  and huntTarget keeps owning him by the pre-window rules however deep into the
+  window he slips (the leash band applies only to `reacting()` escapees). Without
+  that split, a from-the-gun solo simply outlived the shortened hunt zone and
+  npm run solo went red. Drifters get the cover
   choice re-asked every 60 s (once-only is about surprise — a dangler has none).
   Individual covers (the 2 s jump answer) are untouched by the delay. Events: "The
   break organises the chase behind you" (big) / brought back at ABSORPTION.

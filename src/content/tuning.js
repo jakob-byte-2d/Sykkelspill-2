@@ -48,26 +48,26 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.049;   // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.058;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
-                           // back. Tightened from -0.044 when the hunt and the in-window leash
-                           // taught the break to chase its own escapees: riding a dangler back is
-                           // riding hard, and survival rose ~8 points in both winds. At -0.040,
-                           // over 80 seeds (1000 + s·7919), a headwind move survives 35/44 and a
-                           // tailwind 28/36 — the same profile main measured before the hunt
-                           // (35/44, 27/36), wind split preserved: headwind breaks outlive
-                           // tailwind ones because cheap sitting-in matters most into the wind.
-export const PEL_LEAD_KIND = { sprint: 0, rouleur: 0, climb: -0.016 };
+                           // back. Deepened from -0.049 when the racing window moved out to
+                           // ATT_FROM 15 km: a break that races from 15 km is slower on average
+                           // than one that cooperates to 8, and at the old deadline whole race
+                           // days died (sprint survival 70 % → 53 %). At -0.058 with the
+                           // PEL_LEAD_KIND trims below, all three archetypes sit at 70-76 %
+                           // over 120 seeds (1000 + s·7919).
+export const PEL_LEAD_KIND = { sprint: 0, rouleur: -0.011, climb: -0.020 };
                            // ...per finale archetype, added to PEL_LEAD. One deadline knob
                            // cannot serve three terrains: the benchmark (the player's
                            // threshold ride) is cheapest to beat on flat roads and dearest
-                           // on a summit finish — raw survival ran 85 % sprint / 76 %
-                           // rouleur / 52 % climb over 120 seeds. With the offsets all
-                           // three land 72-76 % (climb is a weak lever, ~0.9 pt per 0.001
-                           // - the wall itself does the selecting, and fewer of the five
-                           // survive it: 2.8 home per surviving race against 3.3-3.4).
+                           // on a summit finish. Re-based for the 15 km window: racing
+                           // costs the rouleur days their long cooperation (-0.011) and
+                           // the climb days pay twice — early racing AND the wall
+                           // (-0.020). Measured 70/71/76 over 120 seeds with the gallop
+                           // gate on wantsAttack (no sprint-loser attacks into a summit
+                           // finish) carrying most of the climb-day recovery.
 export const DRAW_W = {          // the day's finale weights which classes get drawn as the
   sprint:  { sprinter: 0.50, breaker: 0.30, climber: 0.20 },   // player's four companions —
   rouleur: { sprinter: 0.30, breaker: 0.40, climber: 0.30 },   // the men who go in the move
@@ -86,10 +86,22 @@ export const CARB_BASE = 0.30;    // glycogen's share of the bill at zero effort
                            // of it at threshold. The whole economics of sitting in: a wheel does
                            // not just cost fewer watts, it costs cheaper ones — fat pays the rest
 /* ---- attacks: the cooperation's endgame ---- */
-export const ATT_FROM = 8000;     // the racing-each-other window opens this far from the line...
+export const ATT_FROM = 15000;    // the racing-each-other window opens this far from the line —
+                           // most of the race, in a 20-25 km finale: the cooperation is only
+                           // sacred for the opening kilometres, and a break with the legs can
+                           // go long. Moved from 8000 (where every attack fired in the same
+                           // 8-5 km slot); the capital rule below and the 25 s leash still
+                           // make an early move expensive to stick...
 export const ATT_SAFE = 42;       // ...but only once the bunch is this many seconds back: the gap the
                            // group built together is the capital an attack spends. Measured: races
                            // the break survives show 46 s here at 8 km, races it loses show 23
+export const ATT_SAFE_M = 8000;   // ...and that price was set for 8 km of exposure. Beyond it the
+                           // requirement scales with the road left (42 s at 8 km, ~79 s at 15),
+                           // because an attack must outlive every kilometre it buys: priced flat,
+                           // opening the window at 15 km fired 276 attacks in the first three
+                           // kilometres of it — the untouched 65-105 s start cushion read as
+                           // capital — and climb-day survival fell 70 % → 30 %. Inside 8 km
+                           // nothing changes: the flat rule IS the scaled rule there.
 export const ATT_SPRINT_EDGE = 0.10; // motive one: you attack when your sprint gives away this share to
                               // the group's best — the man who loses the gallop must go early
 export const ATT_ENGINE_EDGE = 0.05; // motive two: you attack when the rest of the course costs you this

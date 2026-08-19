@@ -3,7 +3,7 @@ import { burstCeil, durPower } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
-import { attackerAhead, chaseTarget, deadWheel, dist0, huntTarget, launchAt, queueWheel, reacting, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
+import { attCapital, attackerAhead, chaseTarget, deadWheel, dist0, giveUp, huntTarget, launchAt, queueWheel, reacting, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
 
 /* The decision, once per rider per second: how many watts, and why. */
 
@@ -62,7 +62,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     const gapS = (dist0(att) - dist0(r)) / Math.max(r.speed, 6);
     const on = !att.caught && att.finished == null
       && ((att.attT ?? 0) > 0 || att.attacked)
-      && gapS < ATT_GIVEUP && b.sf >= 0.10 && togo >= SPRINT_FINALE_M;
+      && gapS < giveUp(S, r) && b.sf >= 0.10 && togo >= SPRINT_FINALE_M;
     if (!on) { r.attChase = null; r.attChaseT = 0; }
     else {
       r.attChaseT = (r.attChaseT || 0) + 1;
@@ -123,7 +123,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // out — nobody skips turns forever for an attack that never comes.
         r.attLoadT = (r.attLoadT || 0) + 1;
         const open = togo >= SPRINT_FINALE_M && togo <= ATT_FROM
-          && (S.pel.gapS ?? 0) > ATT_SAFE - 8
+          && (S.pel.gapS ?? 0) > attCapital(S, r) - 8
           && !grp.some((o) => o !== r && (o.attT ?? 0) > 0);
         if (!open || r.attLoadT > 150) {
           // ...and a dropped load takes a breath before reloading: the bunch gap

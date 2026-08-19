@@ -4,7 +4,7 @@ import { tagGroups } from "./groups.js";
 import { stepPel } from "./peloton.js";
 import { BIKE, G, LY_FLOOR, SHEL_MAX, powerFor, rhoAt, shelterAt, shelterStack } from "./physics.js";
 import { planSpeedAt } from "./plan.js";
-import { working } from "./tactics.js";
+import { attCapital, working } from "./tactics.js";
 import { coopRide } from "./ride.js";
 import { stepComm } from "./commentary.js";
 import { pushEvent } from "./events.js";
@@ -277,8 +277,14 @@ export function stepSim(S) {
         if (o === r || o.caught || o.finished != null) continue;
         if (o.dist < r.dist && (o.groupSize ?? 1) > 1) { biggerBehind = true; break; }
       }
-      if (biggerBehind && !r.attacked && (r.attCool ?? 0) <= 0) {
-        // a drifter, not a jump: marked so the machinery owns him, flagged soft
+      if (biggerBehind && !r.attacked && (r.attCool ?? 0) <= 0
+        && (S.pel.gapS ?? 0) >= attCapital(S, r)) {
+        // a drifter, not a jump: marked so the machinery owns him, flagged soft.
+        // Marked ONLY with the attack's own capital in the bank — the window
+        // opens the RIGHT to race, and racing still costs the capital. A man
+        // clear without it has not attacked anybody; he is simply riding off,
+        // and the hunt keeps owning him (huntTarget treats an unmarked escapee
+        // by the pre-window rules, leash or no leash).
         r.attacked = 1; r.attSoft = 1; r.attAt = S.t; r.attNews = 3;
       } else if (biggerBehind && r.attacked && r.attSoft && S.t - r.attAt >= 60) {
         // ...and a drifter still dangling gets LOOKED AT AGAIN: a jump is answered
