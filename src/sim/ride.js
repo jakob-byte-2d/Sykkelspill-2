@@ -1,4 +1,4 @@
-import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_SAFE, ATT_SF, CHASE_NEAR, CHASE_NEAR_W, CLIMB_MIN_T, COOP_BLEND, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
+import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_SAFE, ATT_SF, CHASE_NEAR, CHASE_NEAR_W, CLIMB_MIN_T, COOP_BLEND, COOP_MARGIN, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { burstCeil, durPower } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
@@ -139,7 +139,20 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     }
     // ...and the same idea for anyone: whoever is not working holds the back of the
     // line — including the man loading an attack, whose rest is the point
-    const resting = sitting || (!r.isPlayer && ((r.sf ?? 1) < PULL_MIN_SF || r.attLoad));
+    // The sulk: cooperation is a bargain, and a man who has paid MORE than his
+    // fair share while somebody able sits in the wheels stops honouring it — he
+    // sits on too, until the ledger says he is no longer the mug. Shares sum to
+    // one, so at most a minority can sulk at once; the most underpaid man always
+    // works, and a sulker's unpaid share falls until he rejoins. Resting by TANK
+    // is gone (the user's rule): an empty man still rotates — the body makes his
+    // pulls soft and short, which is what a cooked break grinding on looks like.
+    if (!r.isPlayer) {
+      const totPaid = grp.reduce((s, o) => s + o.paid, 0);
+      const mug = totPaid > 0 && r.paid / totPaid > 1 / grp.length + COOP_MARGIN;
+      r.sulk = mug && grp.some((o) => o !== r && !o.offline
+        && (o.attLoad || o.sulk || (o.isPlayer && S.input.mode === "sit"))) ? 1 : 0;
+    } else r.sulk = 0;
+    const resting = sitting || (!r.isPlayer && (r.attLoad || r.sulk));
     // the turn was called over in stepSim — by the ledger or by his body, whichever
     // came first. It is a flag and not a sum, so it holds all the way down the
     // drop-back: recomputed, it would flick off the moment his tank started refilling
@@ -415,9 +428,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       let nextUp = null, fullest = null;
       for (let k = 1; k < grp.length; k++) {
         const o = grp[k];
-        if (o.offline || reacting(o) || o.attLoad || o.digging || (o.isPlayer && S.input.mode === "sit")) continue;
+        if (o.offline || reacting(o) || o.attLoad || o.digging || o.sulk || (o.isPlayer && S.input.mode === "sit")) continue;
         if (!fullest || (o.sf ?? 1) > (fullest.sf ?? 1)) fullest = o;
-        if (nextUp == null && (o.sf ?? 1) >= PULL_MIN_SF) nextUp = o;
+        // no tank bar any more: whoever is next in the line takes the front —
+        // resting by tank is gone, and an empty man's pull is simply soft and short
+        if (nextUp == null) nextUp = o;
       }
       nextUp = nextUp || fullest;
       if (mine) {

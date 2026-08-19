@@ -57,20 +57,18 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
 - **Balance profile** (must hold after sim changes; measure over ~120 seeds
   `1000 + s*7919`, bucketed by `S.course.kind` — the legend pool is drawn, so
   measure by class, not by name): break survival 70–76 % in every archetype
-  (measured after the 23-man pool landed: climb 76, sprint 72, rouleur 74 over
-  120 seeds — the same seeds read 82/81/82 before the PEL_LEAD re-base, because
-  the eight new legends made the average field stronger); attacks spread across
-  the whole 15 km window; sprint days see real sprinter wins (9) though the
-  attrition gallop still leans breaker (KNOWN ISSUE, sim/AI work). KNOWN LEANS
-  (follow-up material): climb-day wins run breaker 12 v climber 9 (the
-  long-range engine move pre-wall is viable — arguably real racing, watch it),
-  and the headless relay-bot player wins more than before (a perfectly paced
-  legal escape is close to optimal play). A flat solo from the GUN must NOT win:
-  `npm run solo` → 0 wire-to-wire (streak beginning before the window) and ≤8
-  wins total — wins via legal in-window escapes with capital are the feature,
-  not the exploit. Knobs: PEL_LEAD master (−0.050 — re-based when the pool grew
-  15 → 23: a stronger average field beats the fixed benchmark by more) and
-  PEL_LEAD_KIND trim ({sprint 0, rouleur −0.011, climb −0.024}).
+  (measured after the no-tank-rest rotation: sprint 72, rouleur 76, climb 76
+  over 120 seeds — the same seeds read 75/85/82 before the deadline re-shallow,
+  because a rotation where nobody rests on a low tank is faster); attacks spread
+  across the whole 15 km window and fire on low tanks (sf median 0.19); sprint
+  days see real sprinter wins (9) though the gallop still leans breaker (KNOWN
+  ISSUE, sim/AI work). KNOWN LEANS: climb-day wins run climber 11 v breaker 10
+  (watch it), and the headless relay-bot player wins a fair share (a perfectly
+  paced legal escape is close to optimal play). A flat solo from the GUN must
+  NOT win: `npm run solo` → 0 wire-to-wire (streak beginning before the window)
+  and ≤8 wins total (measured 0 after the no-rest rotation — five men who never
+  stop working reel everything). Knobs: PEL_LEAD master (−0.049) and
+  PEL_LEAD_KIND trim ({sprint 0.002, rouleur −0.007, climb −0.021}).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -132,7 +130,17 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   damage, never refills, divided by the roster's `dura`).
 - **The hold formula** everywhere an effort is dosed: `min(T + surge/t, durPower(t), ceil)`.
 - **Cooperation (ride.js/step.js):** one ledger, equal shares; front pulls just over
-  threshold at the plan's price, swings off when paid up / spent / empty / clock.
+  threshold at the plan's price, swings off when paid up / spent / empty / clock —
+  but never before COOP_PULL_MIN (20 s): a man who comes to the front commits to a
+  real pull (measured: 1 of 1079 voluntary turn-ends under 20 s). Resting by TANK
+  is GONE — sitting on is a CHOICE: loading a gun, or SULKING (`r.sulk`): a man
+  who has paid more than fair share + margin while somebody able refuses to work
+  (a loader, another sulker, or the PLAYER in SIT ON) stops working too. Shares
+  sum to one, so sulks self-stabilize; in headless relay races sulk is ~0 s, but
+  when the player freeloads it runs ~9 % of AI time (55 episodes / 8 races) —
+  sit on too long and the break stops riding for you. An empty man still rotates:
+  his pulls are soft and short, the body is the governor (PULL_MIN_SF now only
+  gates the front-relief handover in step.js).
   `done` flag + `offline` (drifting down the outside) is the only lateral language —
   declared for AI, watts-derived for the manual player. A rester takes a drop-back as
   his wheel only when that man is the NEAREST ahead (wave-in); with anyone in between,
@@ -144,7 +152,10 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   breaker attacked early on summit days and the field wrecked itself. "Let him
   die" scales the same way: giveUp = ATT_GIVEUP · road left / 8 km, and the two
   scales agree — a legal attack is beyond the leash the moment it fires),
-  loading (skip turns to refill, visible gun), kick =
+  loading (skip turns to refill, visible gun — now RARE: ATT_SF 0.05 means a
+  motive fires on whatever tank he has, the jump paying the kick and the dosing
+  near threshold — the desperate flyer; measured attacks fire at sf median 0.19,
+  min 0.05, ~2.8 first-attacks per race), kick =
   ATT_KICK_T seconds at burstCeil then dosing for ATT_COMMIT. Response = a CHOICE per
   rider, once, ATT_REACT after the jump: can I (sf), is it worth it (I beat him in a
   sprint), am I needed (≤ ATT_FOLLOW_N covers, rest free-ride). Non-followers refuse

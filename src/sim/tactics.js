@@ -32,9 +32,11 @@ export const validWheel = (o, r, grad) => o.speed > r.speed - 2 / 3.6 || grad < 
 // shelter is still free watts, and a cooked break grinds on in a slow file.
 export const deadWheel = (o, r) => (o.sf ?? 1) < WHEEL_COOKED_SF && (r.sf ?? 1) > (o.sf ?? 1) + WHEEL_DEAD_EDGE;
 
-// whoever is actually taking his turn: role decides it for the player, the tank for
-// everyone else — and nobody drifting back down the outside counts as a turn-taker
-export const working = (S, o) => !o.offline && (o.isPlayer ? S.input.mode !== "sit" : (o.sf ?? 1) >= PULL_MIN_SF);
+// whoever is actually taking his turn: role decides it for the player, CHOICE for
+// everyone else (loading a gun or sulking at freeloaders is the only sitting-on
+// there is — the tank no longer rests anybody) — and nobody drifting back down
+// the outside counts as a turn-taker
+export const working = (S, o) => !o.offline && (o.isPlayer ? S.input.mode !== "sit" : !(o.attLoad || o.sulk));
 
 // whoever is racing an attack rather than riding the group's race: the attacker mid-
 // commitment or clear, and any man who chose to cover the move. One word, because the
