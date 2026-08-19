@@ -1,4 +1,4 @@
-import { ATT_ENGINE_EDGE, ATT_FROM, ATT_GIVEUP, ATT_SAFE, ATT_SPRINT_EDGE, DH_GRAD, HUNT_DELAY, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
+import { ATT_ENGINE_EDGE, ATT_FROM, ATT_GIVEUP, ATT_SAFE, ATT_SAFE_M, ATT_SPRINT_EDGE, CLIMB_GRAD, DH_GRAD, HUNT_DELAY, PEL_FINALE_M, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_LONG, SPRINT_M, WHEEL_COOKED_SF, WHEEL_DEAD_EDGE } from "../content/tuning.js";
 import { bodyNow, durPower } from "./body.js";
 import { BIKE, SHEL_MAX, powerFor, rhoAt } from "./physics.js";
 import { planTimeAt } from "./plan.js";
@@ -106,6 +106,20 @@ export function lineEdge(S, grp, r) {
   return { mine, second, cheapest: cheapest === r };
 }
 
+// What an attack COSTS from here: the capital rule, priced per kilometre of
+// exposure. ATT_SAFE seconds buys the ATT_SAFE_M ride home; going earlier
+// must outlive more road, so the requirement scales up with what is left —
+// and inside ATT_SAFE_M the flat rule stands unchanged.
+export const attCapital = (S, r) => ATT_SAFE * Math.max(1, (S.course.total - r.dist) / ATT_SAFE_M);
+
+// ...and what the GROUP still bothers to chase, priced the same way: "let him die
+// at 25 s" was set for 8 km of road — with more road left, dying takes longer and
+// the leash reaches further (47 s at 15 km). The two scales agree by construction:
+// a legal attack needs attCapital (42/25 higher), so the moment it fires it is
+// already beyond the leash — while a drifter who never had the capital is still
+// within reach and gets ridden back, however early he slipped away.
+export const giveUp = (S, r) => ATT_GIVEUP * Math.max(1, (S.course.total - r.dist) / ATT_SAFE_M);
+
 // The attack question, asked by every AI rider once a second: does the cooperation
 // still serve ME? Two motives end it, both read off attributes. You lose the group's
 // sprint by a real margin — the man who loses the gallop must go early. Or the rest
@@ -117,11 +131,21 @@ export function wantsAttack(S, grp, r) {
   if (r.isPlayer || (r.attCool ?? 0) > 0 || grp.length < 2) return false;
   const togo = S.course.total - r.dist;
   if (togo < SPRINT_FINALE_M || togo > ATT_FROM) return false;
-  if ((S.pel.gapS ?? 0) < ATT_SAFE) return false;
+  if ((S.pel.gapS ?? 0) < attCapital(S, r)) return false;
   if (grp.some((o) => o !== r && ((o.attT ?? 0) > 0 || o.attLoad))) return false;
-  let bestX = 0;
-  for (const o of grp) bestX = Math.max(bestX, o.sprintX);
-  if ((bestX - r.sprintX) / bestX >= ATT_SPRINT_EDGE) return true;
+  // motive one, the sprint-loser, only exists where a GALLOP does: on a summit
+  // finish the wall decides, not the flat kick, and "I lose the sprint" is no
+  // reason to burn the break 15 km out. The same last-kilometre read that
+  // cancels the bunch's lead-out — without it, every breaker outsprinted on
+  // paper attacked early on climb days, the field wrecked itself on the wall,
+  // and a steady solo (any steady solo) waltzed home past the wreckage.
+  const total = S.course.total;
+  const gallop = (S.course.eleAt(total) - S.course.eleAt(total - PEL_FINALE_M)) / PEL_FINALE_M < CLIMB_GRAD;
+  if (gallop) {
+    let bestX = 0;
+    for (const o of grp) bestX = Math.max(bestX, o.sprintX);
+    if ((bestX - r.sprintX) / bestX >= ATT_SPRINT_EDGE) return true;
+  }
   const e = lineEdge(S, grp, r);
   return e.cheapest && (e.second - e.mine) >= ATT_ENGINE_EDGE;
 }
@@ -176,16 +200,17 @@ export function huntTarget(S, grp, r) {
     if (dist0(o) > dist0(r) && (!best || dist0(o) < dist0(best))) best = o;
   }
   if (!best) return null;
-  if (togo <= ATT_FROM) {
-    // inside the window the leash is ATT_GIVEUP, made flesh: "the chase stops
-    // bothering at 25 s" only means something if under 25 s there IS a chase —
-    // the covers are one answer, the front's tempo is the other, and a dangler
-    // the group can still see is ridden back rather than watched. Past the
-    // leash, "let him die out there" stands. It reaches through the finale too:
-    // the man towing the group to its sprint chases the dangler down exactly
-    // like the bunch's own lead-out would — the launches themselves are untouched.
+  if (togo <= ATT_FROM && reacting(best)) {
+    // inside the window, a RACING escapee (marked or kicked — he had the capital)
+    // is chased on the leash: "let him die" only means something if under the
+    // leash there IS a chase — the covers are one answer, the front's tempo the
+    // other. Past it, the group rides for the placings. It reaches through the
+    // finale too, like a lead-out. An UNMARKED escapee — clear without the
+    // attack's capital — is not racing, he is riding off: the pre-window rules
+    // keep owning him, however deep into the window he slips, and the hunt
+    // never gives up on a man who never bought the right to be let go.
     const gapS = (dist0(best) - dist0(r)) / Math.max(r.speed, 6);
-    if (gapS >= ATT_GIVEUP) return null;
+    if (gapS >= giveUp(S, r)) return null;
   }
   return best;
 }
