@@ -55,9 +55,9 @@ export function drawProfile(S, ctx, w, h, cx) {
   for (let i = 0; i <= N; i++) (i ? ctx.lineTo(px(i), py(xs[i])) : ctx.moveTo(px(i), py(xs[i])));
   ctx.strokeStyle = "#2c4a2a"; ctx.lineWidth = 1; ctx.stroke();
 
-  // 5-km ticks
+  // 2-km ticks
   ctx.fillStyle = "rgba(20,45,75,0.45)";
-  for (let km = 5; km < C.total / 1000; km += 5) {
+  for (let km = 2; km < C.total / 1000; km += 2) {
     const x = pad + (km * 1000 / C.total) * iw;
     ctx.fillRect(x, top + 12, 1, ih);
   }
