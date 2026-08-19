@@ -15,7 +15,10 @@ export const COOP_PULL_SPEND = 0.09; // a turn also ends once it has cost this m
                               // to the front. At two per cent the median turn ran twelve seconds —
                               // a full-gas through-and-off, which is what a break does when it is
                               // being hunted, not what one riding its own tempo all day does
-export const COOP_PULL_MIN = 12;  // ...but no turn is shorter than this — a rotation that swaps every second is no rotation
+export const COOP_PULL_MIN = 20;  // ...but no turn is shorter than this — a rotation that swaps every
+                           // few seconds is no rotation, and a man who comes to the front at all
+                           // commits to a real pull (the user's rule: never under twenty). The
+                           // player's END TURN is exempt — his turn is his to end
 export const COOP_PULL_MAX = 90;  // ...and on the flat none is longer: a wheel is worth a third of
                            // your power there, so real breakaway turns run 30-90 s
 export const COOP_PULL_MAX_UP = 150; // ...but at five per cent a wheel is worth six, the swap stops
@@ -24,7 +27,10 @@ export const COOP_PULL_MAX_UP = 150; // ...but at five per cent a wheel is worth
                               // seven-minute solo effort is ruled out.
 export const COOP_COAST_KMH = 50; // past this speed a pace-setting effort buys nothing...
 export const COOP_COAST_SPAN = 8; // ...watts tapering to zero over the next this-many km/h
-export const PULL_MIN_SF = 0.3;   // under this much tank you stop taking turns — drop-backs slot in ahead of you
+export const PULL_MIN_SF = 0.3;   // the front-RELIEF line only: an emptier front hands over once somebody
+                           // fresher is there to take it (step.js). Resting by tank is GONE —
+                           // sitting on is a CHOICE (loading a gun, or sulking at freeloaders);
+                           // an empty man still rotates, his pulls just soft and short
 export const WHEEL_COOKED_SF = 0.2; // ...and under this much, his wheel is about to go backwards
 export const WHEEL_DEAD_EDGE = 0.15; // ...but you only look through it if you hold this much more tank
                               // than him. Judged on a hair's difference, a break where everyone
@@ -48,26 +54,23 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.050;   // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.049;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
-                           // back. Deepened from -0.049 when the racing window moved out to
-                           // ATT_FROM 15 km: a break that races from 15 km is slower on average
-                           // than one that cooperates to 8, and at the old deadline whole race
-                           // days died (sprint survival 70 % → 53 %). At -0.058 with the
-                           // PEL_LEAD_KIND trims below, all three archetypes sit at 70-76 %
-                           // over 120 seeds (1000 + s·7919).
-export const PEL_LEAD_KIND = { sprint: 0, rouleur: -0.011, climb: -0.024 };
+                           // back. Shallowed again (-0.050 → -0.049 with softer KIND trims)
+                           // when resting-by-tank was removed: a rotation where NOBODY sits
+                           // out on a low tank is faster, and survival ran 75/85/82 at the
+                           // old deadline. At these values all three archetypes measure
+                           // 72/76/76 over 120 seeds (1000 + s·7919).
+export const PEL_LEAD_KIND = { sprint: 0.002, rouleur: -0.007, climb: -0.021 };
                            // ...per finale archetype, added to PEL_LEAD. One deadline knob
                            // cannot serve three terrains: the benchmark (the player's
                            // threshold ride) is cheapest to beat on flat roads and dearest
-                           // on a summit finish. Re-based for the 15 km window: racing
-                           // costs the rouleur days their long cooperation (-0.011) and
-                           // the climb days pay twice — early racing AND the wall
-                           // (-0.020). Measured 70/71/76 over 120 seeds with the gallop
-                           // gate on wantsAttack (no sprint-loser attacks into a summit
-                           // finish) carrying most of the climb-day recovery.
+                           // on a summit finish. Re-based twice: for the 15 km racing
+                           // window, then again when resting-by-tank went (the no-rest
+                           // rotation gains most where cooperation is longest — rouleur
+                           // days ran 85 % before the softer trim). Measured 72/76/76.
 export const DRAW_W = {          // the day's finale weights which classes get drawn as the
   sprint:  { sprinter: 0.50, breaker: 0.30, climber: 0.20 },   // player's four companions —
   rouleur: { sprinter: 0.30, breaker: 0.40, climber: 0.30 },   // the men who go in the move
@@ -108,8 +111,11 @@ export const ATT_ENGINE_EDGE = 0.05; // motive two: you attack when the rest of 
                               // much less (as a share of what you can hold to the line) than it costs
                               // the next man — the strongest rider drops his passengers rather than
                               // tow them home
-export const ATT_SF = 0.55;       // matches needed to fire: below this he LOADS instead — skips his
-                           // turns, sits at the back and refills, the gun loading everyone can see
+export const ATT_SF = 0.05;       // matches needed to fire: barely any — a rider with a motive goes on
+                           // what he has (the jump tank pays the kick; the dosing after is near
+                           // threshold — the desperate flyer, as real racing knows him). Below
+                           // even this he LOADS: skips turns and refills, the visible gun —
+                           // now rare, where it used to be every attack's prelude (was 0.55)
 export const ATT_COMMIT = 75;     // seconds of full commitment before the attack is judged
 export const ATT_COOL = 150;      // seconds before a brought-back attacker considers going again
 export const ATT_KICK_T = 10;     // the opening jump: this many seconds at the burst ceiling before the
