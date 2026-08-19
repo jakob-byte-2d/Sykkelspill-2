@@ -1,11 +1,19 @@
-import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_SAFE, ATT_SF, CHASE_NEAR, CHASE_NEAR_W, CLIMB_MIN_T, COOP_BLEND, COOP_MARGIN, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
-import { burstCeil, durPower } from "./body.js";
+import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_HOLD, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_RESERVE, ATT_SAFE, ATT_SF, CHASE_NEAR, CHASE_NEAR_W, CLIMB_MIN_T, COOP_BLEND, COOP_MARGIN, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
+import { burstCeil, durPower, usableSurge } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
 import { attCapital, attackerAhead, chaseTarget, deadWheel, dist0, giveUp, huntTarget, launchAt, queueWheel, reacting, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
 
 /* The decision, once per rider per second: how many watts, and why. */
+
+// The attack's opening kick: hard, but PACED — his own curve read at ~40 s, because
+// a road attack is a half-minute-plus effort out of a moving group, not a finish
+// sprint (at the raw burst ceiling the median kick measured 1069 W = 16.6 W/kg;
+// real attacks go 8-12). The burst ceiling still caps it — a drained jump tank
+// caps what any all-out gesture can open with — and the jump still pays whatever
+// tops the ordinary ceiling, so a kick is never free.
+const attKick = (r, b) => Math.min(durPower(r, ATT_KICK_HOLD, b.T), burstCeil(r, b));
 
 /* The cooperative ride, shared by every AI in the break: one ledger, equal shares.
    In front you pull just over threshold and swing off once overpaid; in deficit you
@@ -41,13 +49,17 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // that is the other headline — the moment the chase either organises or loses
       else r.attNews = 3;
     }
-    // the opening seconds ARE a sprint — the burst ceiling, the jump paying for it.
-    // A steady dosing from second one never left the wheels: measured, the median
-    // gap after ten seconds was five metres. The kick is what an attack IS; the
-    // dosing below is what SURVIVING one's own attack is.
-    if (ATT_COMMIT - r.attT <= ATT_KICK_T) return { P: burstCeil(r, b), brake: 0 };
+    // the opening seconds ARE the jump — a steady dosing from second one never left
+    // the wheels: measured, the median gap after ten seconds was five metres. The
+    // kick is what an attack IS; the dosing below is what SURVIVING one's own attack
+    // is — and it banks a reserve: the commitment spends most of the matches, never
+    // all of them (the re-kick, the sprint, the ride-on all live on what is kept
+    // back). The LAST move — solo against the line — is the solo branch's business,
+    // and THAT one still empties everything: there is no after to save for.
+    if (ATT_COMMIT - r.attT <= ATT_KICK_T) return { P: attKick(r, b), brake: 0 };
     const tc = Math.max(r.attT, 15);
-    return { P: Math.min(b.T + r.surge / tc, durPower(r, tc, b.T), b.ceil), brake: 0 };
+    const keep = ATT_RESERVE * usableSurge(r);
+    return { P: Math.min(Math.max(b.T, b.T + (r.surge - keep) / tc), durPower(r, tc, b.T), b.ceil), brake: 0 };
   }
   // ...and brought back for good: the moment a gone attacker is swallowed by a group
   // again, the attack is over and the ledger's ordinary life resumes. The player's
@@ -71,9 +83,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // on the wheel: covering costs the price of holding him from your shelter —
       // sitting on the attacker is the whole point of marking, not pulling him
       if (away < DRAFT) return { P: Math.min(Math.max(powerFor(att.speed, r.mass, r.cda, grad, rho, hw, shel), 0), b.ceil), brake: 0 };
-      // still reaching for it: the answer to a jump is a jump — the burst ceiling,
-      // his own matches burnt to hold the move. After that, the chase's arithmetic.
-      if (r.attChaseT <= ATT_KICK_T) return { P: burstCeil(r, b), brake: 0 };
+      // still reaching for it: the answer to a jump is a jump — the same paced kick
+      // the attack itself opens with, his own matches burnt to hold the move (an
+      // answer at the raw burst ceiling would out-kick the attacks it covers).
+      // After that, the chase's arithmetic.
+      if (r.attChaseT <= ATT_KICK_T) return { P: attKick(r, b), brake: 0 };
       return { P: chaseRide(S, r, b, att, grad, rho, hw), brake: 0 };
     }
   }
@@ -111,8 +125,8 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       const fire = () => {
         r.attLoad = 0; r.attLoadT = 0; r.attT = ATT_COMMIT; r.attAt = S.t; r.attNews = 1;
         r.hold = false; r.digging = 0;
-        // launched sprinting, not settling: the very first second is already the kick
-        return { P: burstCeil(r, b), brake: 0 };
+        // launched jumping, not settling: the very first second is already the kick
+        return { P: attKick(r, b), brake: 0 };
       };
       if (r.attLoad) {
         // loading is a COMMITMENT, not a per-tick opinion: judged afresh every second
@@ -252,8 +266,8 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
           if (stronger < ATT_FOLLOW_N) {
             r.attChase = up; r.attChaseT = 1;
             r.hold = false; r.digging = 0;
-            // his answer opens the same way the attack did: with the jump
-            return { P: burstCeil(r, b), brake: 0 };
+            // his answer opens the same way the attack did: with the paced kick
+            return { P: attKick(r, b), brake: 0 };
           }
         }
       }
