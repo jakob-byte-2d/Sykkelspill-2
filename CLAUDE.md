@@ -57,18 +57,19 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
 - **Balance profile** (must hold after sim changes; measure over ~120 seeds
   `1000 + s*7919`, bucketed by `S.course.kind` — the legend pool is drawn, so
   measure by class, not by name): break survival 70–76 % in every archetype
-  (measured after the no-tank-rest rotation: sprint 72, rouleur 76, climb 76
-  over 120 seeds — the same seeds read 75/85/82 before the deadline re-shallow,
-  because a rotation where nobody rests on a low tank is faster); attacks spread
-  across the whole 15 km window and fire on low tanks (sf median 0.19); sprint
-  days see real sprinter wins (9) though the gallop still leans breaker (KNOWN
-  ISSUE, sim/AI work). KNOWN LEANS: climb-day wins run climber 11 v breaker 10
-  (watch it), and the headless relay-bot player wins a fair share (a perfectly
-  paced legal escape is close to optimal play). A flat solo from the GUN must
-  NOT win: `npm run solo` → 0 wire-to-wire (streak beginning before the window)
-  and ≤8 wins total (measured 0 after the no-rest rotation — five men who never
-  stop working reel everything). Knobs: PEL_LEAD master (−0.049) and
-  PEL_LEAD_KIND trim ({sprint 0.002, rouleur −0.007, climb −0.021}).
+  (measured after the paced attack kick + dosing reserve: sprint 74, rouleur 76,
+  climb 73 over 120 seeds — the same seeds read 85/79/85 before the deadline
+  deepened, because attackers who no longer wreck themselves make a faster
+  break); attacks spread across the whole 15 km window and fire on low tanks
+  (sf median 0.41 with the reserve banking matches); sprint days see real
+  sprinter wins (13) though the gallop still leans breaker (KNOWN ISSUE, sim/AI
+  work). KNOWN LEANS: climb-day wins run breaker 12 v climber 10 (watch it), and
+  the headless relay-bot player wins a fair share (a perfectly paced legal
+  escape is close to optimal play). A flat solo from the GUN must NOT win:
+  `npm run solo` → 0 wire-to-wire (streak beginning before the window) and ≤8
+  wins total (measured 0 — five men who never stop working reel everything).
+  Knobs: PEL_LEAD master (−0.041) and PEL_LEAD_KIND trim
+  ({sprint 0.006, rouleur −0.001, climb −0.015}).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -153,14 +154,23 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   die" scales the same way: giveUp = ATT_GIVEUP · road left / 8 km, and the two
   scales agree — a legal attack is beyond the leash the moment it fires),
   loading (skip turns to refill, visible gun — now RARE: ATT_SF 0.05 means a
-  motive fires on whatever tank he has, the jump paying the kick and the dosing
-  near threshold — the desperate flyer; measured attacks fire at sf median 0.19,
-  min 0.05, ~2.8 first-attacks per race), kick =
-  ATT_KICK_T seconds at burstCeil then dosing for ATT_COMMIT. Response = a CHOICE per
-  rider, once, ATT_REACT after the jump: can I (sf), is it worth it (I beat him in a
-  sprint), am I needed (≤ ATT_FOLLOW_N covers, rest free-ride). Non-followers refuse
-  to be towed: `reacting()` wheels are nobody's to follow (queueWheel, usable,
-  fallbacks, alone branch all look through them).
+  motive fires on whatever tank he has — the desperate flyer), kick =
+  ATT_KICK_T seconds at `attKick` (ride.js): the man's own ~40 s curve power
+  (ATT_KICK_HOLD), capped by burstCeil — a road attack is a half-minute effort
+  out of a moving group, not a finish sprint (at raw burstCeil the median kick
+  measured 1069 W = 16.6 W/kg; anchored, 566 W = 8.7 W/kg, the real 8–12 band;
+  the jump still pays whatever tops the ordinary ceiling). Then dosing for
+  ATT_COMMIT with a RESERVE: `T + (surge − ATT_RESERVE·usableSurge)/tc`, floored
+  at T — the commitment spends most of the matches, never all (was 157/157
+  attackers at sf < 0.05 within 2 min; now 36/171, sf after median 0.21 — the
+  re-kick, the sprint and the ride-on live on what is kept back). The LAST move
+  is the exception where it belongs: the solo-attacked branch doses on road
+  left and still crosses the line empty. Covers open with the same attKick
+  (an answer at raw burstCeil would out-kick the attacks it covers). Response =
+  a CHOICE per rider, once, ATT_REACT after the jump: can I (sf), is it worth it
+  (I beat him in a sprint), am I needed (≤ ATT_FOLLOW_N covers, rest free-ride).
+  Non-followers refuse to be towed: `reacting()` wheels are nobody's to follow
+  (queueWheel, usable, fallbacks, alone branch all look through them).
 - **The player's attack is derived from physics** (step.js): over threshold, over
   1.5× the sit-in price, actually pulling away (ATT_JUMP_DV vs quickest companion),
   3 s sustained, never on a real descent → he gets the same att-state as an AI and the

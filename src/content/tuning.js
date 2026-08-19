@@ -54,7 +54,7 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.049;   // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.041;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
@@ -63,7 +63,7 @@ export const PEL_LEAD = -0.049;   // the bunch crosses the line this much earlie
                            // out on a low tank is faster, and survival ran 75/85/82 at the
                            // old deadline. At these values all three archetypes measure
                            // 72/76/76 over 120 seeds (1000 + s·7919).
-export const PEL_LEAD_KIND = { sprint: 0.002, rouleur: -0.007, climb: -0.021 };
+export const PEL_LEAD_KIND = { sprint: 0.006, rouleur: -0.001, climb: -0.015 };
                            // ...per finale archetype, added to PEL_LEAD. One deadline knob
                            // cannot serve three terrains: the benchmark (the player's
                            // threshold ride) is cheapest to beat on flat roads and dearest
@@ -118,9 +118,19 @@ export const ATT_SF = 0.05;       // matches needed to fire: barely any — a ri
                            // now rare, where it used to be every attack's prelude (was 0.55)
 export const ATT_COMMIT = 75;     // seconds of full commitment before the attack is judged
 export const ATT_COOL = 150;      // seconds before a brought-back attacker considers going again
-export const ATT_KICK_T = 10;     // the opening jump: this many seconds at the burst ceiling before the
+export const ATT_KICK_T = 10;     // the opening jump: this many seconds at the kick wattage before the
                            // attack settles into its dosing — an attack IS a sprint out of the group,
-                           // and the alactic tank pays for it
+                           // and the alactic tank pays for whatever tops the ordinary ceiling
+export const ATT_KICK_HOLD = 40;  // ...but the kick is paced like a ~40 s effort, not a finish sprint:
+                           // the curve read at this duration caps it (measured at the burst ceiling
+                           // the median kick ran 1069 W = 16.6 W/kg — real attacks go 8-12 W/kg;
+                           // anchored here it is the man's own half-minute-plus power, tired as
+                           // he is, which is exactly what a road attack is)
+export const ATT_RESERVE = 0.30;  // share of usable W′ the commitment dosing keeps back: an attacker
+                           // does not zero his matches ON the attack — he keeps a re-kick and a
+                           // sprint (measured pre-reserve, 157/157 attackers hit sf < 0.05 within
+                           // two minutes). The LAST move — solo against the line — still empties
+                           // everything: that branch doses on road left, not on the commitment
 export const ATT_REACT = 2;       // a jump is answered at once or not at all: seconds before a rider
                            // who chooses to cover it launches
 export const ATT_FOLLOW_SF = 0.35; // the tank it takes to even try to go with an attack
