@@ -11,7 +11,7 @@ import { stepSim } from "./step.js";
 /* A new race: build the stage and the bodies, solve the deadline, then ride the move
    for a minute before the clock is allowed to start. */
 
-/* The day's field: four of the fifteen, drawn without replacement, each pick weighted
+/* The day's field: four of the pool, drawn without replacement, each pick weighted
    by what the finale pays his class (DRAW_W) — the men who go in the move are the men
    the finish suits. On the same rng stream as everything else: same seed, same field.
    Sits BETWEEN buildCourse and makeRiders so the course itself (totals, wind) is

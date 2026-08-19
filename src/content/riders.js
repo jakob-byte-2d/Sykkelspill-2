@@ -40,11 +40,13 @@ export const PLAYER = { name: "PEDERSEN", team: "LIDL-TREK", color: "#f5f2e9", c
   mass: 78, h: 1.80, curve: { p5s: 1520, p1: 810, p5: 545, p20: 478, p60: 447, wp: 27 }, dura: 1.04,
   merits: "", look: { skin: "#e8c9a0", hair: "#7a5a30", style: "cap", extra: ["stubble"] } };
 
-/* Fifteen legends at the height of their careers, five to a class. The curves are
-   best-year estimates anchored to the same physiology the engine already speaks:
-   sprinters live above 1550 W for five seconds and pay for it uphill through mass;
-   the breakaway men hold the biggest hour-powers and wear slowest; the climbers are
-   the lightest men with the flattest curves — small absolute watts, enormous W/kg. */
+/* Twenty-three legends at the height of their careers — and the three Norwegians the
+   user grew up with. The curves are best-year estimates anchored to the same
+   physiology the engine already speaks: sprinters live above 1550 W for five seconds
+   and pay for it uphill through mass; the breakaway men hold the biggest hour-powers
+   and wear slowest; the climbers are the lightest men with the flattest curves —
+   small absolute watts, enormous W/kg. Classes run 7 sprinters / 9 breakers /
+   7 climbers; DRAW_W weighs the classes, so the split shifts the draw, not the race. */
 export const POOL = [
   // ---- sprinters: the gallop, and the price of carrying it over the climb ----
   { name: "CIPOLLINI", team: "SAECO", color: "#ff3b30", class: "sprinter",
@@ -67,6 +69,14 @@ export const POOL = [
     mass: 78, h: 1.84, curve: { p5s: 1660, p1: 845, p5: 548, p20: 478, p60: 447, wp: 31 }, dura: 1.10,
     merits: "3× World Champion · 7× Tour green jersey · Roubaix and Flanders",
     look: { skin: "#e2bd92", hair: "#4a3320", style: "curls", extra: ["goatee"] } },
+  { name: "HUSHOVD", team: "CREDIT AGRICOLE", color: "#7dbb42", class: "sprinter",
+    mass: 83, h: 1.83, curve: { p5s: 1680, p1: 850, p5: 545, p20: 478, p60: 445, wp: 31 }, dura: 1.08,
+    merits: "World Champion '10 · 2× Tour green jersey · 10 Tour stages",
+    look: { skin: "#e2bd92", hair: "#2a2118", style: "short", extra: ["stubble"] } },
+  { name: "KELLY", team: "KAS", color: "#ffb400", class: "sprinter",
+    mass: 74, h: 1.77, curve: { p5s: 1620, p1: 810, p5: 520, p20: 460, p60: 428, wp: 30 }, dura: 1.12,
+    merits: "9 monuments · 4× green jersey · 7× Paris-Nice in a row",
+    look: { skin: "#e2bd92", hair: "#3a2c1e", style: "short", extra: [] } },
   // ---- breakaway men: the biggest engines, the slowest wear ----
   { name: "MERCKX", team: "MOLTENI", color: "#e07f28", class: "breaker",
     mass: 74, h: 1.85, curve: { p5s: 1500, p1: 825, p5: 560, p20: 504, p60: 476, wp: 26 }, dura: 1.15,
@@ -88,6 +98,22 @@ export const POOL = [
     mass: 72, h: 1.80, curve: { p5s: 1010, p1: 630, p5: 505, p20: 465, p60: 435, wp: 18 }, dura: 1.06,
     merits: "Stage wins in all three grand tours · the Stelvio '12 · Ventoux '16",
     look: { skin: "#e8c9a0", hair: "#6b4a2a", style: "short", extra: ["stubble"] } },
+  { name: "HINAULT", team: "RENAULT-ELF", color: "#f6d431", class: "breaker",
+    mass: 62, h: 1.74, curve: { p5s: 1300, p1: 720, p5: 500, p20: 448, p60: 415, wp: 23 }, dura: 1.15,
+    merits: "5× Tour · 3× Giro · 2× Vuelta · World Champion '80 — the Badger",
+    look: { skin: "#d9b088", hair: "#241c14", style: "curls", extra: ["sideburns"] } },
+  { name: "INDURAIN", team: "BANESTO", color: "#7fa8e6", class: "breaker",
+    mass: 80, h: 1.88, curve: { p5s: 1400, p1: 800, p5: 565, p20: 502, p60: 474, wp: 24 }, dura: 1.15,
+    merits: "5× Tour in a row · 2× Giro · the hour record '94",
+    look: { skin: "#d4a276", hair: "#1e1a16", style: "short", extra: [] } },
+  { name: "B.HAGEN", team: "TEAM SKY", color: "#1c2735", class: "breaker",
+    mass: 76, h: 1.82, curve: { p5s: 1500, p1: 790, p5: 525, p20: 465, p60: 435, wp: 24 }, dura: 1.06,
+    merits: "3 Tour stages · Gent-Wevelgem '09 · Norway's man for the hard finales",
+    look: { skin: "#e8c9a0", hair: "#6b4a2a", style: "short", extra: [] } },
+  { name: "LAURITZEN", team: "7-ELEVEN", color: "#ff6a3d", class: "breaker",
+    mass: 72, h: 1.78, curve: { p5s: 1280, p1: 700, p5: 490, p20: 440, p60: 410, wp: 20 }, dura: 1.10,
+    merits: "Luz Ardiden '87 — the first Norwegian Tour stage win · ex-paratrooper",
+    look: { skin: "#e2bd92", hair: "#7a5a30", style: "short", extra: ["stubble"] } },
   // ---- climbers: small watts, light bodies, the wall is theirs ----
   { name: "PANTANI", team: "MERCATONE UNO", color: "#ffd23f", class: "climber",
     mass: 57, h: 1.72, curve: { p5s: 1050, p1: 660, p5: 462, p20: 410, p60: 385, wp: 20 }, dura: 1.00,
@@ -109,5 +135,13 @@ export const POOL = [
     mass: 65, h: 1.79, curve: { p5s: 1150, p1: 680, p5: 484, p20: 435, p60: 402, wp: 20 }, dura: 1.05,
     merits: "7× Tour King of the Mountains · Ventoux '02 · Paris–Tours '01",
     look: { skin: "#e2bd92", hair: "#2c2015", style: "short", extra: [] } },
+  { name: "COPPI", team: "BIANCHI", color: "#8fd8cf", class: "climber",
+    mass: 66, h: 1.77, curve: { p5s: 1100, p1: 680, p5: 490, p20: 440, p60: 412, wp: 20 }, dura: 1.10,
+    merits: "5× Giro · 2× Tour · the hour record · Il Campionissimo",
+    look: { skin: "#d9b088", hair: "#1e1a16", style: "slick", extra: [] } },
+  { name: "LEMOND", team: "LA VIE CLAIRE", color: "#2f4de0", class: "climber",
+    mass: 67, h: 1.78, curve: { p5s: 1200, p1: 700, p5: 495, p20: 445, p60: 415, wp: 21 }, dura: 1.08,
+    merits: "3× Tour · 2× World Champion · the 8-second Tour of '89",
+    look: { skin: "#e8c9a0", hair: "#8a6b3a", style: "curls", extra: [] } },
 ];
 

@@ -48,7 +48,7 @@ export const PACE_MARGIN = 15;    // seconds the break wants to cross the line a
 export const WARMUP_S = 60;       // seconds the move is ridden before the clock starts, so the player
                            // is handed a rotation that is already turning rather than five men
                            // dropped abreast on identical speeds
-export const PEL_LEAD = -0.058;   // the bunch crosses the line this much earlier than the benchmark: one
+export const PEL_LEAD = -0.050;   // the bunch crosses the line this much earlier than the benchmark: one
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
@@ -58,7 +58,7 @@ export const PEL_LEAD = -0.058;   // the bunch crosses the line this much earlie
                            // days died (sprint survival 70 % → 53 %). At -0.058 with the
                            // PEL_LEAD_KIND trims below, all three archetypes sit at 70-76 %
                            // over 120 seeds (1000 + s·7919).
-export const PEL_LEAD_KIND = { sprint: 0, rouleur: -0.011, climb: -0.020 };
+export const PEL_LEAD_KIND = { sprint: 0, rouleur: -0.011, climb: -0.024 };
                            // ...per finale archetype, added to PEL_LEAD. One deadline knob
                            // cannot serve three terrains: the benchmark (the player's
                            // threshold ride) is cheapest to beat on flat roads and dearest

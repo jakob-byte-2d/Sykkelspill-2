@@ -7,8 +7,9 @@ line, the peloton pacing to catch the best of you by a single second. Vite 5 + R
 ## Architecture (dependency order — never import upward)
 
 ```
-src/content/   tuning.js (ALL constants), riders.js (PLAYER + POOL of 15 legends,
-               5 per class: sprinter/breaker/climber, team+color+curve per man),
+src/content/   tuning.js (ALL constants), riders.js (PLAYER + POOL of 23 legends,
+               7 sprinters / 9 breakers / 7 climbers incl. the Norwegians Hushovd,
+               B.Hagen and Lauritzen, team+color+curve per man),
                stage.js (three finale archetypes: sprint/rouleur/climb, drawn by
                the seed's first roll; course.kind rides on the course object)
 src/sim/       DOM-free, Node-importable. newRace → step (1 Hz) → ride/tactics/body/
@@ -56,20 +57,20 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
 - **Balance profile** (must hold after sim changes; measure over ~120 seeds
   `1000 + s*7919`, bucketed by `S.course.kind` — the legend pool is drawn, so
   measure by class, not by name): break survival 70–76 % in every archetype
-  (measured after the 15 km window: sprint 70, rouleur 71, climb 76 over 120
-  seeds); attacks spread across the whole window (150 first-attacks at 15-12 km,
-  90 at 12-8, 64 inside 8) instead of all firing in the old 8-5 km slot; sprint
-  days now see real sprinter wins (8, was 5) because early attackers who are not
-  sprinters get reeled. KNOWN LEANS (follow-up material): climb-day wins run
-  breaker 11 v climber 9 (the long-range engine move pre-wall is viable now —
-  arguably real racing, watch it), and the headless relay-bot player wins more
-  than before (11/9/2 across kinds — a perfectly paced legal escape is close to
-  optimal play). A flat solo from the GUN must NOT win: `npm run solo` → 0
-  wire-to-wire (streak beginning before the window) and ≤8 wins total — wins via
-  legal in-window escapes with capital are the feature, not the exploit. Knobs:
-  PEL_LEAD master (−0.058 — re-based for the 15 km window: a racing break is
-  slower than a cooperating one) and PEL_LEAD_KIND trim
-  ({sprint 0, rouleur −0.011, climb −0.020}).
+  (measured after the 23-man pool landed: climb 76, sprint 72, rouleur 74 over
+  120 seeds — the same seeds read 82/81/82 before the PEL_LEAD re-base, because
+  the eight new legends made the average field stronger); attacks spread across
+  the whole 15 km window; sprint days see real sprinter wins (9) though the
+  attrition gallop still leans breaker (KNOWN ISSUE, sim/AI work). KNOWN LEANS
+  (follow-up material): climb-day wins run breaker 12 v climber 9 (the
+  long-range engine move pre-wall is viable — arguably real racing, watch it),
+  and the headless relay-bot player wins more than before (a perfectly paced
+  legal escape is close to optimal play). A flat solo from the GUN must NOT win:
+  `npm run solo` → 0 wire-to-wire (streak beginning before the window) and ≤8
+  wins total — wins via legal in-window escapes with capital are the feature,
+  not the exploit. Knobs: PEL_LEAD master (−0.050 — re-based when the pool grew
+  15 → 23: a stronger average field beats the fixed benchmark by more) and
+  PEL_LEAD_KIND trim ({sprint 0, rouleur −0.011, climb −0.024}).
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -114,7 +115,7 @@ sprinter); their case is human play (SIT ON, saved matches).
 
 ## The draw (newRace.drawOpponents)
 
-Four of POOL's fifteen, without replacement, each pick weighted by what the finale
+Four of POOL's twenty-three, without replacement, each pick weighted by what the finale
 pays his class (DRAW_W in tuning.js: sprint days lean sprinters, summit finishes lean
 climbers). Drawn BETWEEN buildCourse and makeRiders on the same rng stream — so the
 course is untouched by the draw (golden's total/wind fields prove placement) and the
