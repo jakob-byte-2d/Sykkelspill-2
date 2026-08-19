@@ -31,6 +31,7 @@ export default function TheBreakaway() {
   const previewRef = useRef(null);   // the day the builder is choosing for: course + the drawn four
   const specRef = useRef(null);      // the body the player confirmed — SAME RACE reuses it
   const buildCvs = useRef(null);
+  const [rollN, setRollN] = useState(0);   // bumped per toBuild, so a REROLL repaints
   const dragRef = useRef(false);
   const alertRef = useRef(null);   // the last big event already reacted to
   const marksRef = useRef([]);     // last frame's rider screen spots, from draw()
@@ -43,6 +44,9 @@ export default function TheBreakaway() {
   const toBuild = (seed) => {
     seedRef.current = seed;
     previewRef.current = previewRace(seed);
+    // the preview lives in a ref and a REROLL keeps the phase — the counter is what
+    // makes React and the profile strip see the new day
+    setRollN((n) => n + 1);
     setPhase("build");
   };
 
@@ -98,7 +102,7 @@ export default function TheBreakaway() {
     ctx.scale(dpr, dpr);
     ctx.fillStyle = "#0e1c30"; ctx.fillRect(0, 0, w, h);
     drawProfile({ course: previewRef.current.course, profile: null, groups: [], riders: [], pel: { dist: -1 } }, ctx, w, h, 0);
-  }, [phase]);
+  }, [phase, rollN]);
 
   useEffect(() => {
     if (phase !== "race") return;
@@ -776,7 +780,15 @@ export default function TheBreakaway() {
           return (
             <div style={overlay}>
               <div style={{ ...card, maxWidth: 380, padding: "14px 16px" }}>
-                <div style={{ fontFamily: font, fontSize: 11, letterSpacing: 3, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic" }}>THE DAY AHEAD</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontFamily: font, fontSize: 11, letterSpacing: 3, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic" }}>THE DAY AHEAD</span>
+                  {/* another day entirely: new seed, new course, new draw — the build
+                      (points, weight, name, kit) stays yours */}
+                  <button onClick={() => toBuild((Math.random() * 1e9) | 0)}
+                    style={{ ...btn("#3a76bd", "#fff"), padding: "3px 12px", fontSize: 10.5 }}>
+                    ↻ REROLL
+                  </button>
+                </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                   <span style={{ fontFamily: font, fontWeight: 800, fontSize: 22, fontStyle: "italic", color: "#0d3568", letterSpacing: 1 }}>{kindTxt}</span>
                   <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: "#22456b" }}>{(C.total / 1000).toFixed(1)} km · {Math.round(climbM)} m ↑ · {wdir} {C.wv.toFixed(1)}</span>
