@@ -912,7 +912,7 @@ export default function TheBreakaway() {
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <Portrait look={r.look} color={r.color} size={68} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: font, fontWeight: 800, fontStyle: "italic", fontSize: 21, color: "#0d3568", letterSpacing: 1, lineHeight: 1.05 }}>{r.name}</div>
+                    <div style={{ fontFamily: font, fontWeight: 800, fontStyle: "italic", fontSize: 21, color: "#0d3568", letterSpacing: 1, lineHeight: 1.05 }}>{r.full || r.name}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
                       <span style={{ width: 10, height: 10, borderRadius: 3, background: r.color, border: "1.5px solid #123a6b", flexShrink: 0 }} />
                       <span style={{ fontFamily: font, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: "#3c5a7a", overflow: "hidden", whiteSpace: "nowrap" }}>{r.team}</span>
