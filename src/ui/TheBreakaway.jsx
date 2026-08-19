@@ -527,8 +527,22 @@ export default function TheBreakaway() {
         </button>
         </div>
 
-        {/* instrument panel */}
-        <div style={{ position: "absolute", left: 10, bottom: 56, width: 168, background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "10px 12px 8px" }}>
+        {/* instrument panel, with the road's pitch riding on top of it */}
+        <div style={{ position: "absolute", left: 10, bottom: 56, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+          {(() => {
+            // the slope under the player's wheels, the way a rider reads it: signed
+            // percent, colour by how much it hurts
+            const g = S.course.gradAt(player.dist) * 100;
+            const col = g >= 4 ? "#c22a1e" : g >= 1.5 ? "#b8791a" : g > -1.5 ? "#123a6b" : "#1d7a34";
+            const arrow = g >= 0.3 ? "▲" : g <= -0.3 ? "▼" : "—";
+            return (
+              <div style={{ background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(15,35,60,0.3)", borderRadius: 10, padding: "3px 10px", fontFamily: mono, fontSize: 12, fontWeight: 700, color: col }}>
+                <span style={{ fontFamily: font, fontSize: 9, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", marginRight: 7 }}>SLOPE</span>
+                {arrow} {g.toFixed(1)} %
+              </div>
+            );
+          })()}
+          <div style={{ width: 168, boxSizing: "border-box", background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "10px 12px 8px" }}>
           <Bar label="SURGE" frac={body.sf} color="#35c24d" />
           <Bar label="FUEL" frac={body.ff} color="#2e8fe0" />
           {/* the jump: the ten seconds above everything else, spent only all-out.
@@ -540,12 +554,23 @@ export default function TheBreakaway() {
               wind himself. Same number, read the way a rider says it — and it uses the
               whole scale, where the saving alone sat in the bottom third all race */}
           <Bar label="WIND" frac={1 - player.ly} color="#8e6bd6" />
-          {/* watts, speed and what he is doing moved down to the rider himself —
-              the panel keeps only what the body offers, not what it is spending */}
+          {/* watts and speed live on the speedo beside this panel too — here the body,
+              there what it is spending right now */}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontFamily: mono, fontSize: 11 }}>
             <span style={{ color: "#1d7a34", fontWeight: 700 }}>THR {Math.round(body.T)}</span>
             <span style={{ color: "#c22a1e", fontWeight: 700 }}>MAX {Math.round(body.ceil)}</span>
           </div>
+          </div>
+        </div>
+
+        {/* the speedo: what he is putting out and what it buys, big enough to read
+            mid-effort — the strip on the road says the same but travels with him */}
+        <div style={{ position: "absolute", left: 186, bottom: 56, width: 86, boxSizing: "border-box", textAlign: "center", background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "8px 6px 7px" }}>
+          <div style={{ fontFamily: mono, fontSize: 23, fontWeight: 800, color: "#0d3568", lineHeight: 1 }}>{Math.round(player.power)}</div>
+          <div style={{ fontFamily: font, fontSize: 9, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", marginTop: 1 }}>WATTS</div>
+          <div style={{ height: 1, background: "rgba(60,90,125,0.35)", margin: "6px 4px" }} />
+          <div style={{ fontFamily: mono, fontSize: 23, fontWeight: 800, color: "#0d3568", lineHeight: 1 }}>{(player.speed * 3.6).toFixed(0)}</div>
+          <div style={{ fontFamily: font, fontSize: 9, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", marginTop: 1 }}>KM/H</div>
         </div>
 
         {/* watt slider — its foot carries the WATTS label, so the column stops where
