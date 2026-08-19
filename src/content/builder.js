@@ -20,12 +20,15 @@ import { POOL } from "./riders.js";
 
 /* The jerseys on offer: the great teams of road cycling, one hex each — the same
    dressing rule as the roster (the engine never reads team or color). The pool's
-   fifteen kits are borrowed straight from POOL so the two lists cannot drift; the
-   nine above them are legends whose captains didn't make the draw pool. The build
-   screen strikes out whatever the four drawn opponents are wearing — you cannot
-   ride in a kit that is already in the break — which is also why the extras lead
-   the list: the default choice can never be the one that just got struck. */
-export const TEAMS = [
+   kits are borrowed straight from POOL so the two lists cannot drift; the extras
+   above them are legends whose captains didn't make the draw pool — filtered
+   against POOL, so when a captain later JOINS the pool (Coppi took Bianchi,
+   Hinault Renault-Elf, LeMond La Vie Claire, Indurain Banesto, B.Hagen Sky) his
+   kit moves with him instead of listing twice. The build screen strikes out
+   whatever the four drawn opponents are wearing — you cannot ride in a kit that
+   is already in the break — which is also why the extras lead the list: the
+   default choice can never be the one that just got struck. */
+const EXTRA_TEAMS = [
   { team: "BIANCHI", color: "#8fd8cf" },       // Coppi's celeste
   { team: "FAEMA", color: "#efe3c9" },         // Merckx's first great kit
   { team: "PEUGEOT", color: "#dde3f0" },       // the checkerboard
@@ -35,6 +38,9 @@ export const TEAMS = [
   { team: "BANESTO", color: "#7fa8e6" },       // Indurain's five Julys
   { team: "US POSTAL", color: "#33508f" },     // the blue train
   { team: "TEAM SKY", color: "#1c2735" },      // the black line
+];
+export const TEAMS = [
+  ...EXTRA_TEAMS.filter((t) => !POOL.some((p) => p.team === t.team)),
   ...POOL.map((p) => ({ team: p.team, color: p.color })),
 ];
 
