@@ -268,12 +268,12 @@ export default function TheBreakaway() {
     // the bottom guard: the button stack is a fixed 288 px column, and on a window
     // too short to hold the chyron, a usable slider track AND the buttons, something
     // has to give. The whole stack scales down from its bottom-right corner and the
-    // slider keeps every pixel the stack gives up. 558 px is the last height where
+    // slider keeps every pixel the stack gives up. 532 px is the last height where
     // everything fits at full size — any normal screen sits well above it, so there
-    // k is exactly 1 and nothing moves. (Both numbers grew by one button-pitch when
-    // END TURN joined the column.)
-    const k = wrapH > 0 ? clamp(wrapH / 558, 0.7, 1) : 1;
-    const stackB = Math.round(288 * k);   // where the button column now ends, the slider's new foot
+    // k is exactly 1 and nothing moves. (Both numbers shrank when RELAY and END TURN
+    // merged into one slot; the merged button is two lines tall while pulling.)
+    const k = wrapH > 0 ? clamp(wrapH / 532, 0.7, 1) : 1;
+    const stackB = Math.round(262 * k);   // where the button column now ends, the slider's new foot
     // ...and the guard's measurements answer one more question: are the two bubbles
     // on the slider actually clear of each other, in pixels on THIS track? Closer
     // than a bubble-height, the ring's number would print on top of the indicator's.
@@ -370,7 +370,7 @@ export default function TheBreakaway() {
             how the standing order on the slider becomes the ride. */}
         <button
           onClick={() => { if (S && !S.ended) setInput(S, { mode: "manual" }); }}
-          style={actionBtn(208, {
+          style={actionBtn(220, {
             cursor: "pointer", userSelect: "none", WebkitUserSelect: "none",
             WebkitTouchCallout: "none", touchAction: "manipulation",
             border: "2px solid #35516e",
@@ -385,45 +385,54 @@ export default function TheBreakaway() {
           MANUAL
         </button>
 
-        {/* END TURN: in a break it is the man on the front who decides when he has
-            had enough, not a ledger — so in RELAY the turn lasts until this is
-            pressed. Live only while you are actually pulling; dark otherwise, the
-            same way RELAY and SIT ON go dark past the flamme rouge. */}
-        <button
-          onClick={() => { if (S && !S.ended && canEndTurn) setInput(S, { endTurn: true }); }}
-          style={actionBtn(246, {
-            cursor: canEndTurn ? "pointer" : "default", userSelect: "none", WebkitUserSelect: "none",
-            WebkitTouchCallout: "none", touchAction: "manipulation",
-            opacity: canEndTurn ? 1 : 0.35,
-            border: "2px solid #6b4a12",
-            color: "#fff",
-            background: canEndTurn
-              ? "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #a8791f"
-              : "linear-gradient(180deg, rgba(255,255,255,0.30), rgba(0,0,0,0.28)), #6f5218",
-          })}>
-          END TURN
-        </button>
-
-        {/* relay and sit on: two buttons, one per intention — the lit one is the mode
-            you are in, and past the flamme rouge both go dark: nobody rides for
-            anybody in the last kilometre. */}
-        <button
-          onClick={() => { if (S && !S.ended && !finale) setInput(S, { mode: "relay" }); }}
-          style={actionBtn(170, {
-            cursor: finale ? "default" : "pointer", userSelect: "none", WebkitUserSelect: "none",
-            WebkitTouchCallout: "none", touchAction: "manipulation",
-            opacity: finale ? 0.35 : 1,
-            border: "2px solid #123a6b",
-            color: "#fff",
-            background: S.input.mode === "relay"
-              ? "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.25) 45%, rgba(0,0,0,0.10)), #3a76bd"
-              : "linear-gradient(180deg, rgba(255,255,255,0.30), rgba(0,0,0,0.28)), #2a507c",
-            boxShadow: S.input.mode === "relay"
-              ? "inset 0 1px 0 rgba(255,255,255,0.8), 0 0 8px rgba(125,179,224,0.8)"
-              : "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(20,40,70,0.35)",
-          })}>
-          RELAY
-        </button>
+        {/* one button, two faces: RELAY when you are not relaying (press to join the
+            rotation), END TURN once you are — in a break the man on the front says
+            when he has had enough, so the turn lasts until this is pressed. Live only
+            while you are actually pulling (dark while you wait in the line, and past
+            the flamme rouge), with the stint's seconds on it; past 60 s on the front
+            it turns red — you are giving more than a turn. */}
+        {S.input.mode === "relay" ? (() => {
+          const over = canEndTurn && player.pullT > 60;
+          return (
+            <button
+              onClick={() => { if (S && !S.ended && canEndTurn) setInput(S, { endTurn: true }); }}
+              style={actionBtn(170, {
+                cursor: canEndTurn ? "pointer" : "default", userSelect: "none", WebkitUserSelect: "none",
+                WebkitTouchCallout: "none", touchAction: "manipulation",
+                opacity: canEndTurn ? 1 : 0.35,
+                border: over ? "2px solid #ffb3a6" : "2px solid #6b4a12",
+                color: "#fff",
+                background: canEndTurn
+                  ? (over
+                    ? "linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.1) 45%, rgba(0,0,0,0.2)), #c0392b"
+                    : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #a8791f")
+                  : "linear-gradient(180deg, rgba(255,255,255,0.30), rgba(0,0,0,0.28)), #6f5218",
+                boxShadow: over
+                  ? "0 0 12px rgba(224,72,60,0.9), inset 0 1px 0 rgba(255,255,255,0.5)"
+                  : "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(20,40,70,0.35)",
+              })}>
+              END TURN
+              {canEndTurn && <span style={{ display: "block", fontFamily: mono, fontSize: 10, fontStyle: "normal", letterSpacing: 0, marginTop: 1 }}>{player.pullT}s</span>}
+            </button>
+          );
+        })() : (
+          <button
+            onClick={() => { if (S && !S.ended && !finale) setInput(S, { mode: "relay" }); }}
+            style={actionBtn(170, {
+              cursor: finale ? "default" : "pointer", userSelect: "none", WebkitUserSelect: "none",
+              WebkitTouchCallout: "none", touchAction: "manipulation",
+              opacity: finale ? 0.35 : 1,
+              border: "2px solid #123a6b",
+              color: "#fff",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.30), rgba(0,0,0,0.28)), #2a507c",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(20,40,70,0.35)",
+            })}>
+            RELAY
+          </button>
+        )}
+        {/* sit on keeps its own button — the lit one is the mode you are in, and past
+            the flamme rouge the autopilot buttons go dark: nobody rides for anybody
+            in the last kilometre. */}
         <button
           onClick={() => { if (S && !S.ended && !finale) setInput(S, { mode: "sit" }); }}
           style={actionBtn(132, {
@@ -564,12 +573,13 @@ export default function TheBreakaway() {
         </div>
 
         {/* the speedo: what he is putting out and what it buys, big enough to read
-            mid-effort — the strip on the road says the same but travels with him */}
-        <div style={{ position: "absolute", left: 186, bottom: 56, width: 86, boxSizing: "border-box", textAlign: "center", background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "8px 6px 7px" }}>
-          <div style={{ fontFamily: mono, fontSize: 23, fontWeight: 800, color: "#0d3568", lineHeight: 1 }}>{Math.round(player.power)}</div>
+            mid-effort — the strip on the road says the same but travels with him.
+            The watts wear the threshold's verdict: green riding under it, red over. */}
+        <div style={{ position: "absolute", left: 186, bottom: 56, width: 64, boxSizing: "border-box", textAlign: "center", background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "8px 3px 7px" }}>
+          <div style={{ fontFamily: mono, fontSize: 19, fontWeight: 800, color: player.power > body.T ? "#c22a1e" : "#1d7a34", lineHeight: 1 }}>{Math.round(player.power)}</div>
           <div style={{ fontFamily: font, fontSize: 9, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", marginTop: 1 }}>WATTS</div>
           <div style={{ height: 1, background: "rgba(60,90,125,0.35)", margin: "6px 4px" }} />
-          <div style={{ fontFamily: mono, fontSize: 23, fontWeight: 800, color: "#0d3568", lineHeight: 1 }}>{(player.speed * 3.6).toFixed(0)}</div>
+          <div style={{ fontFamily: mono, fontSize: 19, fontWeight: 800, color: "#0d3568", lineHeight: 1 }}>{(player.speed * 3.6).toFixed(0)}</div>
           <div style={{ fontFamily: font, fontSize: 9, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", marginTop: 1 }}>KM/H</div>
         </div>
 
