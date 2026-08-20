@@ -390,7 +390,7 @@ export default function TheBreakaway() {
             how the standing order on the slider becomes the ride. */}
         <button
           onClick={() => { if (S && !S.ended) setInput(S, { mode: "manual" }); }}
-          style={actionBtn(220, {
+          style={actionBtn(170, {
             cursor: "pointer", userSelect: "none", WebkitUserSelect: "none",
             WebkitTouchCallout: "none", touchAction: "manipulation",
             border: "2px solid #35516e",
@@ -416,7 +416,7 @@ export default function TheBreakaway() {
           return (
             <button
               onClick={() => { if (S && !S.ended && canEndTurn) setInput(S, { endTurn: true }); }}
-              style={actionBtn(170, {
+              style={actionBtn(208, {
                 cursor: canEndTurn ? "pointer" : "default", userSelect: "none", WebkitUserSelect: "none",
                 WebkitTouchCallout: "none", touchAction: "manipulation",
                 opacity: canEndTurn ? 1 : 0.35,
@@ -438,7 +438,7 @@ export default function TheBreakaway() {
         })() : (
           <button
             onClick={() => { if (S && !S.ended && !finale) setInput(S, { mode: "relay" }); }}
-            style={actionBtn(170, {
+            style={actionBtn(208, {
               cursor: finale ? "default" : "pointer", userSelect: "none", WebkitUserSelect: "none",
               WebkitTouchCallout: "none", touchAction: "manipulation",
               opacity: finale ? 0.35 : 1,
@@ -521,7 +521,7 @@ export default function TheBreakaway() {
               ? "linear-gradient(180deg, #fff3c4, #ffd23f 45%, #d99a1b)"
               : "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.18)), #b8791a",
           })}>
-          HTFU! {player.sulT > 0 ? Math.ceil(player.sulT) + "s"
+          DIG {player.sulT > 0 ? Math.ceil(player.sulT) + "s"
             : "\u25cf".repeat(player.sulLeft) + "\u25cb".repeat(Math.max(2 - player.sulLeft, 0))}
         </button>
 
@@ -600,8 +600,9 @@ export default function TheBreakaway() {
             let role = roleOf(S, player);
             // on the slider with no clearer story, what he is doing is steering himself
             if (S.input.mode === "manual" && !S.input.sprint && (role === "RELAYING" || role === "TURN DONE")) role = "MANUAL";
-            return <div style={{ fontFamily: font, fontSize: 9, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.4, color: "#b8791a", lineHeight: 1.1, minHeight: 10, marginBottom: 4 }}>{role}</div>;
+            return <div style={{ fontFamily: font, fontSize: 9, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.4, color: "#b8791a", lineHeight: 1.1, minHeight: 10 }}>{role}</div>;
           })()}
+          <div style={{ height: 1, background: "rgba(60,90,125,0.35)", margin: "6px 4px" }} />
           <div style={{ fontFamily: mono, fontSize: 19, fontWeight: 800, color: player.power > body.T ? "#c22a1e" : "#1d7a34", lineHeight: 1 }}>{Math.round(player.power)}</div>
           <div style={{ fontFamily: font, fontSize: 9, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", marginTop: 1 }}>WATTS</div>
           <div style={{ height: 1, background: "rgba(60,90,125,0.35)", margin: "6px 4px" }} />
