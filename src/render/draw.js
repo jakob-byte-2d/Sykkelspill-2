@@ -355,7 +355,7 @@ export function draw(S, canvas, alpha) {
     const b = bodyNow(r);
     const mode = r.power > 1.22 * b.T && g > 0.015 ? "stand" : "ride";
     r.ped = (r.ped || 0) + r.speed * 0.045;
-    drawCyclist(ctx, x, y, riderK(pxm), r.color, r.ped, mode, -Math.atan(g * 1.6));
+    drawCyclist(ctx, x, y, riderK(pxm), r.color, r.ped, mode, -Math.atan(g * 1.6), (r.look && r.look.skin) || undefined);
     spots.push({ r, x, y });
     // the arrow sits between his head and his bubble — still "this one is you"
     if (r.isPlayer) {
