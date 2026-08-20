@@ -400,36 +400,8 @@ export function draw(S, canvas, alpha) {
     }
   }
 
-  // the player's own strip, under his wheels: what he is DOING, and the watts and
-  // speed he is doing it at — the live numbers travel with the man they describe,
-  // where the eye already is, instead of sitting in a corner panel
-  {
-    const p = S.riders[0];
-    if (!p.caught && p.finished == null) {
-      const d = lerp(p.prevDist, p.dist, alpha);
-      const x = xOf(d);
-      if (x > -30 && x < w + 30) {
-        const y = yOf(d);
-        let role = roleOf(S, p);
-        // on the slider with no clearer story, what he is doing is steering himself
-        if (S.input.mode === "manual" && !S.input.sprint && (role === "RELAYING" || role === "TURN DONE")) role = "MANUAL";
-        const data = Math.round(p.power) + "W · " + (p.speed * 3.6).toFixed(0) + " km/h";
-        ctx.font = "800 10px ui-monospace, monospace";
-        const pw = Math.max(ctx.measureText(role).width, ctx.measureText(data).width) + 14;
-        const px = Math.min(Math.max(x, pw / 2 + 4), w - pw / 2 - 4), py = y + 8, ph = 28;
-        ctx.fillStyle = "rgba(13,27,42,0.82)";
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(px - pw / 2, py, pw, ph, 7); else ctx.rect(px - pw / 2, py, pw, ph);
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255,210,63,0.85)"; ctx.lineWidth = 1.2; ctx.stroke();
-        ctx.textAlign = "center";
-        ctx.fillStyle = "#ffd23f";
-        ctx.fillText(role, px, py + 11);
-        ctx.fillStyle = "#f2f6fa";
-        ctx.fillText(data, px, py + 23);
-      }
-    }
-  }
+  // (the player's black strip under his wheels is gone — his role, watts and speed
+  // live on the speedo panel now, and the yellow arrow alone says "this one is you")
 
   // wind sock — pinned in the window's top right corner, tucked under the chyron
   const hw = C.windAt(cx);
