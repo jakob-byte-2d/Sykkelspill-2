@@ -66,7 +66,9 @@ export function gapRows(S) {
       ? (grp.length > 1 ? "YOU +" + (grp.length - 1) : "YOU")
       : (grp.length > 2 ? names[0] + " +" + (grp.length - 1) : names.join(" "));
     if (grps.length > 1) label = "G" + (gi + 1) + " · " + label;
-    rows.push({ key: "g" + grp[0].i, label, gapS: -(grp[0].dist - me.dist) / vRef, me: mine });
+    // grp rides along so the board's names can open the rider card — the UI's
+    // reader, same as the label; nothing in sim reads a row back
+    rows.push({ key: "g" + grp[0].i, label, gapS: -(grp[0].dist - me.dist) / vRef, me: mine, grp });
   });
   rows.push({ key: "pel", label: "PELOTON", gapS: S.pel.gapS });
   rows.sort((a, b) => a.gapS - b.gapS);

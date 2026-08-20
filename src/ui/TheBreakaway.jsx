@@ -137,6 +137,16 @@ export default function TheBreakaway() {
   // the sprite is ~11 px wide, so the target is the man, not the pixels. Opening the
   // card pauses the race (reading mid-finale must not cost); closing hands back the
   // interrupted speed, and leaves a deliberate pause alone.
+  // one door for every name in the UI — canvas, gap board, results: open the card,
+  // and mid-race pause the clock while it is up (a finished race has no clock to hold)
+  const openCard = (rider) => {
+    if (!rider) return;
+    if (phase === "race" && S && !S.ended) {
+      cardResume.current = paused ? 0 : speedRef.current || 1;
+      speedRef.current = 0; setPaused(true);
+    }
+    setRiderCard(rider);
+  };
   const onCanvasTap = (e) => {
     if (phase !== "race" || !S || S.ended) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -146,10 +156,7 @@ export default function TheBreakaway() {
       const dx = Math.abs(m.x - px);
       if (dx < best && Math.abs(m.y - 8 - py) < 48) { best = dx; hit = m.r; }
     }
-    if (!hit) return;
-    cardResume.current = paused ? 0 : speedRef.current || 1;
-    speedRef.current = 0; setPaused(true);
-    setRiderCard(hit);
+    if (hit) openCard(hit);
   };
   const closeCard = () => {
     setRiderCard(null);
@@ -319,12 +326,25 @@ export default function TheBreakaway() {
 
         {/* time gaps — sits under the chyron, never behind it */}
         <div style={{ margin: "6px 0 0 10px", width: 168, background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", borderRadius: 8, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 3px 8px rgba(15,35,60,0.3)", padding: "4px 0" }}>
-          {gapRows(S).map((r) => (
-            <div key={r.key} style={{ display: "flex", justifyContent: "space-between", padding: "1px 7px", background: r.me ? "rgba(255,210,63,0.55)" : "transparent", fontFamily: mono, fontSize: 9.5, fontWeight: 700 }}>
-              <span style={{ color: "#0d3568", overflow: "hidden", whiteSpace: "nowrap" }}>{r.label}</span>
-              <span style={{ color: Math.abs(r.gapS) < 1 ? "#123a6b" : r.gapS < 0 ? "#1d7a34" : "#c22a1e" }}>{Math.abs(r.gapS) < 1 ? "—" : fmtGap(r.gapS)}</span>
-            </div>
-          ))}
+          {gapRows(S).map((r) => {
+            // the board's names open the rider card: every listed name is its own
+            // target, "YOU" opens your own, "+N" and PELOTON name nobody. Same
+            // wording as the label gapRows builds — grp is the same array.
+            const short = (o) => o.name.split(".").pop().slice(0, 8);
+            const pre = r.grp && S.groups.length > 1 ? "G" + r.grp[0].groupNo + " · " : "";
+            const tap = { cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(13,53,104,0.35)", textUnderlineOffset: 2 };
+            let body;
+            if (!r.grp) body = <span>{r.label}</span>;
+            else if (r.me) body = <span>{pre}<span style={tap} onClick={() => openCard(player)}>YOU</span>{r.grp.length > 1 ? " +" + (r.grp.length - 1) : ""}</span>;
+            else if (r.grp.length > 2) body = <span>{pre}<span style={tap} onClick={() => openCard(r.grp[0])}>{short(r.grp[0])}</span>{" +" + (r.grp.length - 1)}</span>;
+            else body = <span>{pre}{r.grp.map((o, k) => <span key={o.i}>{k > 0 ? " " : ""}<span style={tap} onClick={() => openCard(o)}>{short(o)}</span></span>)}</span>;
+            return (
+              <div key={r.key} style={{ display: "flex", justifyContent: "space-between", padding: "1px 7px", background: r.me ? "rgba(255,210,63,0.55)" : "transparent", fontFamily: mono, fontSize: 9.5, fontWeight: 700 }}>
+                <span style={{ color: "#0d3568", overflow: "hidden", whiteSpace: "nowrap" }}>{body}</span>
+                <span style={{ color: Math.abs(r.gapS) < 1 ? "#123a6b" : r.gapS < 0 ? "#1d7a34" : "#c22a1e" }}>{Math.abs(r.gapS) < 1 ? "—" : fmtGap(r.gapS)}</span>
+              </div>
+            );
+          })}
         </div>
 
         {/* the commentary box — the voice that took over from the bubbles: form,
@@ -709,7 +729,8 @@ export default function TheBreakaway() {
                         : winT != null && r.finished > winT ? "+" + fmtTime(r.finished - winT) : "";
                       return (
                         <div key={r.i} style={{ padding: "3px 4px 2px", borderBottom: "1px solid rgba(60,90,125,0.22)", background: r.isPlayer ? "rgba(255,210,63,0.5)" : "transparent" }}>
-                          <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
+                          {/* the name line opens the rider card, here too */}
+                          <div style={{ overflow: "hidden", whiteSpace: "nowrap", cursor: "pointer" }} onClick={() => openCard(r)}>
                             <span style={{ fontFamily: font, fontSize: 11, fontWeight: 800, fontStyle: "italic", color: "#0d3568" }}>{k + 1}. {r.name}</span>
                             <span style={{ fontFamily: font, fontSize: 7.5, fontWeight: 700, letterSpacing: 1, color: "#3c5a7a" }}>{"  " + r.team}</span>
                             <span style={{ fontFamily: mono, fontSize: 8, fontWeight: 700, color: r.caught ? "#c22a1e" : "#547294" }}>{"  " + gap}</span>
