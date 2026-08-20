@@ -66,13 +66,14 @@ export const PEL_LEAD = -0.046;   // the bunch crosses the line this much earlie
                            // used to waste (survival ran 70/82/79 before the trim). At
                            // these values all three archetypes measure 70/74/70 over 120
                            // seeds (1000 + s·7919).
-export const PEL_LEAD_KIND = { sprint: 0.008, rouleur: 0.005, climb: -0.011 };
+export const PEL_LEAD_KIND = { sprint: 0.0075, rouleur: 0.005, climb: -0.011 };
                            // ...per finale archetype, added to PEL_LEAD. One deadline knob
                            // cannot serve three terrains: the benchmark (the player's
                            // threshold ride) is cheapest to beat on flat roads and dearest
                            // on a summit finish. The trims sit near cliffs (climb swung
-                           // 79 → 52 on +0.005) — retune on measurements, not feel.
-                           // Measured 70/74/70, sprinter 9 wins on sprint days.
+                           // 79 → 52 on +0.005, sprint 68 → 79 on −0.001 — hence the
+                           // half-step) — retune on measurements, not feel.
+                           // Measured 75/71/76, sprinter 12 wins on sprint days.
 export const DRAW_W = {          // the day's finale weights which classes get drawn as the
   sprint:  { sprinter: 0.50, breaker: 0.30, climber: 0.20 },   // player's four companions —
   rouleur: { sprinter: 0.30, breaker: 0.40, climber: 0.30 },   // the men who go in the move

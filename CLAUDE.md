@@ -57,19 +57,19 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
 - **Balance profile** (must hold after sim changes; measure over ~120 seeds
   `1000 + s*7919`, bucketed by `S.course.kind` — the legend pool is drawn, so
   measure by class, not by name): break survival 70–76 % in every archetype
-  (measured after the descent-tuck rule: sprint 70, rouleur 74, climb 70 over
-  120 seeds — riders who no longer waste watts downhill make a faster break,
-  and the deadline trims chased it); attacks spread across the whole 15 km
-  window, fire on low tanks, and never in real descents; sprint days see real
-  sprinter wins (9) though the gallop still leans breaker (KNOWN ISSUE,
-  sim/AI work). KNOWN LEANS: climb-day wins run breaker 12 v climber 9
-  (watch it), and the headless relay-bot player wins a fair share (a
-  perfectly paced legal escape is close to optimal play). A flat solo from
+  (measured after the wheel-tracker was carved out of the descent tuck:
+  sprint 75, rouleur 71, climb 76 over 120 seeds); attacks spread across the
+  whole 15 km window, fire on low tanks, and never in real descents; sprint
+  days see real sprinter wins (12) though the gallop still leans breaker
+  (KNOWN ISSUE, sim/AI work). KNOWN LEANS: climb-day wins run breaker 13 v
+  climber 10 (watch it), and the headless relay-bot player wins a fair share
+  (a perfectly paced legal escape is close to optimal play). A flat solo from
   the GUN must NOT win: `npm run solo` → 0 wire-to-wire (streak beginning
   before the window) and ≤8 wins total (measured 0 — five men who never stop
   working reel everything). Knobs: PEL_LEAD master (−0.046) and PEL_LEAD_KIND
-  trim ({sprint 0.008, rouleur 0.005, climb −0.011}); the trims sit near
-  cliffs (climb swung 79 → 52 on +0.005) — tune on measurements, never feel.
+  trim ({sprint 0.0075, rouleur 0.005, climb −0.011}); the trims sit near
+  cliffs (climb swung 79 → 52 on +0.005, sprint 68 → 79 on −0.001, hence the
+  half-step) — tune on measurements, never feel.
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -194,10 +194,16 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   outright — a re-kick mid-catch is answered at once, no fresh grace, and a leader
   whose chasers splinter keeps his clock. A hunting front is `chasing`: coast()
   must not gut the alarm at 50+ km/h — EXCEPT in a real descent (grad <
-  DH_GRAD): there gravity sets the speed and the chase TUCKS (coast lies over
-  every chasing/closing/racing branch, gradient-gated so the tailwind-flat
-  alarm that motivated the exemption is untouched; measured 304 → 60 s of AI
-  over 1.1·T at 55+ km/h downhill, the residue being covers mid-commitment).
+  DH_GRAD): there gravity sets the speed and the chase TUCKS, floored at the
+  price of the lead's own speed (matching him is never the waste, digging
+  past him is; measured 304 → 63 s of AI over 1.1·T at 55+ km/h downhill,
+  the residue being covers mid-commitment). Gradient-gated so the tailwind-
+  flat alarm that motivated the exemption is untouched. The tuck does NOT
+  touch wheelAutopilot: the wheel-tracker's one job is contact, a front can
+  be accelerating downhill on an exempt order (the player's pull), and a cap
+  priced off the target's current speed structurally trails an accelerating
+  target — when the tuck briefly lived there a follower lost a pedalling
+  front's wheel in 51 % of descent seconds (now 13 %, flat baseline 10 %).
   The reeling resumes where the road stops falling — which is also why a
   low-watt player gliding away downhill is physics, not a bug: watts buy
   nothing there for anyone. A man ALONE and clear of a bigger group in

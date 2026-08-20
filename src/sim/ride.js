@@ -517,12 +517,13 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // hold it, so the autopilot gets its full closing authority.
         const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, !movingUp && !finale && !playerGlue);
         P = out.P; brake = out.brake;
-        // closing a gap on a REAL descent is the same waste the chase's descent
-        // rule names: the controller asked 300-450 W at 60+ km/h downhill and the
-        // metres came from gravity, not the watts. Tuck; the closing resumes
-        // where the road flattens. Not in the finale — positioning is priceless
-        // there and the sprint's own branches never pass this way anyway.
-        if (!finale && grad < DH_GRAD) P = coast(P, r.speed);
+        // NO descent-coast here, deliberately: the wheel-tracker's one job is
+        // CONTACT, and a front can be accelerating downhill on an exempt order
+        // (the player's pull) — a cap priced off the target's current speed
+        // structurally trails an accelerating target, and when the tuck briefly
+        // lived here a follower lost a pedalling front's wheel in half his
+        // descent seconds. The tuck belongs to the chases, where the man ahead
+        // is tucking too; following an order-driven wheel is never the waste.
         // ...and up a climb there is a level above which following him is not following
         // at all, it is blowing up in his wake. A rider knows that: he lets the wheel go
         // and rides what he can hold to the top, and as often as not he comes back over
@@ -584,7 +585,13 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // once, and it turned every transient loss on a climb into a permanent
         // one: the climbing cap sheds you near the top, the cap forbade the ride
         // back over it, and "come back over the summit" never happened.
-        if (!r.chasing || grad < DH_GRAD) P = coast(P, r.speed);
+        // On a REAL descent the chase tucks — but holding the man's SPEED is
+        // never the waste, digging past it is: his price is the coast's floor.
+        if (!r.chasing) P = coast(P, r.speed);
+        else if (grad < DH_GRAD) {
+          const hisP = lead ? powerFor(lead.speed, r.mass, r.cda, grad, rho, hw, shel) : 0;
+          P = Math.min(P, Math.max(hisP, coast(P, r.speed)));
+        }
       }
     }
   } else {
@@ -625,9 +632,15 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // a tailwind at fifty-six an hour is doing neither of those things, he is racing.
     // (The sitting player, alone, chases like any AI rester — the threshold cap that
     // lived here made a temporary loss on a climb a permanent one.)
-    // On a REAL descent even the racer tucks: the watts bought nothing, and the
-    // surge they would have burnt wins the race on the road after the drop.
-    if (!(r.chasing || racing) || grad < DH_GRAD) P = coast(P, r.speed);
+    // On a REAL descent even the racer tucks — but matching the wheel he is
+    // chasing is never the waste, digging past its speed is: the price of the
+    // lead's pace is the coast's floor. The clear man racing the line has
+    // nobody to match and tucks fully; the surge he banks wins the road after.
+    if (!(r.chasing || racing)) P = coast(P, r.speed);
+    else if (grad < DH_GRAD) {
+      const hisP = lead ? powerFor(lead.speed, r.mass, r.cda, grad, rho, hw, shel) : 0;
+      P = Math.min(P, Math.max(hisP, coast(P, r.speed)));
+    }
   }
   return { P, brake };
 }
