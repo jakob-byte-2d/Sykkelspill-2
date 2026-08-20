@@ -230,3 +230,25 @@ export function queueWheel(S, r, ahead) {
   }
   return best || ahead;
 }
+
+// The TRAIN, and its last wheel: the contiguous chain from the group's first rider,
+// broken where the gap — his rear wheel to the next man's front wheel — opens beyond
+// one bike length. The glued player's wheel is this tail, not whoever happens to be
+// nearest: a straggler dangling behind the train is not the line, and sinking in
+// behind him parks you in his hole. Offline drop-backs and men racing attacks are
+// looked through (the same eyes every wheel-pick has) and carry no contiguity —
+// they ride the outside; the line's own spacing is what the chain measures. The
+// asker himself is skipped the same way, which bounds the chain at his own slot
+// when he is IN it: the phantom gap his bike leaves breaks the walk, and the tail
+// ahead of him is simply the man in front — tight files ride exactly as before.
+export function chainTail(grp, r, aheadOnly) {
+  let tail = null, prev = null;
+  for (const o of grp) {
+    if (aheadOnly && dist0(o) <= dist0(r)) break;   // a wheel choice never moves you backwards
+    if (o === r || o.offline || reacting(o)) continue;
+    if (prev && wheelGap0(prev, o) > BIKE) break;   // the chain is broken here
+    prev = o;
+    tail = o;
+  }
+  return tail;
+}

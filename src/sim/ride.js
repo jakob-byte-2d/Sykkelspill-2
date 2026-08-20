@@ -3,7 +3,7 @@ import { burstCeil, durPower, usableSurge } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
 import { clamp } from "./rng.js";
-import { attCapital, attackerAhead, chaseTarget, deadWheel, dist0, giveUp, huntTarget, launchAt, queueWheel, reacting, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
+import { attCapital, attackerAhead, chainTail, chaseTarget, deadWheel, dist0, giveUp, huntTarget, launchAt, queueWheel, reacting, terrainEdge, validWheel, wantPos, wantsAttack, wheelGap0, working } from "./tactics.js";
 
 /* The decision, once per rider per second: how many watts, and why. */
 
@@ -352,6 +352,11 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // price − DROP_W while the man is behind, and hands him the wheel as he clears
       let back = grp[grp.length - 1];
       if (follower) back = follower;
+      // the glued player lands on the TRAIN's tail — the last wheel of the
+      // contiguous chain from the front — not on whoever is dangling at the
+      // back of the group's bookkeeping: sinking past the train into a
+      // straggler's hole is exactly what the mode promises not to do
+      else if (playerGlue && chainTail(grp, r, false)) back = chainTail(grp, r, false);
       else for (let k = grp.length - 1; k >= 1; k--) {
         const o = grp[k];
         if (o === r) continue;
@@ -369,20 +374,25 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     } else {
       // the wheel is queueWheel's for everyone — it looks THROUGH the dying, the
       // offline and the racing to the last man still in the group's race...
-      // except the sitting player, whose wheel is literally the NEAREST man ahead
-      // still riding in the line, a dying one included: he holds it until the
-      // healthy line comes past, and the yield above hands him onto it. Only a
-      // drop-back on the outside (the wave-in decides when HE becomes the wheel)
-      // and a man racing an attack are looked through.
-      let tgt;
-      if (sitGlue) {
-        tgt = null;
-        for (const o of grp) {
-          if (o === r || o.offline || reacting(o)) continue;
-          if (dist0(o) > dist0(r) && (!tgt || dist0(o) < dist0(tgt))) tgt = o;
+      // except the GLUED player (sit or relay, a human steering), whose wheel is
+      // the TRAIN's last man: the tail of the contiguous chain from the group's
+      // first rider (chainTail) — a straggler dangling more than a bike length
+      // off the back is not the line, and his wheel is a hole, not a slot. Mid-
+      // line nothing changes (the tail ahead of you IS the man in front); the
+      // rule bites when the nearest wheel has itself lost the train. Dying
+      // wheels INSIDE the train are still held — contact, not the tank, is what
+      // makes a wheel. Falls back to the old pick so the glue never lets go
+      // just because the whole front happens to be racing.
+      let tgt = playerGlue ? chainTail(grp, r, true) : null;
+      if (!tgt) {
+        if (sitGlue) {
+          for (const o of grp) {
+            if (o === r || o.offline || reacting(o)) continue;
+            if (dist0(o) > dist0(r) && (!tgt || dist0(o) < dist0(tgt))) tgt = o;
+          }
+        } else {
+          tgt = ahead ? queueWheel(S, r, ahead) : null;
         }
-      } else {
-        tgt = ahead ? queueWheel(S, r, ahead) : null;
       }
       // in the finale he rides to his slot instead of just holding whatever wheel he
       // has. Sitting too far back, he takes the wheel of the man he wants to be behind
@@ -427,12 +437,12 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
       // either: going with the move is a decision each rider makes for himself, and
       // this rider (the player included) did not make it. The GLUE skips only the
       // speed-validity test: a group that slows is still the player's wheel.
-      // ...and the sitting player's deadWheel veto yields with it: a dying wheel
-      // is now HIS wheel to hold — the line coming past from behind, not the veto,
-      // is what moves him off it.
-      const usable = tgt && !reacting(tgt) && (sitGlue || !deadWheel(tgt, r))
-        && (playerGlue || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));
-      // the line hands over to the first man still in it — not literally position 2,
+      // ...and the glued player's deadWheel veto yields with it: a dying wheel
+      // still IN the train is his wheel to hold — the chain breaking behind the
+      // man (or the line coming past, for the sitter), not the veto, is what
+      // moves him off it.
+      const usable = tgt && !reacting(tgt) && (playerGlue || !deadWheel(tgt, r))
+        && (playerGlue || validWheel(tgt, r, S.course.gradAt(Math.max(dist0(tgt), 0))));      // the line hands over to the first man still in it — not literally position 2,
       // or a rester there would leave the break with no engine at all. A rider on an
       // empty tank is no engine either, so he is passed over too; but if nobody has
       // anything left, the fullest tank takes it anyway. Somebody still has to ride.
