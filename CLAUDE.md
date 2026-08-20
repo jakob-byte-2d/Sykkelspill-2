@@ -57,19 +57,20 @@ tools/         golden.mjs (the master check), bundle.mjs (artifact build), sweep
 - **Balance profile** (must hold after sim changes; measure over ~120 seeds
   `1000 + s*7919`, bucketed by `S.course.kind` — the legend pool is drawn, so
   measure by class, not by name): break survival 70–76 % in every archetype
-  (measured after the paced attack kick + dosing reserve: sprint 74, rouleur 76,
-  climb 73 over 120 seeds — the same seeds read 85/79/85 before the deadline
-  deepened, because attackers who no longer wreck themselves make a faster
-  break); attacks spread across the whole 15 km window and fire on low tanks
-  (sf median 0.41 with the reserve banking matches); sprint days see real
-  sprinter wins (13) though the gallop still leans breaker (KNOWN ISSUE, sim/AI
-  work). KNOWN LEANS: climb-day wins run breaker 12 v climber 10 (watch it), and
-  the headless relay-bot player wins a fair share (a perfectly paced legal
-  escape is close to optimal play). A flat solo from the GUN must NOT win:
-  `npm run solo` → 0 wire-to-wire (streak beginning before the window) and ≤8
-  wins total (measured 0 — five men who never stop working reel everything).
-  Knobs: PEL_LEAD master (−0.041) and PEL_LEAD_KIND trim
-  ({sprint 0.006, rouleur −0.001, climb −0.015}).
+  (measured after the downhill attack gate: sprint 72, rouleur 76, climb 73
+  over 120 seeds — attacks DRIVE the break now, not wreck it, so removing the
+  descent fires slowed it and the deadline re-shallowed); attacks spread
+  across the whole 15 km window, fire on low tanks, and never in real
+  descents; sprint days see real sprinter wins (11) though the gallop still
+  leans breaker (KNOWN ISSUE, sim/AI work). KNOWN LEANS: climb-day wins run
+  breaker 12 v climber 9 (watch it), and the headless relay-bot player wins a
+  fair share (a perfectly paced legal escape is close to optimal play). A flat
+  solo from the GUN must NOT win: `npm run solo` → 0 wire-to-wire (streak
+  beginning before the window) and ≤8 wins total (measured 0 — five men who
+  never stop working reel everything). Knobs: PEL_LEAD master (−0.046) and
+  PEL_LEAD_KIND trim ({sprint 0.008, rouleur 0.000, climb −0.012}); the
+  sprint trim sits near a cliff — ±0.002 swings several races, tune on
+  measurements.
 - **Playwright smoke** at 430×860 AND 900×760 (chromium at `/opt/pw-browsers/chromium`,
   never `playwright install`): start race, poke the controls, screenshot, zero page
   errors (Google Fonts fetch errors are expected sandbox noise in dev; the bundle
@@ -148,11 +149,15 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   the nearer wheel wins — a wheel choice never moves you backwards.
 - **Attacks:** wantsAttack (sprint-loser or strongest-engine motives, window 15 km→1 km,
   bunch ≥ attCapital back — ATT_SAFE scaled by road left, 42 s at 8 km / ~79 s at
-  15: an attack must outlive every kilometre it buys. The sprint-loser motive only
-  exists where a GALLOP does — last km climbing voids it, or every outsprinted
-  breaker attacked early on summit days and the field wrecked itself. "Let him
-  die" scales the same way: giveUp = ATT_GIVEUP · road left / 8 km, and the two
-  scales agree — a legal attack is beyond the leash the moment it fires),
+  15: an attack must outlive every kilometre it buys. NEVER in a real descent
+  (grad ≤ DH_GRAD): the same line the player's detector and validWheel draw —
+  downhill speed is terrain, not a jump (was 29 of 156 fires); a loaded gun
+  waits out the descent and an attack fired over the crest stands. The
+  sprint-loser motive only exists where a GALLOP does — last km climbing voids
+  it, or every outsprinted breaker attacked early on summit days and the field
+  wrecked itself. "Let him die" scales the same way: giveUp = ATT_GIVEUP ·
+  road left / 8 km, and the two scales agree — a legal attack is beyond the
+  leash the moment it fires),
   loading (skip turns to refill, visible gun — now RARE: ATT_SF 0.05 means a
   motive fires on whatever tank he has — the desperate flyer), kick =
   ATT_KICK_T seconds at `attKick` (ride.js): the man's own ~40 s curve power

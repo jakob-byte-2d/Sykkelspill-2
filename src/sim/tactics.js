@@ -133,6 +133,11 @@ export function wantsAttack(S, grp, r) {
   if (r.isPlayer || (r.attCool ?? 0) > 0 || grp.length < 2) return false;
   const togo = S.course.total - r.dist;
   if (togo < SPRINT_FINALE_M || togo > ATT_FROM) return false;
+  // never on a real descent — the same line the player's attack detector and
+  // validWheel draw, because it is the same physics: downhill speed is terrain,
+  // not a jump, and the W′ bill for a kick nobody can't follow is still full.
+  // An attack OVER the crest (fired on the climb before the drop) stands.
+  if (S.course.gradAt(Math.max(r.dist, 0)) <= DH_GRAD) return false;
   if ((S.pel.gapS ?? 0) < attCapital(S, r)) return false;
   if (grp.some((o) => o !== r && ((o.attT ?? 0) > 0 || o.attLoad))) return false;
   // motive one, the sprint-loser, only exists where a GALLOP does: on a summit

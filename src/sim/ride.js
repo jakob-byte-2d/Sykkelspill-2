@@ -1,4 +1,4 @@
-import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_HOLD, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_RESERVE, ATT_SAFE, ATT_SF, CHASE_NEAR, CHASE_NEAR_W, CLIMB_MIN_T, COOP_BLEND, COOP_MARGIN, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
+import { ATT_COMMIT, ATT_COOL, ATT_FOLLOW_EDGE, ATT_FOLLOW_N, ATT_FOLLOW_SF, ATT_FROM, ATT_GIVEUP, ATT_KICK_HOLD, ATT_KICK_T, ATT_REACT, ATT_REARM, ATT_RESERVE, ATT_SAFE, ATT_SF, CHASE_NEAR, CHASE_NEAR_W, CLIMB_MIN_T, COOP_BLEND, COOP_MARGIN, DH_GRAD, DOOR_NEAR, DROP_W, PACE_GAIN, PACE_WINDOW, PULL_MIN_SF, SPRINT_FINALE_M, SPRINT_M, SWING_W, TERRAIN_EDGE, TERRAIN_WHEEL } from "../content/tuning.js";
 import { burstCeil, durPower, usableSurge } from "./body.js";
 import { BIKE, DRAFT, SHEL_MAX, coast, powerFor, powerRaw, rhoAt, speedFor } from "./physics.js";
 import { planSpeedAt, planTimeAt } from "./plan.js";
@@ -145,7 +145,10 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
           // and put down every few seconds
           r.attLoad = 0; r.attLoadT = 0; r.attCool = Math.max(r.attCool, 30);
         }
-        else if (b.sf >= ATT_SF) return fire();
+        // ...and a loaded gun WAITS OUT a descent (wantsAttack's own downhill
+        // gate — same DH_GRAD line as the player's detector): the load stands,
+        // the patience clock runs, and he fires when the road turns up again
+        else if (b.sf >= ATT_SF && grad > DH_GRAD) return fire();
       } else if (wantsAttack(S, grp, r)) {
         if (b.sf >= ATT_SF) return fire();
         r.attLoad = 1; r.attLoadT = 0;
