@@ -99,21 +99,58 @@ export function draw(S, canvas, alpha) {
   const yOf = (d) => Math.min(baseY - (C.eleAt(d) - eleC) * sv, floorY);
   const xOf = (d) => (d - cx) * pxm + w * 0.42;
 
-  // sky
+  // sky — deep zenith falling into a warm haze at the horizon
   const sky = ctx.createLinearGradient(0, 0, 0, h);
-  sky.addColorStop(0, "#5f9fd6"); sky.addColorStop(0.55, "#a9cfec"); sky.addColorStop(1, "#ddeef8");
+  sky.addColorStop(0, "#4c92d2"); sky.addColorStop(0.42, "#8ec2ea");
+  sky.addColorStop(0.75, "#cbe4f5"); sky.addColorStop(1, "#eaf3f2");
   ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = "rgba(255,250,220,0.85)";
-  ctx.beginPath(); ctx.arc(w * 0.82, h * 0.16, 26, 0, 6.284); ctx.fill();
+  // the sun wears a halo now, not just a disc
+  const sunX = w * 0.82, sunY = h * 0.16;
+  const halo = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 88);
+  halo.addColorStop(0, "rgba(255,250,215,0.8)"); halo.addColorStop(1, "rgba(255,250,215,0)");
+  ctx.fillStyle = halo; ctx.fillRect(sunX - 88, sunY - 88, 176, 176);
+  ctx.fillStyle = "#fffbe0";
+  ctx.beginPath(); ctx.arc(sunX, sunY, 23, 0, 6.284); ctx.fill();
+  // clouds: hashed, fixed in the world, drifting on their own slow parallax —
+  // deterministic per seed and per frame, so nothing ever flickers
+  const wrap = w + 340;
+  for (let i = 0; i < 5; i++) {
+    const cs = 42 + hash1(i * 7.13) * 58;
+    const cyy = h * (0.045 + 0.2 * hash1(i * 3.71));
+    const cxx = ((hash1(i * 11.3) * wrap - cx * (0.05 + 0.025 * hash1(i * 1.7))) % wrap + wrap) % wrap - 170;
+    ctx.fillStyle = "rgba(255,255,255," + (0.45 + 0.3 * hash1(i * 5.7)).toFixed(2) + ")";
+    ctx.beginPath();
+    ctx.ellipse(cxx, cyy, cs, cs * 0.3, 0, 0, 6.284);
+    ctx.ellipse(cxx - cs * 0.45, cyy + cs * 0.1, cs * 0.55, cs * 0.2, 0, 0, 6.284);
+    ctx.ellipse(cxx + cs * 0.42, cyy + cs * 0.11, cs * 0.5, cs * 0.19, 0, 0, 6.284);
+    ctx.fill();
+  }
 
-  // far hills (parallax from the course itself)
+  // two ridges of hills, the far one almost lost in the haze — depth is
+  // three speeds of parallax (clouds, far ridge, near ridge), not one. The course's
+  // own elevation is mostly flat at these scales, so each ridge carries its own
+  // rolling profile on top: fixed sine mixes of the world distance — deterministic,
+  // smooth, and never the flat band the raw course drew
+  ctx.fillStyle = "#bcd3e6";
+  ctx.beginPath(); ctx.moveTo(0, h);
+  for (let x = 0; x <= w; x += 14) {
+    const d = cx * 0.15 + x / pxm * 5 + 9000;
+    const roll = 16 * Math.sin(d * 0.017) + 8 * Math.sin(d * 0.048 + 2.1);
+    ctx.lineTo(x, baseY - 84 - roll - (C.eleAt(Math.abs(d) % C.total) - 300) * 0.2);
+  }
+  ctx.lineTo(w, h); ctx.fill();
   ctx.fillStyle = "#8fb3d4";
   ctx.beginPath(); ctx.moveTo(0, h);
   for (let x = 0; x <= w; x += 12) {
     const d = cx * 0.35 + x / pxm * 3 + 4000;
-    ctx.lineTo(x, baseY - 40 - (C.eleAt(Math.abs(d) % C.total) - 300) * 0.35);
+    const roll = 24 * Math.sin(d * 0.026 + 1.3) + 10 * Math.sin(d * 0.073 + 4.0);
+    ctx.lineTo(x, baseY - 34 - roll - (C.eleAt(Math.abs(d) % C.total) - 300) * 0.35);
   }
   ctx.lineTo(w, h); ctx.fill();
+  // the haze band that ties the ridges to the ground
+  const haze = ctx.createLinearGradient(0, baseY - 96, 0, baseY + 6);
+  haze.addColorStop(0, "rgba(228,240,247,0)"); haze.addColorStop(1, "rgba(228,240,247,0.42)");
+  ctx.fillStyle = haze; ctx.fillRect(0, baseY - 96, w, 102);
 
   // ground + road
   ctx.beginPath(); ctx.moveTo(0, h);
@@ -125,13 +162,38 @@ export function draw(S, canvas, alpha) {
     ctx.lineTo(x, y);
   }
   ctx.lineTo(w + 8, h);
-  ctx.fillStyle = "#77b24e"; ctx.fill();
-  ctx.beginPath();
-  pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
-  ctx.strokeStyle = "#9aa0a8"; ctx.lineWidth = Math.max(4, 0.9 * pxm); ctx.stroke();
+  const grass = ctx.createLinearGradient(0, baseY - 140, 0, h);
+  grass.addColorStop(0, "#85bd5d"); grass.addColorStop(0.5, "#74af4c"); grass.addColorStop(1, "#619e41");
+  ctx.fillStyle = grass; ctx.fill();
+  // the road: a soft shadow under the bed, asphalt with a little light on top,
+  // a bright shoulder line above and a dark one below — then the centre dashes
+  const roadW = Math.max(4, 0.9 * pxm);
+  const tracePts = () => {
+    ctx.beginPath();
+    pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+  };
+  ctx.save();
+  ctx.translate(0, roadW * 0.34);
+  tracePts();
+  ctx.strokeStyle = "rgba(30,42,54,0.22)"; ctx.lineWidth = roadW * 1.14; ctx.stroke();
+  ctx.restore();
+  const tar = ctx.createLinearGradient(0, baseY - 160, 0, h);
+  tar.addColorStop(0, "#a9aeb6"); tar.addColorStop(1, "#8b929b");
+  tracePts();
+  ctx.strokeStyle = tar; ctx.lineWidth = roadW; ctx.stroke();
+  const edge = Math.max(1, roadW * 0.09);
+  ctx.save();
+  ctx.translate(0, -(roadW / 2 - edge));
+  tracePts();
+  ctx.strokeStyle = "rgba(250,252,255,0.75)"; ctx.lineWidth = edge; ctx.stroke();
+  ctx.restore();
+  ctx.save();
+  ctx.translate(0, roadW / 2 - edge);
+  tracePts();
+  ctx.strokeStyle = "rgba(44,54,66,0.35)"; ctx.lineWidth = edge; ctx.stroke();
+  ctx.restore();
   ctx.setLineDash([9, 10]);
-  ctx.beginPath();
-  pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+  tracePts();
   ctx.strokeStyle = "rgba(255,255,255,0.85)"; ctx.lineWidth = Math.max(1, 0.12 * pxm); ctx.stroke();
   ctx.setLineDash([]);
 
