@@ -592,10 +592,16 @@ export default function TheBreakaway() {
           </div>
         </div>
 
-        {/* the speedo: what he is putting out and what it buys, big enough to read
-            mid-effort — the strip on the road says the same but travels with him.
+        {/* the speedo: what he is DOING and what it costs — the role took over from
+            the black strip that used to ride under his wheels on the road.
             The watts wear the threshold's verdict: green riding under it, red over. */}
-        <div style={{ position: "absolute", left: 186, bottom: 56, width: 64, boxSizing: "border-box", textAlign: "center", background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "8px 3px 7px" }}>
+        <div style={{ position: "absolute", left: 186, bottom: 56, width: 64, boxSizing: "border-box", textAlign: "center", background: "linear-gradient(180deg, #f4f8fc, #ccd9e6 55%, #b3c6d8)", border: "2px solid #6f8cab", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(60,90,125,0.35), 0 3px 10px rgba(15,35,60,0.35)", borderRadius: 12, padding: "6px 3px 7px" }}>
+          {(() => {
+            let role = roleOf(S, player);
+            // on the slider with no clearer story, what he is doing is steering himself
+            if (S.input.mode === "manual" && !S.input.sprint && (role === "RELAYING" || role === "TURN DONE")) role = "MANUAL";
+            return <div style={{ fontFamily: font, fontSize: 9, fontWeight: 800, fontStyle: "italic", letterSpacing: 0.4, color: "#b8791a", lineHeight: 1.1, minHeight: 10, marginBottom: 4 }}>{role}</div>;
+          })()}
           <div style={{ fontFamily: mono, fontSize: 19, fontWeight: 800, color: player.power > body.T ? "#c22a1e" : "#1d7a34", lineHeight: 1 }}>{Math.round(player.power)}</div>
           <div style={{ fontFamily: font, fontSize: 9, letterSpacing: 2, color: "#3c5a7a", fontWeight: 800, fontStyle: "italic", marginTop: 1 }}>WATTS</div>
           <div style={{ height: 1, background: "rgba(60,90,125,0.35)", margin: "6px 4px" }} />
@@ -916,6 +922,13 @@ export default function TheBreakaway() {
           const cls = { sprinter: "SPRINTER", breaker: "BREAKAWAY", climber: "CLIMBER" }[r.klass || r.class] || "";
           const rat = ratingsOf(r);
           const live = phase === "race" && S && !S.ended && r.isPlayer !== undefined;
+          // leaf through the whole field: the race's riders, or the build screen's
+          // drawn four. The card object IS a row of that list, so indexOf finds it.
+          const deck = phase === "race" && S ? S.riders
+            : previewRef.current ? previewRef.current.opponents : [];
+          const at = deck.indexOf(r);
+          const leaf = (d) => { if (deck.length > 1) setRiderCard(deck[(Math.max(at, 0) + d + deck.length) % deck.length]); };
+          const leafBtn = { position: "absolute", top: 8, width: 26, height: 26, borderRadius: 999, border: "1.5px solid #35516e", background: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(0,0,0,0.15)), #3a76bd", color: "#fff", fontSize: 12, fontWeight: 800, lineHeight: "23px", textAlign: "center", padding: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(20,40,70,0.35)" };
           const pipRow = (label, v) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "2.5px 0" }}>
               <span style={{ fontFamily: font, fontSize: 10.5, fontWeight: 800, fontStyle: "italic", letterSpacing: 1, color: "#0d3568", width: 56, flexShrink: 0 }}>{label}</span>
@@ -929,8 +942,12 @@ export default function TheBreakaway() {
           );
           return (
             <div style={{ ...overlay, zIndex: 8 }} onClick={closeCard}>
-              <div style={{ ...card, maxWidth: 330, padding: "14px 16px" }} onClick={(e) => e.stopPropagation()}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ ...card, maxWidth: 330, padding: "14px 16px", position: "relative" }} onClick={(e) => e.stopPropagation()}>
+                {deck.length > 1 && <>
+                  <button onClick={() => leaf(-1)} style={{ ...leafBtn, left: 8 }}>◀</button>
+                  <button onClick={() => leaf(1)} style={{ ...leafBtn, right: 8 }}>▶</button>
+                </>}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 26px" }}>
                   <Portrait look={r.look} color={r.color} size={68} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: font, fontWeight: 800, fontStyle: "italic", fontSize: 21, color: "#0d3568", letterSpacing: 1, lineHeight: 1.05 }}>{r.full || r.name}</div>
