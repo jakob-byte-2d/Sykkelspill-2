@@ -23,7 +23,12 @@ export default function TheBreakaway() {
   const simRef = useRef(null);
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
-  const seedRef = useRef((Math.random() * 1e9) | 0);
+  // ?seed=N pins the day — the gallery tool and any bug report need the same race
+  // twice; without the param the seed is drawn fresh per load, as always
+  const seedRef = useRef((() => {
+    const p = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("seed") : null;
+    return p ? (Number(p) | 0) : (Math.random() * 1e9) | 0;
+  })());
   const [build, setBuild] = useState({ spurt: 6, punch: 6, motor: 6, seighet: 6, kg: 70 });
   const [pname, setPname] = useState("");           // the name on the frame — empty rides as YOU
   const [teamI, setTeamI] = useState(0);            // index into the day's AVAILABLE kits
