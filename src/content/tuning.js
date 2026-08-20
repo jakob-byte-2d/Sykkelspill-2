@@ -58,20 +58,21 @@ export const PEL_LEAD = -0.046;   // the bunch crosses the line this much earlie
                            // rider, alone in the wind, holding his threshold the whole way and
                            // never running out of fuel. Negative because that ride is a fiction —
                            // nobody has a tank that deep — so the bunch has to give some of it
-                           // back. Re-based twice recently, both times because ATTACKS now
-                           // drive the break rather than wreck it (the paced kick + dosing
-                           // reserve): deepened when attackers stopped emptying themselves
-                           // (survival ran 85/79/85), shallowed again when the downhill gate
-                           // removed ~14 % of attacks (the descent fires) and survival fell
-                           // to 62/71/70. At these values all three archetypes measure
-                           // 72/76/73 over 120 seeds (1000 + s·7919).
-export const PEL_LEAD_KIND = { sprint: 0.008, rouleur: 0.000, climb: -0.012 };
+                           // back. Re-based three times recently, every time because racing
+                           // efficiency moved: deepened when attackers stopped emptying
+                           // themselves (the paced kick + reserve), shallowed when the
+                           // downhill gate removed the descent fires, trimmed again when
+                           // the descent-tuck rule let everyone bank the watts descents
+                           // used to waste (survival ran 70/82/79 before the trim). At
+                           // these values all three archetypes measure 70/74/70 over 120
+                           // seeds (1000 + s·7919).
+export const PEL_LEAD_KIND = { sprint: 0.008, rouleur: 0.005, climb: -0.011 };
                            // ...per finale archetype, added to PEL_LEAD. One deadline knob
                            // cannot serve three terrains: the benchmark (the player's
                            // threshold ride) is cheapest to beat on flat roads and dearest
-                           // on a summit finish. The sprint trim sits near a cliff (±0.002
-                           // swings several races) — retune it on measurements, not feel.
-                           // Measured 72/76/73, sprinter 11 wins on sprint days.
+                           // on a summit finish. The trims sit near cliffs (climb swung
+                           // 79 → 52 on +0.005) — retune on measurements, not feel.
+                           // Measured 70/74/70, sprinter 9 wins on sprint days.
 export const DRAW_W = {          // the day's finale weights which classes get drawn as the
   sprint:  { sprinter: 0.50, breaker: 0.30, climber: 0.20 },   // player's four companions —
   rouleur: { sprinter: 0.30, breaker: 0.40, climber: 0.30 },   // the men who go in the move

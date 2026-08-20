@@ -2,8 +2,8 @@
  {
   "seed": 1000,
   "bench": 1750.177,
-  "pelT": 1851.688,
-  "base": 367.469,
+  "pelT": 1849.938,
+  "base": 368.137,
   "finaleP": 0,
   "total": 20456,
   "wind": -2.973,
@@ -12,44 +12,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 548183,
-    "wear": 0.632525
+    "work": 542490,
+    "wear": 0.631981
    },
    {
     "name": "VIRENQUE",
     "fin": null,
     "caught": true,
-    "work": 461799,
-    "wear": 0.51992
+    "work": 460935,
+    "wear": 0.535973
    },
    {
     "name": "CANCELLARA",
     "fin": null,
     "caught": true,
-    "work": 546723,
-    "wear": 0.470765
+    "work": 515841,
+    "wear": 0.464025
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 448006,
-    "wear": 0.522653
+    "work": 443167,
+    "wear": 0.521508
    },
    {
     "name": "L.HERRERA",
     "fin": null,
     "caught": true,
-    "work": 454615,
-    "wear": 0.637766
+    "work": 459027,
+    "wear": 0.636479
    }
   ]
  },
  {
   "seed": 8919,
   "bench": 2391.406,
-  "pelT": 2530.107,
-  "base": 366.321,
+  "pelT": 2527.716,
+  "base": 366.927,
   "finaleP": 0,
   "total": 19859,
   "wind": 4.535,
@@ -58,36 +58,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 742729,
-    "wear": 0.66631
+    "work": 738744,
+    "wear": 0.66638
    },
    {
     "name": "SAGAN",
-    "fin": 2519.556,
-    "caught": false,
-    "work": 808339,
-    "wear": 0.938287
+    "fin": null,
+    "caught": true,
+    "work": 794267,
+    "wear": 0.70361
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 639211,
-    "wear": 0.517471
+    "work": 633348,
+    "wear": 0.51156
    },
    {
     "name": "KELLY",
     "fin": null,
     "caught": true,
-    "work": 673175,
-    "wear": 0.50826
+    "work": 657568,
+    "wear": 0.503839
    },
    {
     "name": "L.HERRERA",
-    "fin": null,
-    "caught": true,
-    "work": 633566,
-    "wear": 0.676602
+    "fin": 2526.875,
+    "caught": false,
+    "work": 631192,
+    "wear": 0.651095
    }
   ]
  },
@@ -104,22 +104,22 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 647904,
-    "wear": 0.738023
+    "work": 648698,
+    "wear": 0.738753
    },
    {
     "name": "CAVENDISH",
     "fin": null,
     "caught": true,
-    "work": 511147,
-    "wear": 0.891447
+    "work": 510672,
+    "wear": 0.898964
    },
    {
     "name": "KELLY",
     "fin": null,
     "caught": true,
-    "work": 613107,
-    "wear": 0.728963
+    "work": 611589,
+    "wear": 0.728507
    },
    {
     "name": "MERCKX",
@@ -140,8 +140,8 @@
  {
   "seed": 24757,
   "bench": 1987.499,
-  "pelT": 2078.924,
-  "base": 365.682,
+  "pelT": 2068.987,
+  "base": 369.787,
   "finaleP": 637.113,
   "total": 21196,
   "wind": 2.325,
@@ -150,44 +150,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 671891,
-    "wear": 0.727541
+    "work": 655274,
+    "wear": 0.722615
    },
    {
     "name": "KELLY",
     "fin": null,
     "caught": true,
-    "work": 452626,
-    "wear": 0.542801
+    "work": 491924,
+    "wear": 0.629031
    },
    {
     "name": "HINAULT",
     "fin": null,
     "caught": true,
-    "work": 586709,
-    "wear": 0.670461
+    "work": 578989,
+    "wear": 0.669822
    },
    {
     "name": "SAGAN",
-    "fin": 2054.871,
+    "fin": 2051.524,
     "caught": false,
-    "work": 728290,
-    "wear": 0.813581
+    "work": 716962,
+    "wear": 0.826333
    },
    {
     "name": "INDURAIN",
-    "fin": 2044.907,
+    "fin": 2043.477,
     "caught": false,
-    "work": 726042,
-    "wear": 0.715461
+    "work": 714444,
+    "wear": 0.729326
    }
   ]
  },
  {
   "seed": 32676,
   "bench": 1955.092,
-  "pelT": 2045.026,
-  "base": 379.751,
+  "pelT": 2035.251,
+  "base": 383.933,
   "finaleP": 662.405,
   "total": 21328,
   "wind": 2.098,
@@ -196,90 +196,90 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 692351,
-    "wear": 0.698843
+    "work": 683705,
+    "wear": 0.689352
    },
    {
     "name": "PANTANI",
     "fin": null,
     "caught": true,
-    "work": 436605,
-    "wear": 0.652121
+    "work": 418022,
+    "wear": 0.63254
    },
    {
     "name": "SAGAN",
-    "fin": 2002.493,
+    "fin": 2005.573,
     "caught": false,
-    "work": 755850,
-    "wear": 0.850078
+    "work": 727143,
+    "wear": 0.808371
    },
    {
     "name": "CONTADOR",
-    "fin": 2023.398,
+    "fin": 2025.322,
     "caught": false,
-    "work": 657049,
-    "wear": 0.634528
+    "work": 639988,
+    "wear": 0.617505
    },
    {
     "name": "B.HAGEN",
     "fin": null,
     "caught": true,
-    "work": 672376,
-    "wear": 0.614486
+    "work": 579614,
+    "wear": 0.559077
    }
   ]
  },
  {
   "seed": 40595,
   "bench": 1752.107,
-  "pelT": 1853.729,
-  "base": 366.186,
+  "pelT": 1851.977,
+  "base": 366.883,
   "finaleP": 0,
   "total": 21268,
   "wind": -3.164,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1844.841,
+    "fin": 1843.02,
     "caught": false,
-    "work": 576236,
-    "wear": 0.846901
+    "work": 575264,
+    "wear": 0.84213
    },
    {
     "name": "MERCKX",
-    "fin": 1796.158,
+    "fin": 1800.549,
     "caught": false,
-    "work": 573309,
-    "wear": 0.650078
+    "work": 575831,
+    "wear": 0.646738
    },
    {
     "name": "HINAULT",
-    "fin": 1799.34,
+    "fin": 1804.444,
     "caught": false,
-    "work": 488766,
-    "wear": 0.56906
+    "work": 489358,
+    "wear": 0.570033
    },
    {
     "name": "CIPOLLINI",
     "fin": null,
     "caught": true,
-    "work": 501965,
-    "wear": 0.721761
+    "work": 518508,
+    "wear": 0.686114
    },
    {
     "name": "ZABEL",
-    "fin": 1797.512,
+    "fin": 1802.393,
     "caught": false,
-    "work": 527913,
-    "wear": 0.798639
+    "work": 527061,
+    "wear": 0.805553
    }
   ]
  },
  {
   "seed": 48514,
   "bench": 1593.956,
-  "pelT": 1686.405,
-  "base": 383.25,
+  "pelT": 1684.811,
+  "base": 383.989,
   "finaleP": 0,
   "total": 20129,
   "wind": -3.935,
@@ -288,128 +288,128 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 516232,
-    "wear": 0.527198
+    "work": 513536,
+    "wear": 0.526919
    },
    {
     "name": "CONTADOR",
-    "fin": 1676.373,
+    "fin": 1675.916,
     "caught": false,
-    "work": 453679,
-    "wear": 0.680886
+    "work": 453206,
+    "wear": 0.680945
    },
    {
     "name": "QUINTANA",
-    "fin": 1673.245,
+    "fin": 1672.865,
     "caught": false,
-    "work": 428948,
-    "wear": 0.692147
+    "work": 428474,
+    "wear": 0.69404
    },
    {
     "name": "CAVENDISH",
     "fin": null,
     "caught": true,
-    "work": 464894,
-    "wear": 0.616189
+    "work": 462482,
+    "wear": 0.616361
    },
    {
     "name": "VOIGT",
     "fin": null,
     "caught": true,
-    "work": 473295,
-    "wear": 0.596751
+    "work": 469908,
+    "wear": 0.594413
    }
   ]
  },
  {
   "seed": 56433,
   "bench": 1595.587,
-  "pelT": 1668.984,
-  "base": 370.241,
+  "pelT": 1661.007,
+  "base": 374.854,
   "finaleP": 651.128,
   "total": 21252,
   "wind": -2.832,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1637.708,
+    "fin": 1642.226,
     "caught": false,
-    "work": 558509,
-    "wear": 0.816927
+    "work": 545145,
+    "wear": 0.802147
    },
    {
     "name": "KELLY",
-    "fin": 1637.629,
+    "fin": 1640.852,
     "caught": false,
-    "work": 525093,
-    "wear": 0.853698
+    "work": 519878,
+    "wear": 0.774894
    },
    {
     "name": "VOECKLER",
-    "fin": 1658.407,
+    "fin": 1659.163,
     "caught": false,
-    "work": 493641,
-    "wear": 0.80997
+    "work": 467323,
+    "wear": 0.776816
    },
    {
     "name": "MERCKX",
-    "fin": 1564.189,
+    "fin": 1579.032,
     "caught": false,
-    "work": 611220,
-    "wear": 0.680724
+    "work": 565293,
+    "wear": 0.633755
    },
    {
     "name": "PANTANI",
-    "fin": 1601.359,
+    "fin": 1623.594,
     "caught": false,
-    "work": 489768,
-    "wear": 0.582642
+    "work": 458219,
+    "wear": 0.565417
    }
   ]
  },
  {
   "seed": 64352,
   "bench": 2054.752,
-  "pelT": 2173.928,
-  "base": 357.216,
+  "pelT": 2171.873,
+  "base": 357.897,
   "finaleP": 0,
   "total": 20101,
   "wind": 2.374,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2121.211,
+    "fin": 2119.414,
     "caught": false,
-    "work": 654198,
-    "wear": 0.693427
+    "work": 645142,
+    "wear": 0.684663
    },
    {
     "name": "COPPI",
-    "fin": 2132.931,
+    "fin": 2126.701,
     "caught": false,
-    "work": 624958,
-    "wear": 0.612815
+    "work": 616820,
+    "wear": 0.602544
    },
    {
     "name": "KELLY",
-    "fin": 2125.584,
+    "fin": 2118.591,
     "caught": false,
-    "work": 606126,
-    "wear": 0.770689
+    "work": 617413,
+    "wear": 0.762604
    },
    {
     "name": "INDURAIN",
-    "fin": 2120.546,
+    "fin": 2117.894,
     "caught": false,
-    "work": 641872,
-    "wear": 0.520862
+    "work": 657656,
+    "wear": 0.5135
    },
    {
     "name": "VOECKLER",
-    "fin": 2118.782,
+    "fin": 2113.396,
     "caught": false,
-    "work": 567609,
-    "wear": 0.597101
+    "work": 585493,
+    "wear": 0.60512
    }
   ]
  },
@@ -424,38 +424,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1956.584,
+    "fin": 1956.95,
     "caught": false,
-    "work": 614018,
-    "wear": 0.689639
+    "work": 620850,
+    "wear": 0.688874
    },
    {
     "name": "SAGAN",
-    "fin": 1956.562,
+    "fin": 1956.916,
     "caught": false,
-    "work": 587812,
-    "wear": 0.657576
+    "work": 593440,
+    "wear": 0.654578
    },
    {
     "name": "KELLY",
-    "fin": 1955.794,
+    "fin": 1955.874,
     "caught": false,
-    "work": 584117,
-    "wear": 0.651729
+    "work": 595869,
+    "wear": 0.654732
    },
    {
     "name": "HUSHOVD",
-    "fin": 1956.255,
+    "fin": 1958.152,
     "caught": false,
-    "work": 627841,
-    "wear": 0.703369
+    "work": 634563,
+    "wear": 0.698415
    },
    {
     "name": "BOONEN",
-    "fin": 1957.567,
+    "fin": 1958.176,
     "caught": false,
-    "work": 618294,
-    "wear": 0.745732
+    "work": 622670,
+    "wear": 0.754692
    }
   ]
  },
@@ -470,38 +470,38 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1547.153,
+    "fin": 1548.171,
     "caught": false,
-    "work": 469927,
-    "wear": 0.651595
+    "work": 472461,
+    "wear": 0.658013
    },
    {
     "name": "ZABEL",
-    "fin": 1547.016,
+    "fin": 1548.147,
     "caught": false,
-    "work": 418294,
-    "wear": 0.673505
+    "work": 414158,
+    "wear": 0.679871
    },
    {
     "name": "DE GENDT",
-    "fin": 1547.312,
+    "fin": 1549.18,
     "caught": false,
-    "work": 423470,
-    "wear": 0.534863
+    "work": 436159,
+    "wear": 0.547389
    },
    {
     "name": "B.HAGEN",
-    "fin": 1546.907,
+    "fin": 1548.026,
     "caught": false,
-    "work": 432873,
-    "wear": 0.603742
+    "work": 451592,
+    "wear": 0.61718
    },
    {
     "name": "HINAULT",
-    "fin": 1546.528,
+    "fin": 1547.862,
     "caught": false,
-    "work": 399427,
-    "wear": 0.55666
+    "work": 397331,
+    "wear": 0.5569
    }
   ]
  },
@@ -554,8 +554,8 @@
  {
   "seed": 96028,
   "bench": 1533.218,
-  "pelT": 1603.746,
-  "base": 366.751,
+  "pelT": 1596.08,
+  "base": 371.221,
   "finaleP": 675.866,
   "total": 22240,
   "wind": -4.659,
@@ -564,36 +564,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 446341,
-    "wear": 0.576205
+    "work": 431012,
+    "wear": 0.604517
    },
    {
     "name": "PANTANI",
     "fin": null,
     "caught": true,
-    "work": 357067,
-    "wear": 0.531195
+    "work": 341957,
+    "wear": 0.567799
    },
    {
     "name": "CANCELLARA",
     "fin": null,
     "caught": true,
-    "work": 451078,
-    "wear": 0.505478
+    "work": 427928,
+    "wear": 0.502623
    },
    {
     "name": "B.HAGEN",
     "fin": null,
     "caught": true,
-    "work": 416886,
-    "wear": 0.459709
+    "work": 407351,
+    "wear": 0.46846
    },
    {
     "name": "COPPI",
     "fin": null,
     "caught": true,
-    "work": 387718,
-    "wear": 0.464013
+    "work": 357812,
+    "wear": 0.464976
    }
   ]
  },
@@ -610,82 +610,82 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 250904,
-    "wear": 0.394259
+    "work": 279336,
+    "wear": 0.408972
    },
    {
     "name": "HINAULT",
     "fin": null,
     "caught": true,
-    "work": 216613,
-    "wear": 0.378887
+    "work": 225339,
+    "wear": 0.379734
    },
    {
     "name": "BOONEN",
     "fin": null,
     "caught": true,
-    "work": 257537,
-    "wear": 0.322641
+    "work": 271239,
+    "wear": 0.325472
    },
    {
     "name": "CIPOLLINI",
     "fin": null,
     "caught": true,
-    "work": 247450,
-    "wear": 0.491363
+    "work": 261558,
+    "wear": 0.49446
    },
    {
     "name": "QUINTANA",
     "fin": null,
     "caught": true,
-    "work": 214831,
-    "wear": 0.454032
+    "work": 233729,
+    "wear": 0.459049
    }
   ]
  },
  {
   "seed": 111866,
   "bench": 2041.864,
-  "pelT": 2135.789,
-  "base": 391.108,
+  "pelT": 2125.58,
+  "base": 395.607,
   "finaleP": 674.797,
   "total": 22611,
   "wind": 2.362,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2121.798,
+    "fin": 2111.376,
     "caught": false,
-    "work": 703200,
-    "wear": 0.934939
+    "work": 703416,
+    "wear": 0.928653
    },
    {
     "name": "HINAULT",
-    "fin": 2121.5,
+    "fin": 2111.126,
     "caught": false,
-    "work": 627841,
-    "wear": 0.725327
+    "work": 618793,
+    "wear": 0.708844
    },
    {
     "name": "VIRENQUE",
-    "fin": 2132.764,
-    "caught": false,
-    "work": 611309,
-    "wear": 0.63529
+    "fin": null,
+    "caught": true,
+    "work": 622281,
+    "wear": 0.58175
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 574049,
-    "wear": 0.567891
+    "work": 562129,
+    "wear": 0.547318
    },
    {
     "name": "VOECKLER",
-    "fin": 2130.539,
+    "fin": 2110.6,
     "caught": false,
-    "work": 661610,
-    "wear": 0.742451
+    "work": 656156,
+    "wear": 0.687482
    }
   ]
  },
@@ -707,31 +707,31 @@
    },
    {
     "name": "INDURAIN",
-    "fin": 2041.125,
+    "fin": 2041.227,
     "caught": false,
-    "work": 724087,
-    "wear": 0.737006
+    "work": 725359,
+    "wear": 0.737305
    },
    {
     "name": "ZABEL",
-    "fin": 2074.791,
+    "fin": 2074.56,
     "caught": false,
-    "work": 632096,
-    "wear": 0.974486
+    "work": 633048,
+    "wear": 0.974942
    },
    {
     "name": "COPPI",
-    "fin": 2070.612,
+    "fin": 2070.737,
     "caught": false,
-    "work": 646062,
-    "wear": 0.515752
+    "work": 646820,
+    "wear": 0.515135
    },
    {
     "name": "VOIGT",
-    "fin": 2083.344,
+    "fin": 2083.251,
     "caught": false,
-    "work": 663660,
-    "wear": 0.730278
+    "work": 665268,
+    "wear": 0.722607
    }
   ]
  },
@@ -748,90 +748,90 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 631278,
-    "wear": 0.64391
+    "work": 579957,
+    "wear": 0.602132
    },
    {
     "name": "CAVENDISH",
     "fin": null,
     "caught": true,
-    "work": 507810,
-    "wear": 0.822885
+    "work": 521838,
+    "wear": 0.827796
    },
    {
     "name": "VOECKLER",
     "fin": null,
     "caught": true,
-    "work": 566045,
-    "wear": 0.622668
+    "work": 589522,
+    "wear": 0.670989
    },
    {
     "name": "CANCELLARA",
-    "fin": 2016.404,
+    "fin": 2014.774,
     "caught": false,
-    "work": 743935,
-    "wear": 0.851191
+    "work": 744626,
+    "wear": 0.849057
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 650034,
-    "wear": 0.802192
+    "work": 646468,
+    "wear": 0.805216
    }
   ]
  },
  {
   "seed": 135623,
   "bench": 2121.967,
-  "pelT": 2245.041,
-  "base": 374.327,
+  "pelT": 2242.919,
+  "base": 375.022,
   "finaleP": 0,
   "total": 21329,
   "wind": 2.021,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2239.983,
+    "fin": 2238.263,
     "caught": false,
-    "work": 709483,
-    "wear": 0.889841
+    "work": 713394,
+    "wear": 0.888121
    },
    {
     "name": "CONTADOR",
-    "fin": 2177.119,
+    "fin": 2176.145,
     "caught": false,
-    "work": 646737,
-    "wear": 0.533645
+    "work": 647037,
+    "wear": 0.533991
    },
    {
     "name": "HUSHOVD",
     "fin": null,
     "caught": true,
-    "work": 595874,
-    "wear": 0.507509
+    "work": 596371,
+    "wear": 0.507311
    },
    {
     "name": "MERCKX",
-    "fin": 2177.278,
+    "fin": 2176.252,
     "caught": false,
-    "work": 720026,
-    "wear": 0.729692
+    "work": 723893,
+    "wear": 0.732745
    },
    {
     "name": "QUINTANA",
-    "fin": 2220.591,
+    "fin": 2219.994,
     "caught": false,
-    "work": 584081,
-    "wear": 0.676957
+    "work": 588358,
+    "wear": 0.678618
    }
   ]
  },
  {
   "seed": 143542,
   "bench": 2468.11,
-  "pelT": 2581.643,
-  "base": 344.266,
+  "pelT": 2569.303,
+  "base": 347.674,
   "finaleP": 588.898,
   "total": 20996,
   "wind": 5.907,
@@ -840,44 +840,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 671977,
-    "wear": 0.706805
+    "work": 654511,
+    "wear": 0.69349
    },
    {
     "name": "HINAULT",
     "fin": null,
     "caught": true,
-    "work": 699527,
-    "wear": 0.673034
+    "work": 704083,
+    "wear": 0.618997
    },
    {
     "name": "CANCELLARA",
-    "fin": 2506.91,
+    "fin": 2494.974,
     "caught": false,
-    "work": 882635,
-    "wear": 0.775548
+    "work": 884465,
+    "wear": 0.778602
    },
    {
     "name": "PANTANI",
     "fin": null,
     "caught": true,
-    "work": 657195,
-    "wear": 0.775085
+    "work": 647402,
+    "wear": 0.75851
    },
    {
     "name": "CIPOLLINI",
     "fin": null,
     "caught": true,
-    "work": 675476,
-    "wear": 0.824209
+    "work": 664628,
+    "wear": 0.644177
    }
   ]
  },
  {
   "seed": 151461,
   "bench": 2010.627,
-  "pelT": 2103.115,
-  "base": 386.23,
+  "pelT": 2093.062,
+  "base": 390.467,
   "finaleP": 651.448,
   "total": 20727,
   "wind": 3.128,
@@ -886,36 +886,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 693123,
-    "wear": 0.760184
+    "work": 651096,
+    "wear": 0.73462
    },
    {
     "name": "CAVENDISH",
     "fin": null,
     "caught": true,
-    "work": 337527,
-    "wear": 0.630114
+    "work": 426936,
+    "wear": 0.657274
    },
    {
     "name": "LAURITZEN",
     "fin": null,
     "caught": true,
-    "work": 338005,
-    "wear": 0.471289
+    "work": 444320,
+    "wear": 0.554208
    },
    {
     "name": "CIPOLLINI",
     "fin": null,
     "caught": true,
-    "work": 338305,
-    "wear": 0.634771
+    "work": 376386,
+    "wear": 0.658005
    },
    {
     "name": "B.HAGEN",
     "fin": null,
     "caught": true,
-    "work": 555907,
-    "wear": 0.729012
+    "work": 519178,
+    "wear": 0.722137
    }
   ]
  },
@@ -937,31 +937,31 @@
    },
    {
     "name": "ZABEL",
-    "fin": 1614.352,
+    "fin": 1620.758,
     "caught": false,
-    "work": 493863,
-    "wear": 0.941449
+    "work": 498091,
+    "wear": 0.889286
    },
    {
     "name": "INDURAIN",
-    "fin": 1587.344,
+    "fin": 1587.996,
     "caught": false,
-    "work": 567534,
-    "wear": 0.688098
+    "work": 562982,
+    "wear": 0.686249
    },
    {
     "name": "CAVENDISH",
-    "fin": 1614.414,
+    "fin": 1621.691,
     "caught": false,
-    "work": 475721,
+    "work": 480328,
     "wear": 1
    },
    {
     "name": "COPPI",
-    "fin": 1643.977,
+    "fin": 1650.016,
     "caught": false,
-    "work": 454588,
-    "wear": 0.648269
+    "work": 455330,
+    "wear": 0.683676
    }
   ]
  },
@@ -978,44 +978,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 361391,
-    "wear": 0.416104
+    "work": 360815,
+    "wear": 0.41604
    },
    {
     "name": "LAURITZEN",
     "fin": null,
     "caught": true,
-    "work": 257825,
-    "wear": 0.412434
+    "work": 242954,
+    "wear": 0.416748
    },
    {
     "name": "BOONEN",
     "fin": null,
     "caught": true,
-    "work": 273201,
-    "wear": 0.448968
+    "work": 264783,
+    "wear": 0.445922
    },
    {
     "name": "KELLY",
     "fin": null,
     "caught": true,
-    "work": 315607,
-    "wear": 0.530849
+    "work": 314218,
+    "wear": 0.530637
    },
    {
     "name": "MERCKX",
     "fin": null,
     "caught": true,
-    "work": 320219,
-    "wear": 0.387451
+    "work": 319640,
+    "wear": 0.387077
    }
   ]
  },
  {
   "seed": 175218,
   "bench": 2387.111,
-  "pelT": 2525.564,
-  "base": 331.07,
+  "pelT": 2523.176,
+  "base": 331.622,
   "finaleP": 0,
   "total": 18930,
   "wind": 5.077,
@@ -1024,36 +1024,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 609292,
-    "wear": 0.731148
+    "work": 610936,
+    "wear": 0.730943
    },
    {
     "name": "CIPOLLINI",
     "fin": null,
     "caught": true,
-    "work": 773828,
-    "wear": 0.88867
+    "work": 770832,
+    "wear": 0.893958
    },
    {
     "name": "VIRENQUE",
     "fin": null,
     "caught": true,
-    "work": 592305,
-    "wear": 0.726601
+    "work": 595751,
+    "wear": 0.723408
    },
    {
     "name": "CAVENDISH",
-    "fin": 2491.632,
+    "fin": 2492.731,
     "caught": false,
-    "work": 786867,
+    "work": 787105,
     "wear": 1
    },
    {
     "name": "CANCELLARA",
-    "fin": 2372.807,
+    "fin": 2372.305,
     "caught": false,
-    "work": 884501,
-    "wear": 0.883207
+    "work": 884685,
+    "wear": 0.883251
    }
   ]
  },
@@ -1077,15 +1077,15 @@
     "name": "CAVENDISH",
     "fin": null,
     "caught": true,
-    "work": 664458,
-    "wear": 0.850563
+    "work": 664477,
+    "wear": 0.850544
    },
    {
     "name": "INDURAIN",
-    "fin": 2358.15,
+    "fin": 2358.149,
     "caught": false,
-    "work": 835530,
-    "wear": 0.690782
+    "work": 835521,
+    "wear": 0.69078
    },
    {
     "name": "HUSHOVD",
@@ -1098,8 +1098,8 @@
     "name": "CIPOLLINI",
     "fin": null,
     "caught": true,
-    "work": 690136,
-    "wear": 0.821892
+    "work": 690138,
+    "wear": 0.821888
    }
   ]
  },
@@ -1116,36 +1116,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 626683,
-    "wear": 0.937966
+    "work": 616359,
+    "wear": 0.749188
    },
    {
     "name": "PANTANI",
     "fin": null,
     "caught": true,
-    "work": 512000,
-    "wear": 0.649354
+    "work": 512579,
+    "wear": 0.649365
    },
    {
     "name": "ZABEL",
     "fin": null,
     "caught": true,
-    "work": 576777,
-    "wear": 0.742463
+    "work": 577758,
+    "wear": 0.743145
    },
    {
     "name": "MERCKX",
-    "fin": 1919.832,
+    "fin": 1920.73,
     "caught": false,
-    "work": 643414,
-    "wear": 0.706836
+    "work": 653264,
+    "wear": 0.739282
    },
    {
     "name": "B.HAGEN",
-    "fin": 1920.701,
+    "fin": 1920.159,
     "caught": false,
-    "work": 622310,
-    "wear": 0.813721
+    "work": 616458,
+    "wear": 0.807974
    }
   ]
  },
@@ -1167,10 +1167,10 @@
    },
    {
     "name": "B.HAGEN",
-    "fin": 2131.763,
+    "fin": 2131.662,
     "caught": false,
-    "work": 702031,
-    "wear": 0.912645
+    "work": 702040,
+    "wear": 0.913381
    },
    {
     "name": "L.HERRERA",
@@ -1183,15 +1183,15 @@
     "name": "CAVENDISH",
     "fin": null,
     "caught": true,
-    "work": 655342,
-    "wear": 0.721112
+    "work": 655359,
+    "wear": 0.721144
    },
    {
     "name": "LAURITZEN",
-    "fin": 2135.075,
+    "fin": 2134.984,
     "caught": false,
-    "work": 659820,
-    "wear": 0.790475
+    "work": 659382,
+    "wear": 0.790378
    }
   ]
  },
@@ -1206,46 +1206,46 @@
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1551.406,
+    "fin": 1540.007,
     "caught": false,
-    "work": 506153,
-    "wear": 0.740449
+    "work": 492040,
+    "wear": 0.730209
    },
    {
     "name": "HUSHOVD",
-    "fin": 1534.006,
+    "fin": 1531.052,
     "caught": false,
-    "work": 470120,
-    "wear": 0.753055
+    "work": 474695,
+    "wear": 0.727675
    },
    {
     "name": "INDURAIN",
-    "fin": 1533.527,
+    "fin": 1530.692,
     "caught": false,
-    "work": 482014,
-    "wear": 0.565412
+    "work": 479135,
+    "wear": 0.565548
    },
    {
     "name": "VOIGT",
-    "fin": 1533.794,
+    "fin": 1531.009,
     "caught": false,
-    "work": 465077,
-    "wear": 0.675984
+    "work": 466679,
+    "wear": 0.68728
    },
    {
     "name": "L.HERRERA",
-    "fin": 1533.956,
+    "fin": 1532.137,
     "caught": false,
-    "work": 404044,
-    "wear": 0.62521
+    "work": 389902,
+    "wear": 0.671864
    }
   ]
  },
  {
   "seed": 214813,
   "bench": 1519.408,
-  "pelT": 1607.533,
-  "base": 376.645,
+  "pelT": 1606.014,
+  "base": 377.383,
   "finaleP": 0,
   "total": 19115,
   "wind": -3.47,
@@ -1254,90 +1254,90 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 487677,
-    "wear": 0.630031
+    "work": 488882,
+    "wear": 0.608448
    },
    {
     "name": "L.HERRERA",
     "fin": null,
     "caught": true,
-    "work": 404786,
-    "wear": 0.578501
+    "work": 389994,
+    "wear": 0.561057
    },
    {
     "name": "CAVENDISH",
     "fin": null,
     "caught": true,
-    "work": 458440,
-    "wear": 0.719639
+    "work": 442580,
+    "wear": 0.713046
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 473666,
-    "wear": 0.624046
+    "work": 449069,
+    "wear": 0.609835
    },
    {
     "name": "VIRENQUE",
     "fin": null,
     "caught": true,
-    "work": 419862,
-    "wear": 0.630464
+    "work": 380702,
+    "wear": 0.553086
    }
   ]
  },
  {
   "seed": 222732,
   "bench": 1556.601,
-  "pelT": 1628.205,
-  "base": 362.201,
+  "pelT": 1620.422,
+  "base": 366.628,
   "finaleP": 643.62,
   "total": 22130,
   "wind": -4.797,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1626.202,
-    "caught": false,
-    "work": 504632,
-    "wear": 0.617295
+    "fin": null,
+    "caught": true,
+    "work": 489373,
+    "wear": 0.553341
    },
    {
     "name": "VOIGT",
-    "fin": 1626.232,
-    "caught": false,
-    "work": 511260,
-    "wear": 0.621426
+    "fin": null,
+    "caught": true,
+    "work": 456802,
+    "wear": 0.589498
    },
    {
     "name": "BOONEN",
     "fin": null,
     "caught": true,
-    "work": 424289,
-    "wear": 0.543054
+    "work": 309145,
+    "wear": 0.47152
    },
    {
     "name": "B.HAGEN",
     "fin": null,
     "caught": true,
-    "work": 403477,
-    "wear": 0.443041
+    "work": 414750,
+    "wear": 0.483255
    },
    {
     "name": "CIPOLLINI",
-    "fin": 1626.101,
-    "caught": false,
-    "work": 492371,
-    "wear": 0.944377
+    "fin": null,
+    "caught": true,
+    "work": 453138,
+    "wear": 0.676872
    }
   ]
  },
  {
   "seed": 230651,
   "bench": 2205.306,
-  "pelT": 2333.214,
-  "base": 391.288,
+  "pelT": 2331.009,
+  "base": 391.965,
   "finaleP": 0,
   "total": 19039,
   "wind": 4.923,
@@ -1346,44 +1346,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 656822,
-    "wear": 0.646785
+    "work": 668494,
+    "wear": 0.690329
    },
    {
     "name": "L.HERRERA",
     "fin": null,
     "caught": true,
-    "work": 617696,
-    "wear": 0.807325
+    "work": 619490,
+    "wear": 0.808117
    },
    {
     "name": "CONTADOR",
     "fin": null,
     "caught": true,
-    "work": 538927,
-    "wear": 0.630354
+    "work": 553042,
+    "wear": 0.637064
    },
    {
     "name": "PANTANI",
     "fin": null,
     "caught": true,
-    "work": 508728,
-    "wear": 0.660099
+    "work": 516718,
+    "wear": 0.703781
    },
    {
     "name": "CIPOLLINI",
     "fin": null,
     "caught": true,
-    "work": 587831,
-    "wear": 0.848932
+    "work": 562822,
+    "wear": 0.828582
    }
   ]
  },
  {
   "seed": 238570,
   "bench": 2342.922,
-  "pelT": 2478.812,
-  "base": 366.07,
+  "pelT": 2476.469,
+  "base": 366.693,
   "finaleP": 0,
   "total": 19801,
   "wind": 4.519,
@@ -1392,36 +1392,36 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 667559,
-    "wear": 0.692852
+    "work": 648333,
+    "wear": 0.687381
    },
    {
     "name": "LAURITZEN",
     "fin": null,
     "caught": true,
-    "work": 527830,
-    "wear": 0.656363
+    "work": 528963,
+    "wear": 0.653996
    },
    {
     "name": "CONTADOR",
     "fin": null,
     "caught": true,
-    "work": 614024,
-    "wear": 0.842281
+    "work": 585454,
+    "wear": 0.750017
    },
    {
     "name": "COPPI",
     "fin": null,
     "caught": true,
-    "work": 597228,
-    "wear": 0.654717
+    "work": 614373,
+    "wear": 0.634785
    },
    {
     "name": "PANTANI",
     "fin": null,
     "caught": true,
-    "work": 637642,
-    "wear": 0.596392
+    "work": 639754,
+    "wear": 0.698104
    }
   ]
  },
@@ -1438,44 +1438,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 689751,
-    "wear": 0.696118
+    "work": 691217,
+    "wear": 0.694603
    },
    {
     "name": "ZABEL",
     "fin": null,
     "caught": true,
-    "work": 570964,
-    "wear": 0.69725
+    "work": 569169,
+    "wear": 0.756746
    },
    {
     "name": "LAURITZEN",
     "fin": null,
     "caught": true,
-    "work": 492214,
-    "wear": 0.526383
+    "work": 538729,
+    "wear": 0.550651
    },
    {
     "name": "HUSHOVD",
     "fin": null,
     "caught": true,
-    "work": 523407,
-    "wear": 0.705163
+    "work": 584945,
+    "wear": 0.747947
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 533769,
-    "wear": 0.739096
+    "work": 547579,
+    "wear": 0.736046
    }
   ]
  },
  {
   "seed": 254408,
   "bench": 2267.057,
-  "pelT": 2398.546,
-  "base": 377.819,
+  "pelT": 2396.279,
+  "base": 378.458,
   "finaleP": 0,
   "total": 19413,
   "wind": 4.349,
@@ -1484,44 +1484,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 734982,
-    "wear": 0.642026
+    "work": 731850,
+    "wear": 0.641133
    },
    {
     "name": "DE GENDT",
-    "fin": 2384.054,
+    "fin": 2389.757,
     "caught": false,
-    "work": 759300,
-    "wear": 0.659782
+    "work": 755069,
+    "wear": 0.609879
    },
    {
     "name": "CANCELLARA",
-    "fin": 2390.191,
+    "fin": 2387.453,
     "caught": false,
-    "work": 839384,
-    "wear": 0.793247
+    "work": 838391,
+    "wear": 0.795304
    },
    {
     "name": "LEMOND",
     "fin": null,
     "caught": true,
-    "work": 626702,
-    "wear": 0.59312
+    "work": 623015,
+    "wear": 0.598153
    },
    {
     "name": "QUINTANA",
-    "fin": 2378.784,
+    "fin": 2384.216,
     "caught": false,
-    "work": 630288,
-    "wear": 0.677918
+    "work": 630644,
+    "wear": 0.661652
    }
   ]
  },
  {
   "seed": 262327,
   "bench": 2430.063,
-  "pelT": 2541.846,
-  "base": 391.18,
+  "pelT": 2529.696,
+  "base": 395.096,
   "finaleP": 657.033,
   "total": 21728,
   "wind": 5.995,
@@ -1530,136 +1530,136 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 726208,
-    "wear": 0.660179
+    "work": 711112,
+    "wear": 0.650139
    },
    {
     "name": "VOECKLER",
     "fin": null,
     "caught": true,
-    "work": 749300,
-    "wear": 0.727897
+    "work": 728781,
+    "wear": 0.722911
    },
    {
     "name": "LEMOND",
     "fin": null,
     "caught": true,
-    "work": 539110,
-    "wear": 0.670535
+    "work": 509641,
+    "wear": 0.551134
    },
    {
     "name": "KELLY",
     "fin": null,
     "caught": true,
-    "work": 557543,
-    "wear": 0.640133
+    "work": 567930,
+    "wear": 0.628394
    },
    {
     "name": "INDURAIN",
     "fin": null,
     "caught": true,
-    "work": 836178,
-    "wear": 0.732004
+    "work": 794027,
+    "wear": 0.729309
    }
   ]
  },
  {
   "seed": 270246,
   "bench": 2085.83,
-  "pelT": 2181.778,
-  "base": 365.636,
+  "pelT": 2171.349,
+  "base": 369.739,
   "finaleP": 646.794,
   "total": 22405,
   "wind": 2.281,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2173.128,
+    "fin": 2148.895,
     "caught": false,
-    "work": 716569,
-    "wear": 0.858636
+    "work": 686419,
+    "wear": 0.833897
    },
    {
     "name": "L.HERRERA",
     "fin": null,
     "caught": true,
-    "work": 543115,
-    "wear": 0.655079
+    "work": 549674,
+    "wear": 0.63441
    },
    {
     "name": "LEMOND",
-    "fin": null,
-    "caught": true,
-    "work": 639112,
-    "wear": 0.629325
+    "fin": 2160.333,
+    "caught": false,
+    "work": 628376,
+    "wear": 0.73702
    },
    {
     "name": "DE GENDT",
-    "fin": 2172.198,
-    "caught": false,
-    "work": 700054,
-    "wear": 0.700888
+    "fin": null,
+    "caught": true,
+    "work": 680394,
+    "wear": 0.660831
    },
    {
     "name": "VOECKLER",
-    "fin": null,
-    "caught": true,
-    "work": 660918,
-    "wear": 0.682027
+    "fin": 2155.724,
+    "caught": false,
+    "work": 633574,
+    "wear": 0.674208
    }
   ]
  },
  {
   "seed": 278165,
   "bench": 2296.991,
-  "pelT": 2430.217,
-  "base": 371.618,
+  "pelT": 2427.92,
+  "base": 372.267,
   "finaleP": 0,
   "total": 19210,
   "wind": 5.574,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 2388.349,
+    "fin": 2386.072,
     "caught": false,
-    "work": 733342,
-    "wear": 0.746673
+    "work": 734269,
+    "wear": 0.746277
    },
    {
     "name": "VOIGT",
-    "fin": 2390.264,
+    "fin": 2395.842,
     "caught": false,
-    "work": 728714,
-    "wear": 0.679811
+    "work": 729482,
+    "wear": 0.668833
    },
    {
     "name": "B.HAGEN",
-    "fin": 2395.813,
+    "fin": 2389.493,
     "caught": false,
-    "work": 704411,
-    "wear": 0.884164
+    "work": 705827,
+    "wear": 0.884574
    },
    {
     "name": "CANCELLARA",
-    "fin": 2386.154,
+    "fin": 2383.568,
     "caught": false,
-    "work": 765294,
-    "wear": 0.670904
+    "work": 766264,
+    "wear": 0.663208
    },
    {
     "name": "VOECKLER",
-    "fin": 2385.585,
+    "fin": 2383.799,
     "caught": false,
-    "work": 675701,
-    "wear": 0.621693
+    "work": 675465,
+    "wear": 0.613543
    }
   ]
  },
  {
   "seed": 286084,
   "bench": 1782.202,
-  "pelT": 1885.569,
-  "base": 347.927,
+  "pelT": 1883.787,
+  "base": 348.621,
   "finaleP": 0,
   "total": 20431,
   "wind": -1.723,
@@ -1668,44 +1668,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 577119,
-    "wear": 0.647897
+    "work": 570126,
+    "wear": 0.630498
    },
    {
     "name": "VIRENQUE",
-    "fin": 1851.227,
+    "fin": 1858.247,
     "caught": false,
-    "work": 554174,
-    "wear": 0.810802
+    "work": 552456,
+    "wear": 0.806373
    },
    {
     "name": "HUSHOVD",
-    "fin": 1840.366,
+    "fin": 1841.776,
     "caught": false,
-    "work": 653140,
-    "wear": 0.813234
+    "work": 652158,
+    "wear": 0.816593
    },
    {
     "name": "CONTADOR",
-    "fin": 1780.97,
+    "fin": 1780.816,
     "caught": false,
-    "work": 543790,
-    "wear": 0.667425
+    "work": 544227,
+    "wear": 0.667963
    },
    {
     "name": "BOONEN",
-    "fin": 1812.753,
+    "fin": 1812.856,
     "caught": false,
-    "work": 656399,
-    "wear": 0.855817
+    "work": 658450,
+    "wear": 0.856968
    }
   ]
  },
  {
   "seed": 294003,
   "bench": 2322.361,
-  "pelT": 2429.19,
-  "base": 398.101,
+  "pelT": 2417.578,
+  "base": 402.07,
   "finaleP": 687.507,
   "total": 22275,
   "wind": 4.491,
@@ -1714,44 +1714,44 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 735984,
-    "wear": 0.667649
+    "work": 722792,
+    "wear": 0.655835
    },
    {
     "name": "LAURITZEN",
     "fin": null,
     "caught": true,
-    "work": 404063,
-    "wear": 0.49662
+    "work": 427485,
+    "wear": 0.505419
    },
    {
     "name": "INDURAIN",
     "fin": null,
     "caught": true,
-    "work": 486707,
-    "wear": 0.505828
+    "work": 452902,
+    "wear": 0.479384
    },
    {
     "name": "DE GENDT",
     "fin": null,
     "caught": true,
-    "work": 427228,
-    "wear": 0.633917
+    "work": 425650,
+    "wear": 0.652379
    },
    {
     "name": "HUSHOVD",
     "fin": null,
     "caught": true,
-    "work": 533470,
-    "wear": 0.527512
+    "work": 487692,
+    "wear": 0.483898
    }
   ]
  },
  {
   "seed": 301922,
   "bench": 2340.289,
-  "pelT": 2447.943,
-  "base": 361.612,
+  "pelT": 2436.241,
+  "base": 365.317,
   "finaleP": 612.078,
   "total": 20889,
   "wind": 5.544,
@@ -1760,82 +1760,82 @@
     "name": "PEDERSEN",
     "fin": null,
     "caught": true,
-    "work": 664755,
-    "wear": 0.706171
+    "work": 648317,
+    "wear": 0.695846
    },
    {
     "name": "KELLY",
-    "fin": 2365.747,
+    "fin": 2390.385,
     "caught": false,
-    "work": 800355,
-    "wear": 0.791977
+    "work": 823505,
+    "wear": 0.853975
    },
    {
     "name": "VOIGT",
-    "fin": 2367.412,
+    "fin": 2407.513,
     "caught": false,
-    "work": 755785,
-    "wear": 0.740719
+    "work": 786840,
+    "wear": 0.846346
    },
    {
     "name": "LEMOND",
-    "fin": 2367.381,
+    "fin": 2411.068,
     "caught": false,
-    "work": 695565,
-    "wear": 0.810023
+    "work": 736958,
+    "wear": 0.85348
    },
    {
     "name": "PANTANI",
     "fin": null,
     "caught": true,
-    "work": 644031,
-    "wear": 0.723613
+    "work": 643068,
+    "wear": 0.724145
    }
   ]
  },
  {
   "seed": 309841,
   "bench": 1767.36,
-  "pelT": 1869.867,
-  "base": 394.843,
+  "pelT": 1868.1,
+  "base": 395.605,
   "finaleP": 0,
   "total": 18068,
   "wind": 1.713,
   "riders": [
    {
     "name": "PEDERSEN",
-    "fin": 1832.129,
+    "fin": 1831.16,
     "caught": false,
-    "work": 599070,
-    "wear": 0.667731
+    "work": 600298,
+    "wear": 0.664746
    },
    {
     "name": "HINAULT",
-    "fin": 1828.911,
+    "fin": 1827.663,
     "caught": false,
-    "work": 523287,
-    "wear": 0.588835
+    "work": 523629,
+    "wear": 0.588645
    },
    {
     "name": "VIRENQUE",
-    "fin": 1833.369,
+    "fin": 1832.453,
     "caught": false,
-    "work": 520329,
-    "wear": 0.618717
+    "work": 522268,
+    "wear": 0.617334
    },
    {
     "name": "ZABEL",
-    "fin": 1827.418,
+    "fin": 1826.373,
     "caught": false,
-    "work": 553315,
-    "wear": 0.662395
+    "work": 555785,
+    "wear": 0.660513
    },
    {
     "name": "QUINTANA",
-    "fin": 1828.791,
+    "fin": 1827.711,
     "caught": false,
-    "work": 505338,
-    "wear": 0.54863
+    "work": 507561,
+    "wear": 0.54803
    }
   ]
  }
