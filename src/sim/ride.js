@@ -342,7 +342,13 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
           if (hunt) r.chasing = 1;
         }
       }
-      if (!r.chasing) P = coast(P, r.speed);
+      // ...but the chase exemption stops at the DH_GRAD line: on a REAL descent
+      // gravity sets the speed and watts buy nothing — measured, hunting fronts
+      // burnt 400+ W at 70 km/h downhill and gained not a metre. A real chaser
+      // tucks; the alarm survives (r.chasing stands) and the reeling resumes the
+      // moment the road stops falling. The gradient gate, not a speed gate,
+      // keeps the tailwind-flat alarm (the reason for the exemption) untouched.
+      if (!r.chasing || grad < DH_GRAD) P = coast(P, r.speed);
     } else if ((sitGlue ? !!follower : (overpaid || sitting)) && r.groupPos < grp.length) {
       r.offline = 1;   // drifting back down the outside — not a wheel anyone should take
       // his pull is done: 10 % of threshold on the way back — blending smoothly up to
@@ -496,7 +502,9 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
           const pWant = powerFor(planSpeedAt(S.plan, r.dist), r.mass, r.cda, grad, rho, hw, 0)
             * (1 + PACE_GAIN * urgency);
           P = Math.min(pWant, r.pullX * b.T, b.ceil);
-          if (hunt) r.chasing = 1; else P = coast(P, r.speed);
+          if (hunt) r.chasing = 1;
+          // same descent rule as the front line: a chase tucks where speed is free
+          if (!hunt || grad < DH_GRAD) P = coast(P, r.speed);
         }
       } else if (usable && (movingUp || r.hold || playerGlue || (bestGap >= 0 && shel > 0))) {
         const tgap = tgt === ahead ? bestGap : wheelGap0(tgt, r);
@@ -509,6 +517,12 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // hold it, so the autopilot gets its full closing authority.
         const out = wheelAutopilot(S, r, b, tgt, tgap, shel, need, grad, rho, hw, !movingUp && !finale && !playerGlue);
         P = out.P; brake = out.brake;
+        // closing a gap on a REAL descent is the same waste the chase's descent
+        // rule names: the controller asked 300-450 W at 60+ km/h downhill and the
+        // metres came from gravity, not the watts. Tuck; the closing resumes
+        // where the road flattens. Not in the finale — positioning is priceless
+        // there and the sprint's own branches never pass this way anyway.
+        if (!finale && grad < DH_GRAD) P = coast(P, r.speed);
         // ...and up a climb there is a level above which following him is not following
         // at all, it is blowing up in his wake. A rider knows that: he lets the wheel go
         // and rides what he can hold to the top, and as often as not he comes back over
@@ -570,7 +584,7 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
         // once, and it turned every transient loss on a climb into a permanent
         // one: the climbing cap sheds you near the top, the cap forbade the ride
         // back over it, and "come back over the summit" never happened.
-        if (!r.chasing) P = coast(P, r.speed);
+        if (!r.chasing || grad < DH_GRAD) P = coast(P, r.speed);
       }
     }
   } else {
@@ -611,7 +625,9 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
     // a tailwind at fifty-six an hour is doing neither of those things, he is racing.
     // (The sitting player, alone, chases like any AI rester — the threshold cap that
     // lived here made a temporary loss on a climb a permanent one.)
-    if (!r.chasing && !racing) P = coast(P, r.speed);
+    // On a REAL descent even the racer tucks: the watts bought nothing, and the
+    // surge they would have burnt wins the race on the road after the drop.
+    if (!(r.chasing || racing) || grad < DH_GRAD) P = coast(P, r.speed);
   }
   return { P, brake };
 }
