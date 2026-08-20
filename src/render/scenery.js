@@ -13,16 +13,32 @@ export function drawScenery(S, ctx, w, xOf, yOf, cx, pxm) {
   const SP = 34;                                   // metres between candidate spots
   const i0 = Math.floor((cx - 120) / SP), i1 = Math.ceil((cx + 200) / SP);
   for (let i = i0; i <= i1; i++) {
-    const r1 = hash1(i), r2 = hash1(i + 0.37), r3 = hash1(i + 0.91);
-    if (r1 > 0.62) continue;                       // most spots stay empty
+    const r1 = hash1(i), r2 = hash1(i + 0.37), r3 = hash1(i + 0.91), rf = hash1(i + 0.53);
     const d = i * SP + r2 * 22;
     if (d > S.course.total - 1000) continue;       // the last km belongs to the crowd
     const x = xOf(d);
     if (x < -70 || x > w + 70) continue;
     const y = yOf(d) - 5;                          // just behind the tarmac
+    // people line the road where the race is worth watching: any real ramp (the
+    // steeper, the denser) and the last kilometres into the finish. Their roll
+    // (rf) runs BEFORE the emptiness gate on its own hash channel — behind that
+    // gate, on the old >5 % rule, a sprint day drew ZERO spectators and a rouleur
+    // day six, which read as "the fans never showed up"
+    const grad = S.course.gradAt(d);
+    const toGo = S.course.total - d;
+    const fanP = Math.max(grad > 0.035 ? 0.35 + grad * 8 : 0, toGo < 3000 ? 0.8 : 0);
+    if (rf < Math.min(fanP, 0.9)) {
+      // a fan segment is LINED, not a lone clump: several knots spread over the
+      // whole 34 m between candidate spots
+      const knots = 1 + Math.floor(rf * 3) + (fanP > 0.6 ? 1 : 0);
+      for (let q = 0; q < knots; q++) {
+        const dd = d + (hash1(i * 13.7 + q) - 0.5) * SP;
+        drawFans(ctx, xOf(dd), yOf(dd) - 2, pxm, i * 31 + q, grad);
+      }
+      continue;
+    }
+    if (r1 > 0.62) continue;                       // most spots stay empty
     const j = 0.85 + r3 * 0.3;
-    // on a real climb the roadside fills with people — the steeper, the truer
-    if (S.course.gradAt(d) > 0.05 && r1 < 0.4) { drawFans(ctx, x, y + 3, pxm, i); continue; }
     if (r1 < 0.20) drawTree(ctx, x, y, pxm * j, r3);
     else if (r1 < 0.33) drawSunflowers(ctx, x, y, pxm * j, i);
     else if (r1 < 0.44) drawFence(ctx, x, y, pxm, i);
@@ -133,9 +149,11 @@ export function drawHouse(ctx, x, y, s, r2, r3) {
 }
 
 const FAN_KIT = ["#e0483c", "#3a76bd", "#f5c518", "#2f9e4f", "#8e6bd6", "#f4f4f4", "#e07f28"];
-export function drawFans(ctx, x, y, s, seed) {
-  // a knot of spectators, person-sized against person-sized riders
-  const n = 3 + Math.floor(hash1(seed * 1.7) * 4);
+const FAN_SKIN = ["#e8c9a0", "#e2bd92", "#d4a276", "#b47c48", "#a9713f"];
+export function drawFans(ctx, x, y, s, seed, grad = 0) {
+  // a knot of spectators, person-sized against person-sized riders — a steep ramp
+  // packs them tighter and throws more arms in the air
+  const n = 3 + Math.floor(hash1(seed * 1.7) * 4) + (grad > 0.06 ? 2 : 0);
   for (let p = 0; p < n; p++) {
     const q1 = hash1(seed * 5.3 + p), q2 = hash1(seed * 9.1 + p), q3 = hash1(seed * 2.9 + p);
     const fx = x + (q1 - 0.5) * 4.5 * s;
@@ -145,11 +163,11 @@ export function drawFans(ctx, x, y, s, seed) {
     ctx.fillRect(fx - 0.11 * s, y - hgt * 0.45, 0.22 * s, hgt * 0.45);
     ctx.fillStyle = shirt;                         // torso
     ctx.fillRect(fx - 0.16 * s, y - hgt * 0.82, 0.32 * s, hgt * 0.4);
-    if (q2 > 0.55) {                               // an arm up, roaring the break on
+    if (q2 > (grad > 0.06 ? 0.35 : 0.55)) {        // an arm up, roaring the break on
       ctx.strokeStyle = shirt; ctx.lineWidth = Math.max(1, 0.09 * s);
       ctx.beginPath(); ctx.moveTo(fx + 0.13 * s, y - hgt * 0.78); ctx.lineTo(fx + 0.3 * s, y - hgt * 1.06); ctx.stroke();
     }
-    ctx.fillStyle = "#e8c9a0";                     // head
+    ctx.fillStyle = FAN_SKIN[Math.floor(hash1(seed * 4.7 + p) * FAN_SKIN.length)];
     ctx.beginPath(); ctx.arc(fx, y - hgt * 0.92, 0.14 * s, 0, 6.284); ctx.fill();
   }
 }
