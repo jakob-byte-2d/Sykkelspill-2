@@ -261,23 +261,34 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   so headless races (golden/balance) rotate at the doctrine's price.
 - **Behind a wheel, the player's autopilot is GLUE** (`playerGlue`, ride.js): in SIT ON
   and RELAY he holds the wheel unconditionally, body permitting — full wheelAutopilot
-  authority (no rester soft cap), no summit-pacing cap, no speed-validity veto. What
-  still lets go: the ceiling, a `reacting()` wheel (never towed into attacks), and the
-  player's own hands. Gated on `S.input.turn === "manual"` — a human at the controls —
-  so headless keeps the AI's judgement (unGated, the glue pushed tailwind survival to
-  ~83 % and no PEL_LEAD value could restore the wind split). The wheel warning
-  (commentary) is the glue's voice: it tells you when holding is about to cost the tank.
-- **SIT ON holds the SLOT too** (`sitGlue`, ride.js): the sitting player's wheel is
-  literally the NEAREST man ahead still in the line — a dying wheel included (no
-  deadWheel veto, no queueWheel see-through; only offline drop-backs and `reacting()`
-  wheels are looked through), and he keeps his position until a rider comes up on his
-  wheel from behind, on the wheel AND closing (> +0.15 m/s inside DOOR_NEAR; a queue
-  follower merely sitting there never trips it). Then he yields exactly one slot: the
-  drop-back blend eases him aside at price − DROP_W and lands him on the passer's
-  wheel. Swinging off the front he sinks through the passing train and re-enters where
-  his speed matches (ahead of any non-closing tail). Wave-in only applies to him when
-  he is LAST — mid-line a drop-back passes on the outside, and following it down would
-  tow him out of his slot. RELAY keeps the queueWheel see-through unchanged.
+  authority (no rester soft cap), no summit-pacing cap, no speed-validity veto, no
+  deadWheel veto. What still lets go: the ceiling, a `reacting()` wheel (never towed
+  into attacks), and the player's own hands. Gated on `S.input.turn === "manual"` — a
+  human at the controls — so headless keeps the AI's judgement (unGated, the glue
+  pushed tailwind survival to ~83 % and no PEL_LEAD value could restore the wind
+  split). The wheel warning (commentary) is the glue's voice: it tells you when
+  holding is about to cost the tank.
+- **The glued player's wheel is the TRAIN's tail** (`chainTail`, tactics.js): the last
+  wheel in the contiguous chain from the group's first rider, broken where the gap —
+  rear wheel to front wheel, `wheelGap0` — opens beyond one bike length (BIKE). A
+  straggler dangling behind the train is not the line: the pick and the drop-back
+  landing both go to the train's tail, past him (measured: sit parked-behind-straggler
+  920 s → 199 s over 12 seeds, and in the residue the target is the train in 93 % of
+  seconds, closing at 1.4·T). The file itself rides at ~0 m gaps (median 0.00, only
+  4.2 % of line gaps exceed BIKE), so the chain breaks only at real holes. Offline
+  drop-backs, `reacting()` wheels and the player himself carry no contiguity — which
+  bounds the chain at his own slot mid-line, so tight files ride exactly as before.
+  Dying wheels INSIDE the train are held (contact, not the tank, makes a wheel — the
+  chain breaking behind the man is what moves you off it). Falls back to the old pick
+  (sitGlue nearest-ahead / queueWheel) if the tail doesn't exist.
+- **SIT ON holds the SLOT too** (`sitGlue`, ride.js): the sitting player keeps his
+  position until a rider comes up on his wheel from behind, on the wheel AND closing
+  (> +0.15 m/s inside DOOR_NEAR; a queue follower merely sitting there never trips
+  it). Then he yields exactly one slot: the drop-back blend eases him aside at
+  price − DROP_W and lands him on the passer's wheel. Swinging off the front he sinks
+  through the passing train and re-enters at the train's tail. Wave-in only applies
+  to him when he is LAST — mid-line a drop-back passes on the outside, and following
+  it down would tow him out of his slot.
 - **The player NEVER enters chase autopilot.** In RELAY and SIT ON, with no usable
   wheel to hold (dropped, lost the wheel, alone/clear), the legs ride the instruction
   — `min(setpoint, ceil)` + coast. Getting back on is the slider's job. The AI's
