@@ -308,7 +308,15 @@ ships). `spec.color` is the jersey; the engine never reads team/color/class.
   it down would tow him out of his slot.
 - **The player NEVER enters chase autopilot.** In RELAY and SIT ON, with no usable
   wheel to hold (dropped, lost the wheel, alone/clear), the legs ride the instruction
-  — `min(setpoint, ceil)` + coast. Getting back on is the slider's job. The AI's
+  — `min(setpoint, ceil)` + coast. Getting back on is the slider's job. ONE exception,
+  and it is the button's own meaning: **SIT ON with nobody ahead and somebody behind
+  SITS UP** — he eases to the nearest chaser's price − DROP_W (the rester's drop-back
+  arithmetic, floored at 0.10·T, and the order still caps it from above; the mode may
+  only ask for LESS) so the group reels him in and the glue takes the wheel. Without
+  it the button did nothing at all when clear: measured, the player kept drilling
+  570 W = 1.5·T for 40–50 s and the lead GREW 71 → 138 m until the tank, not the mode,
+  slowed him (now the lead shrinks 63 → 23 m over the first minute). Dropped is
+  unchanged — someone ahead means the slider is still the order. The AI's
   chaseRide has a near-zone instead (CHASE_NEAR/CHASE_NEAR_W): inside 30 m a regain
   costs the wheel's price + ≤150 W, not the minimum-time "empty the tank in 15 s"
   dose that used to bang-bang 690 W at the 12 m group boundary.

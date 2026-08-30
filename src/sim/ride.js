@@ -597,9 +597,33 @@ export function coopRide(S, r, b, ahead, bestGap, shel, grad, rho, hw) {
   } else {
     r.digTo = null;   // whatever climb he claimed, he is his own group now — clean slate
     // The PLAYER alone: the autopilot never chases for him, and it never doses a solo
-    // ride for him either — dropped or clear, the legs ride the instruction bubble
-    // and the slider is how he races. (Same rule as losing the wheel inside a group.)
-    if (r.isPlayer && S.input.mode !== "manual") return { P: Math.min(S.input.watts, b.ceil), brake: 0 };
+    // ride for him either — DROPPED, the legs ride the instruction bubble and the
+    // slider is how he gets back on. (Same rule as losing the wheel inside a group.)
+    // ...but SIT ON with the road BEHIND him is the other case, and the same rule
+    // there made the button do nothing at all: clear of the group he kept drilling
+    // his setpoint away from the very men he had just chosen to sit on (measured:
+    // 570 W = 1.5·T held for 40-50 s, the lead growing 71 → 138 m, until the tank
+    // emptied and the ceiling — not the mode — finally slowed him). A rider who is
+    // clear and decides to sit on SITS UP and lets them come. So: nobody ahead but
+    // somebody behind, he eases to the chasers' own price − DROP_W (the rester's
+    // drop-back arithmetic, floored the same way) and they reel him in. The order
+    // still caps it from above; the mode may only ask for LESS. Nobody behind
+    // either and there is nothing to wait for: the slider stands.
+    if (r.isPlayer && S.input.mode !== "manual") {
+      const order = Math.min(S.input.watts, b.ceil);
+      if (S.input.mode === "sit" && !chaseTarget(S, r)) {
+        let chaser = null;
+        for (const o of S.riders) {
+          if (o === r || o.caught || o.finished != null) continue;
+          if (dist0(o) < dist0(r) && (!chaser || dist0(o) > dist0(chaser))) chaser = o;
+        }
+        if (chaser) {
+          const price = powerFor(chaser.speed, r.mass, r.cda, grad, rho, hw, shel);
+          return { P: Math.min(order, Math.max(0.10 * b.T, price - DROP_W)), brake: 0 };
+        }
+      }
+      return { P: order, brake: 0 };
+    }
     // Alone. Off the front there is nothing to read and nothing to chase, so the old
     // steady tempo stands. Off the back there is a wheel up the road, and the whole
     // question a dropped rider asks is whether he can reach it before the line.
